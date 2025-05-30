@@ -85,4 +85,3 @@ export function SalesListClient({ initialSales, lang, dictionary, salesTexts }: 
     </>
   );
 }
-
