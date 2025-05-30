@@ -73,5 +73,59 @@
     "orderSubmittedToastDesc": "Tu pedido ha sido realizado con éxito. (Simulado)",
     "checkoutErrorToast": "Error en el Pago",
     "checkoutErrorToastDesc": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+  },
+  "loginPage": {
+    "title": "Acceso de Administrador",
+    "description": "Accede al Panel de Administración de CorreoLibro.",
+    "usernameLabel": "Usuario",
+    "usernamePlaceholder": "Ingresa tu usuario",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "loginButton": "Acceder",
+    "loggingIn": "Accediendo..."
+  },
+  "adminPanel": {
+    "sidebar": {
+        "dashboard": "Panel",
+        "manageBooks": "Gestionar Libros",
+        "manageUsersSoon": "Gestionar Usuarios (Pronto)"
+    },
+    "header": {
+        "titleSuffix": "Admin",
+        "storefrontLink": "Tienda"
+    },
+    "footer": {
+        "text": "Panel de Administración"
+    },
+    "dashboardPage": {
+        "title": "Panel de Administración",
+        "manageBooksCard": {
+            "title": "Gestionar Libros",
+            "booksCount": "{count} Libros",
+            "inCatalog": "en catálogo",
+            "viewBooksButton": "Ver Libros"
+        },
+        "totalSalesCard": {
+            "title": "Ventas Totales",
+            "amount": "${amount}",
+            "fromLastMonth": "+{percentage}% del último mes",
+            "viewReportButton": "Ver Informe de Ventas"
+        },
+        "registeredUsersCard": {
+            "title": "Usuarios Registrados",
+            "usersCount": "{count}",
+            "newThisWeek": "+{count} nuevos esta semana",
+            "manageUsersButton": "Gestionar Usuarios"
+        },
+        "quickActionsCard": {
+            "title": "Acciones Rápidas",
+            "addNewBookButton": "Añadir Nuevo Libro",
+            "generateReportButton": "Generar Informe de Ventas",
+            "viewLogsButton": "Ver Registros del Sistema"
+        }
+    },
+     "booksPage": {
+        "title": "Gestionar Libros"
+    }
   }
 }

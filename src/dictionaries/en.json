@@ -73,5 +73,59 @@
     "orderSubmittedToastDesc": "Your order has been successfully placed. (Simulated)",
     "checkoutErrorToast": "Checkout Error",
     "checkoutErrorToastDesc": "An unexpected error occurred. Please try again."
+  },
+  "loginPage": {
+    "title": "Admin Login",
+    "description": "Access the CorreoLibro Admin Panel.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter username",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
+    "loginButton": "Login",
+    "loggingIn": "Logging in..."
+  },
+  "adminPanel": {
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "manageBooks": "Manage Books",
+        "manageUsersSoon": "Manage Users (Soon)"
+    },
+    "header": {
+        "titleSuffix": "Admin",
+        "storefrontLink": "Storefront"
+    },
+    "footer": {
+        "text": "Admin Panel"
+    },
+    "dashboardPage": {
+        "title": "Admin Dashboard",
+        "manageBooksCard": {
+            "title": "Manage Books",
+            "booksCount": "{count} Books",
+            "inCatalog": "in catalog",
+            "viewBooksButton": "View Books"
+        },
+        "totalSalesCard": {
+            "title": "Total Sales",
+            "amount": "${amount}",
+            "fromLastMonth": "+{percentage}% from last month",
+            "viewReportButton": "View Sales Report"
+        },
+        "registeredUsersCard": {
+            "title": "Registered Users",
+            "usersCount": "{count}",
+            "newThisWeek": "+{count} new this week",
+            "manageUsersButton": "Manage Users"
+        },
+        "quickActionsCard": {
+            "title": "Quick Actions",
+            "addNewBookButton": "Add New Book",
+            "generateReportButton": "Generate Sales Report",
+            "viewLogsButton": "View System Logs"
+        }
+    },
+    "booksPage": {
+        "title": "Manage Books"
+    }
   }
 }

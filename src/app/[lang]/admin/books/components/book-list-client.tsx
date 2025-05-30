@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -19,13 +18,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"; // Removed AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 
 interface BookListClientProps {
   initialBooks: Book[];
   onDeleteBook: (bookId: string) => Promise<void>;
-  lang: string; // Added lang prop
+  lang: string;
 }
 
 export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListClientProps) {
@@ -72,7 +71,7 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           </div>
-          <Link href={`/${lang}/admin/books?action=add`} passHref legacyBehavior>
+          <Link href={`/${lang}/admin/panel/books?action=add`} passHref legacyBehavior>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" /> Add New Book
             </Button>
@@ -118,12 +117,11 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
                         <ExternalLink className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Link href={`/${lang}/admin/books?action=edit&id=${book.id}`} passHref legacyBehavior>
+                    <Link href={`/${lang}/admin/panel/books?action=edit&id=${book.id}`} passHref legacyBehavior>
                       <Button variant="ghost" size="icon" title="Edit Book">
                         <Edit className="h-4 w-4" />
                       </Button>
                     </Link>
-                    {/* AlertDialogTrigger is part of Radix AlertDialog, not a separate import. We trigger by setting state. */}
                     <Button variant="ghost" size="icon" title="Delete Book" onClick={() => setBookToDelete(book)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>

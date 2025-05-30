@@ -1,265 +1,160 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import Image from 'next/image';
+import Link from 'next/link';
 import type { Book } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Edit, Trash2, PlusCircle, Search, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, Save, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
-const bookSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  author: z.string().min(3, "Author name must be at least 3 characters"),
-  genre: z.string().min(2, "Genre is required"),
-  description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description too long"),
-  coverImage: z.string().url("Must be a valid URL for cover image (e.g., https://placehold.co/...)"),
-  price: z.preprocess(
-    (val) => parseFloat(String(val)),
-    z.number().min(0, "Price cannot be negative")
-  ),
-  stock: z.preprocess(
-    (val) => parseInt(String(val), 10),
-    z.number().int().min(0, "Stock cannot be negative")
-  ),
-  targetAudience: z.string().optional(),
-  themes: z.string().optional().transform(val => val ? val.split(',').map(t => t.trim()).filter(t => t) : []),
-  content: z.string().optional().describe("Full book content or extended summary"),
-  publishedYear: z.preprocess(
-    (val) => (String(val) === '' ? undefined : parseInt(String(val),10)),
-    z.number().int().min(1000).max(new Date().getFullYear() + 5).optional()
-  ),
-  isbn: z.string().optional(),
-});
-
-type BookFormData = z.infer<typeof bookSchema>;
-
-interface BookFormClientProps {
-  book?: Book;
-  onSave: (data: Book) => Promise<void>; 
-  onDelete?: (bookId: string) => Promise<void>;
-  lang: string; // Added lang prop
+interface BookListClientProps {
+  initialBooks: Book[];
+  onDeleteBook: (bookId: string) => Promise<void>;
+  lang: string;
 }
 
-export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientProps) {
-  const [isSaving, setIsSaving] = useState(false);
+export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListClientProps) {
+  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
   const { toast } = useToast();
-  const router = useRouter();
 
-  const form = useForm<BookFormData>({
-    resolver: zodResolver(bookSchema),
-    defaultValues: book ? {
-      ...book,
-      price: book.price ?? 0,
-      stock: book.stock ?? 0,
-      themes: book.themes?.join(', ') ?? '',
-      publishedYear: book.publishedYear ?? undefined,
-    } : {
-      title: '',
-      author: '',
-      genre: '',
-      description: '',
-      coverImage: 'https://placehold.co/300x450.png',
-      price: 0,
-      stock: 0,
-      targetAudience: '',
-      themes: '',
-      content: '',
-      publishedYear: undefined,
-      isbn: '',
-    },
-  });
-  
   useEffect(() => {
-    if(book) {
-      form.reset({
-        ...book,
-        price: book.price ?? 0,
-        stock: book.stock ?? 0,
-        themes: book.themes?.join(', ') ?? '',
-        publishedYear: book.publishedYear ?? undefined,
-      });
-    }
-  }, [book, form]);
+    setBooks(initialBooks);
+  }, [initialBooks]);
 
-  const onSubmitHandler: SubmitHandler<BookFormData> = async (data) => {
-    setIsSaving(true);
-    try {
-      const themesArray = typeof data.themes === 'string' ? data.themes.split(',').map(t => t.trim()).filter(t => t) : data.themes;
-      const bookToSave: Book = {
-        id: book?.id || String(Date.now()),
-        ...data,
-        themes: themesArray,
-        price: Number(data.price),
-        stock: Number(data.stock),
-        publishedYear: data.publishedYear ? Number(data.publishedYear) : undefined,
-      };
-      await onSave(bookToSave);
-      toast({
-        title: book ? "Book Updated!" : "Book Added!",
-        description: `${data.title} has been successfully saved.`,
-      });
-      // router.push(`/${lang}/admin/books`); // Navigation handled by parent page
-    } catch (error) {
-      console.error("Error saving book:", error);
-      toast({
-        title: "Save Failed",
-        description: "Could not save book. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const filteredBooks = books.filter(book => 
+    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    book.genre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const handleDelete = async () => {
-    if (book && onDelete) {
-      setIsSaving(true);
+  const handleDeleteConfirmation = async () => {
+    if (bookToDelete) {
       try {
-        await onDelete(book.id);
-        toast({
-          title: "Book Deleted",
-          description: `${book.title} has been deleted.`,
-        });
-        // router.push(`/${lang}/admin/books`); // Navigation handled by parent page
+        await onDeleteBook(bookToDelete.id); 
+        setBooks(prevBooks => prevBooks.filter(b => b.id !== bookToDelete.id));
+        toast({ title: "Book Deleted", description: `${bookToDelete.title} has been deleted.` });
       } catch (error) {
-        toast({
-          title: "Delete Failed",
-          description: "Could not delete book.",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: `Failed to delete ${bookToDelete.title}.`, variant: "destructive" });
       } finally {
-        setIsSaving(false);
+        setBookToDelete(null);
       }
     }
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto shadow-xl rounded-lg">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmitHandler)} className="space-y-8">
-          <CardHeader>
-            <CardTitle className="font-headline text-3xl">{book ? 'Edit Book' : 'Add New Book'}</CardTitle>
-            <CardDescription>Fill in the details for the book.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField control={form.control} name="title" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl><Input placeholder="Book Title" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="author" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Author</FormLabel>
-                  <FormControl><Input placeholder="Author Name" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <FormField control={form.control} name="genre" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Genre</FormLabel>
-                  <FormControl><Input placeholder="e.g., Fiction, Fantasy" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="isbn" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ISBN (Optional)</FormLabel>
-                  <FormControl><Input placeholder="978-xxxxxxxxxx" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-            <FormField control={form.control} name="description" render={({ field }) => (
-              <FormItem>
-                <div className="flex justify-between items-center">
-                  <FormLabel>Description</FormLabel>
-                </div>
-                <FormControl><Textarea placeholder="Book description..." {...field} rows={5} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="content" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Content / Extended Summary (Optional)</FormLabel>
-                 <FormControl><Textarea placeholder="Full book content or a longer summary..." {...field} rows={8} /></FormControl>
-                <FormDescription>Provide the full book content or an extended summary here. This can be useful for detailed views or future features.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="coverImage" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cover Image URL</FormLabel>
-                <FormControl><Input placeholder="https://placehold.co/300x450.png" {...field} /></FormControl>
-                <FormDescription>Use a placeholder service like placehold.co or a direct image link.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FormField control={form.control} name="price" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price ($)</FormLabel>
-                  <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="stock" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Stock Quantity</FormLabel>
-                  <FormControl><Input type="number" step="1" placeholder="0" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="publishedYear" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Published Year (Optional)</FormLabel>
-                  <FormControl><Input type="number" placeholder="e.g., 2023" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField control={form.control} name="targetAudience" render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Target Audience (Optional)</FormLabel>
-                    <FormControl><Input placeholder="e.g., Young Adults, Professionals" {...field} /></FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField control={form.control} name="themes" render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Themes (Optional, comma-separated)</FormLabel>
-                    <FormControl><Input placeholder="e.g., Adventure, Romance, Sci-Fi" {...field} /></FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )} />
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between items-center">
-            <Button type="submit" size="lg" disabled={isSaving}>
-              {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-              {book ? 'Save Changes' : 'Add Book'}
+    <AlertDialog open={!!bookToDelete} onOpenChange={(open) => { if (!open) setBookToDelete(null); }}>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="relative w-full sm:max-w-xs">
+            <Input 
+              type="text"
+              placeholder="Search books..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          </div>
+          <Link href={`/${lang}/admin/panel/books?action=add`} passHref legacyBehavior>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" /> Add New Book
             </Button>
-            {book && onDelete && (
-              <Button type="button" variant="destructive" size="lg" onClick={handleDelete} disabled={isSaving}>
-                <Trash2 className="mr-2 h-5 w-5" /> Delete Book
-              </Button>
-            )}
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
+          </Link>
+        </div>
+
+        {filteredBooks.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px]">Image</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Author</TableHead>
+                <TableHead>Genre</TableHead>
+                <TableHead className="text-right">Price</TableHead>
+                <TableHead className="text-right">Stock</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredBooks.map((book) => (
+                <TableRow key={book.id}>
+                  <TableCell>
+                    <Image
+                      src={book.coverImage}
+                      alt={book.title}
+                      width={50}
+                      height={75}
+                      className="rounded object-cover"
+                      data-ai-hint="book cover admin"
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{book.title}</TableCell>
+                  <TableCell>{book.author}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{book.genre}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">${book.price.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{book.stock}</TableCell>
+                  <TableCell className="text-center space-x-1">
+                    <Link href={`/${lang}/books/${book.id}`} target="_blank" passHref legacyBehavior>
+                      <Button variant="ghost" size="icon" title="View on Storefront">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href={`/${lang}/admin/panel/books?action=edit&id=${book.id}`} passHref legacyBehavior>
+                      <Button variant="ghost" size="icon" title="Edit Book">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button variant="ghost" size="icon" title="Delete Book" onClick={() => setBookToDelete(book)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-10 border rounded-md">
+            <p className="text-muted-foreground">No books found matching your search criteria.</p>
+            {searchTerm && <p className="text-sm text-muted-foreground mt-1">Try adjusting your search.</p>}
+          </div>
+        )}
+        
+        {bookToDelete && (
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the book
+                "{bookToDelete?.title}" from the records.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setBookToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirmation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </div>
+    </AlertDialog>
   );
 }
