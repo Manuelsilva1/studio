@@ -89,6 +89,7 @@
         "dashboard": "Dashboard",
         "manageBooks": "Manage Books",
         "manageUsers": "Manage Users",
+        "pointOfSale": "Point of Sale",
         "statusSoon": "(Soon)"
     },
     "header": {
@@ -127,6 +128,32 @@
     },
     "booksPage": {
         "title": "Manage Books"
+    },
+    "posPage": {
+      "title": "Point of Sale",
+      "searchBooksPlaceholder": "Search books by title or author...",
+      "noResults": "No books found.",
+      "addToOrder": "Add",
+      "currentOrderTitle": "Current Order",
+      "emptyOrder": "No items in order.",
+      "bookColumn": "Book",
+      "priceColumn": "Price",
+      "quantityColumn": "Qty",
+      "totalColumn": "Total",
+      "actionsColumn": "Actions",
+      "orderSummaryTitle": "Order Summary",
+      "subtotal": "Subtotal:",
+      "grandTotal": "Grand Total:",
+      "paymentMethodTitle": "Payment Method",
+      "cash": "Cash",
+      "card": "Card",
+      "customerNameLabel": "Customer Name (Optional)",
+      "customerNamePlaceholder": "Enter customer name",
+      "completeSaleButton": "Complete Sale",
+      "processingSale": "Processing...",
+      "saleCompletedToastTitle": "Sale Completed!",
+      "saleCompletedToastDesc": "The sale has been processed successfully.",
+      "errorCompletingSale": "Error completing sale."
     }
   }
 }

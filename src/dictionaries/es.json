@@ -89,6 +89,7 @@
         "dashboard": "Panel",
         "manageBooks": "Gestionar Libros",
         "manageUsers": "Gestionar Usuarios",
+        "pointOfSale": "Punto de Venta",
         "statusSoon": "(Pronto)"
     },
     "header": {
@@ -127,6 +128,32 @@
     },
      "booksPage": {
         "title": "Gestionar Libros"
+    },
+    "posPage": {
+      "title": "Punto de Venta",
+      "searchBooksPlaceholder": "Buscar libros por título o autor...",
+      "noResults": "No se encontraron libros.",
+      "addToOrder": "Añadir",
+      "currentOrderTitle": "Pedido Actual",
+      "emptyOrder": "No hay artículos en el pedido.",
+      "bookColumn": "Libro",
+      "priceColumn": "Precio",
+      "quantityColumn": "Cant.",
+      "totalColumn": "Total",
+      "actionsColumn": "Acciones",
+      "orderSummaryTitle": "Resumen del Pedido",
+      "subtotal": "Subtotal:",
+      "grandTotal": "Total General:",
+      "paymentMethodTitle": "Método de Pago",
+      "cash": "Efectivo",
+      "card": "Tarjeta",
+      "customerNameLabel": "Nombre del Cliente (Opcional)",
+      "customerNamePlaceholder": "Ingrese el nombre del cliente",
+      "completeSaleButton": "Completar Venta",
+      "processingSale": "Procesando...",
+      "saleCompletedToastTitle": "¡Venta Completada!",
+      "saleCompletedToastDesc": "La venta ha sido procesada exitosamente.",
+      "errorCompletingSale": "Error al completar la venta."
     }
   }
 }

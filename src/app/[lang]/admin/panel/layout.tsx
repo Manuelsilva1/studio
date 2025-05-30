@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, BookCopy, Users, Home } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, Home, Store } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary, type Dictionary } from '@/lib/dictionaries';
 
@@ -40,7 +40,8 @@ function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictionary: 
   const sidebarTexts = dictionary.adminPanel?.sidebar || { 
     dashboard: "Dashboard", 
     manageBooks: "Manage Books", 
-    manageUsers: "Manage Users", 
+    manageUsers: "Manage Users",
+    pointOfSale: "Point of Sale", 
     statusSoon: "(Soon)"
   };
   return (
@@ -53,6 +54,11 @@ function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictionary: 
       <Link href={`/${lang}/admin/panel/books`} passHref legacyBehavior>
         <Button variant="ghost" className="justify-start w-full">
           <BookCopy className="mr-2 h-4 w-4" /> {sidebarTexts.manageBooks}
+        </Button>
+      </Link>
+      <Link href={`/${lang}/admin/panel/pos`} passHref legacyBehavior>
+        <Button variant="ghost" className="justify-start w-full">
+          <Store className="mr-2 h-4 w-4" /> {sidebarTexts.pointOfSale}
         </Button>
       </Link>
        <Button variant="ghost" className="justify-start w-full h-auto py-2 items-start" disabled>
