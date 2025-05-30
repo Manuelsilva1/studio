@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -5,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: 'CorreoLibro',
-  description: 'Your online bookstore with AI-powered features.',
+  description: 'Your friendly online bookstore for a great reading experience.',
 };
 
 export default function RootLayout({

@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ export default function SplashPage() {
           Welcome to CorreoLibro
         </h1>
         <p className="text-xl text-foreground/80 mb-12 max-w-2xl">
-          Discover your next favorite book with our AI-powered catalog and enjoy exclusive offers.
+          Discover your next favorite book from our extensive catalog and enjoy exclusive offers.
         </p>
         <Link href="/catalog" passHref legacyBehavior>
           <Button size="lg" className="font-headline text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300">

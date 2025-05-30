@@ -1,3 +1,4 @@
+
 "use client";
 
 // This component's AI functionality has been removed.
@@ -24,7 +25,7 @@ export function OfferAssistantClient() {
         <CardDescription>Check back often for new deals!</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground">No specific AI-suggested offers at this time. Browse our catalog for great prices!</p>
+        <p className="text-muted-foreground">Keep an eye out for special deals! Browse our catalog for great prices.</p>
         {/* You could list static/manually curated offers here */}
       </CardContent>
     </Card>

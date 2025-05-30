@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -200,7 +201,7 @@ export function BookFormClient({ book, onSave, onDelete }: BookFormClientProps) 
               <FormItem>
                 <FormLabel>Full Content / Extended Summary (Optional)</FormLabel>
                  <FormControl><Textarea placeholder="Full book content or a longer summary..." {...field} rows={8} /></FormControl>
-                <FormDescription>Previously used for AI summary generation.</FormDescription>
+                <FormDescription>Provide the full book content or an extended summary here. This can be useful for detailed views or future features.</FormDescription>
                 <FormMessage />
               </FormItem>
             )} />
