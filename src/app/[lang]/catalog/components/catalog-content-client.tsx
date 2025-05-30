@@ -1,0 +1,187 @@
+
+"use client"; 
+
+import { useState, useEffect, useCallback } from 'react';
+import type { Book } from '@/types';
+import { mockBooks, getGenres, getAuthors } from '@/lib/mock-data';
+import { BookCard } from './book-card';
+import { FiltersClient, type CatalogFilters } from './filters-client';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import type { Dictionary } from '@/lib/dictionaries';
+
+const ITEMS_PER_PAGE = 8;
+const initialFilters: CatalogFilters = {
+  genre: 'all',
+  author: 'all',
+  minPrice: '',
+  maxPrice: '',
+  sortBy: 'relevance',
+};
+
+interface CatalogContentClientProps {
+  lang: string;
+  dictionary: Dictionary;
+}
+
+export function CatalogContentClient({ lang, dictionary }: CatalogContentClientProps) {
+  const [allBooks] = useState<Book[]>(mockBooks);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>(allBooks);
+  const [displayedBooks, setDisplayedBooks]  = useState<Book[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilters, setActiveFilters] = useState<CatalogFilters>(initialFilters);
+  
+  const [genres] = useState<string[]>(getGenres());
+  const [authors] = useState<string[]>(getAuthors());
+
+  const texts = dictionary.catalogPage || { // Fallback if not in dictionary
+    pageTitle: "Book Catalog",
+    searchPlaceholder: "Search by title, author, or genre...",
+    noBooksMatch: "No books match your criteria.",
+    previousPage: "Previous",
+    nextPage: "Next",
+    pageIndicator: "Page {currentPage} of {totalPages}"
+  };
+
+  const applyFiltersAndSearch = useCallback(() => {
+    let books = [...allBooks];
+
+    if (searchTerm) {
+      books = books.filter(book =>
+        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.genre.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (activeFilters.genre !== 'all') {
+      books = books.filter(book => book.genre === activeFilters.genre);
+    }
+    if (activeFilters.author !== 'all') {
+      books = books.filter(book => book.author === activeFilters.author);
+    }
+    if (activeFilters.minPrice !== '') {
+      books = books.filter(book => book.price >= Number(activeFilters.minPrice));
+    }
+    if (activeFilters.maxPrice !== '') {
+      books = books.filter(book => book.price <= Number(activeFilters.maxPrice));
+    }
+    
+    switch (activeFilters.sortBy) {
+      case 'price_asc':
+        books.sort((a, b) => a.price - b.price);
+        break;
+      case 'price_desc':
+        books.sort((a, b) => b.price - a.price);
+        break;
+      case 'title_asc':
+        books.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'title_desc':
+        books.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+    }
+
+    setFilteredBooks(books);
+    setCurrentPage(1); 
+  }, [allBooks, searchTerm, activeFilters]);
+
+
+  useEffect(() => {
+    applyFiltersAndSearch();
+  }, [searchTerm, activeFilters, applyFiltersAndSearch]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setDisplayedBooks(filteredBooks.slice(startIndex, endIndex));
+  }, [filteredBooks, currentPage]);
+
+  const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleFilterChange = (filters: CatalogFilters) => {
+    setActiveFilters(filters);
+  };
+
+  const handleResetFilters = () => {
+    setActiveFilters(initialFilters);
+    setSearchTerm('');
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="font-headline text-4xl font-bold mb-8 text-center text-primary">
+        {texts.pageTitle}
+      </h1>
+      
+      <div className="mb-8 relative">
+        <Input 
+          type="text"
+          placeholder={texts.searchPlaceholder}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 py-3 text-base"
+        />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="md:col-span-1">
+          <FiltersClient
+            genres={genres}
+            authors={authors}
+            onFilterChange={handleFilterChange}
+            onResetFilters={handleResetFilters}
+            initialFilters={initialFilters}
+            // dictionary={dictionary} // Pass dictionary to FiltersClient if it needs translated labels/buttons
+          />
+        </div>
+
+        <div className="md:col-span-3">
+          {displayedBooks.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedBooks.map(book => (
+                <BookCard key={book.id} book={book} lang={lang} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl text-muted-foreground">{texts.noBooksMatch}</p>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-12 flex justify-center items-center space-x-2">
+              <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                variant="outline"
+              >
+                {texts.previousPage}
+              </Button>
+              <span className="text-muted-foreground">
+                {texts.pageIndicator.replace('{currentPage}', currentPage.toString()).replace('{totalPages}', totalPages.toString())}
+              </span>
+              <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                variant="outline"
+              >
+                {texts.nextPage}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

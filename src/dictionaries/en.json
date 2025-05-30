@@ -1,0 +1,77 @@
+
+{
+  "siteName": "CorreoLibro",
+  "description": "Your friendly online bookstore for a great reading experience.",
+  "header": {
+    "catalog": "Catalog",
+    "cart": "Cart",
+    "admin": "Admin",
+    "toggleTheme": "Toggle theme",
+    "changeLanguage": "Change language"
+  },
+  "footer": {
+    "copyright": "© {year} CorreoLibro. All rights reserved."
+  },
+  "splashPage": {
+    "welcome": "Welcome to CorreoLibro",
+    "tagline": "Discover your next favorite book from our extensive catalog and enjoy exclusive offers.",
+    "enterCatalog": "Enter Catalog"
+  },
+  "languages": {
+    "english": "English",
+    "spanish": "Español"
+  },
+  "cartPage": {
+    "emptyCartTitle": "Your Cart is Empty",
+    "emptyCartMessage": "Looks like you haven't added any books yet.",
+    "startShopping": "Start Shopping",
+    "yourShoppingCart": "Your Shopping Cart",
+    "itemsSuffix": "items",
+    "clearCart": "Clear Cart",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free": "FREE",
+    "total": "Total",
+    "proceedToCheckout": "Proceed to Checkout"
+  },
+  "catalogPage": {
+    "pageTitle": "Book Catalog",
+    "searchPlaceholder": "Search by title, author, or genre...",
+    "noBooksMatch": "No books match your criteria.",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "pageIndicator": "Page {currentPage} of {totalPages}"
+  },
+  "checkoutForm": {
+    "secureCheckout": "Secure Checkout",
+    "fillDetails": "Please fill in your details to complete the purchase. Total: ${total}",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "john.doe@example.com",
+    "addressLabel": "Street Address",
+    "addressPlaceholder": "123 Main St",
+    "cityLabel": "City",
+    "cityPlaceholder": "Anytown",
+    "stateLabel": "State / Province",
+    "statePlaceholder": "CA",
+    "zipLabel": "ZIP / Postal Code",
+    "zipPlaceholder": "90210",
+    "paymentMethodLabel": "Payment Method",
+    "paymentMethodPlaceholder": "e.g. Credit Card ending in 1234",
+    "paymentMethodDescription": "For demo purposes, any text is accepted.",
+    "placeOrder": "Place Order",
+    "orderSubmittedTitle": "Order Submitted!",
+    "orderSubmittedDescription": "Thank you for your purchase. Your order is being processed (simulated).",
+    "orderSubmittedConfirmation": "You will receive an email confirmation shortly.",
+    "continueShopping": "Continue Shopping",
+    "emptyCartTitle": "Your Cart is Empty",
+    "emptyCartDescription": "Please add items to your cart before proceeding to checkout.",
+    "returnToCart": "Return to Cart",
+    "orderSubmittedToast": "Order Submitted!",
+    "orderSubmittedToastDesc": "Your order has been successfully placed. (Simulated)",
+    "checkoutErrorToast": "Checkout Error",
+    "checkoutErrorToastDesc": "An unexpected error occurred. Please try again."
+  }
+}

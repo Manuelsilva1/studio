@@ -1,0 +1,77 @@
+
+{
+  "siteName": "CorreoLibro",
+  "description": "Tu librería en línea amigable para una gran experiencia de lectura.",
+  "header": {
+    "catalog": "Catálogo",
+    "cart": "Carrito",
+    "admin": "Admin",
+    "toggleTheme": "Cambiar tema",
+    "changeLanguage": "Cambiar idioma"
+  },
+  "footer": {
+    "copyright": "© {year} CorreoLibro. Todos los derechos reservados."
+  },
+  "splashPage": {
+    "welcome": "Bienvenido a CorreoLibro",
+    "tagline": "Descubre tu próximo libro favorito de nuestro extenso catálogo y disfruta de ofertas exclusivas.",
+    "enterCatalog": "Entrar al Catálogo"
+  },
+  "languages": {
+    "english": "English",
+    "spanish": "Español"
+  },
+  "cartPage": {
+    "emptyCartTitle": "Tu Carrito está Vacío",
+    "emptyCartMessage": "Parece que aún no has añadido ningún libro.",
+    "startShopping": "Empezar a Comprar",
+    "yourShoppingCart": "Tu Carrito de Compras",
+    "itemsSuffix": "artículos",
+    "clearCart": "Vaciar Carrito",
+    "orderSummary": "Resumen del Pedido",
+    "subtotal": "Subtotal",
+    "shipping": "Envío",
+    "free": "GRATIS",
+    "total": "Total",
+    "proceedToCheckout": "Proceder al Pago"
+  },
+  "catalogPage": {
+    "pageTitle": "Catálogo de Libros",
+    "searchPlaceholder": "Buscar por título, autor o género...",
+    "noBooksMatch": "No hay libros que coincidan con tus criterios.",
+    "previousPage": "Anterior",
+    "nextPage": "Siguiente",
+    "pageIndicator": "Página {currentPage} de {totalPages}"
+  },
+  "checkoutForm": {
+    "secureCheckout": "Pago Seguro",
+    "fillDetails": "Por favor, completa tus datos para finalizar la compra. Total: ${total}",
+    "fullNameLabel": "Nombre Completo",
+    "fullNamePlaceholder": "Juan Pérez",
+    "emailLabel": "Correo Electrónico",
+    "emailPlaceholder": "juan.perez@example.com",
+    "addressLabel": "Dirección",
+    "addressPlaceholder": "Calle Principal 123",
+    "cityLabel": "Ciudad",
+    "cityPlaceholder": "Ciudad Ejemplo",
+    "stateLabel": "Estado / Provincia",
+    "statePlaceholder": "CDMX",
+    "zipLabel": "Código Postal",
+    "zipPlaceholder": "01234",
+    "paymentMethodLabel": "Método de Pago",
+    "paymentMethodPlaceholder": "Ej. Tarjeta de Crédito terminada en 1234",
+    "paymentMethodDescription": "Para fines de demostración, cualquier texto es aceptado.",
+    "placeOrder": "Realizar Pedido",
+    "orderSubmittedTitle": "¡Pedido Enviado!",
+    "orderSubmittedDescription": "Gracias por tu compra. Tu pedido está siendo procesado (simulado).",
+    "orderSubmittedConfirmation": "Recibirás una confirmación por correo electrónico en breve.",
+    "continueShopping": "Seguir Comprando",
+    "emptyCartTitle": "Tu Carrito está Vacío",
+    "emptyCartDescription": "Por favor, añade artículos a tu carrito antes de proceder al pago.",
+    "returnToCart": "Volver al Carrito",
+    "orderSubmittedToast": "¡Pedido Enviado!",
+    "orderSubmittedToastDesc": "Tu pedido ha sido realizado con éxito. (Simulado)",
+    "checkoutErrorToast": "Error en el Pago",
+    "checkoutErrorToastDesc": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+  }
+}

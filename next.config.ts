@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // The i18n object below is for the Pages Router and conflicts with
+  // App Router's manual i18n setup using [lang] segments and middleware.
+  // Removing it.
+  // i18n: {
+  //   locales: ['en', 'es'],
+  //   defaultLocale: 'en',
+  // },
 };
 
 export default nextConfig;
