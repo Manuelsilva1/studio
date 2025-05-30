@@ -37,7 +37,12 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
 }
 
 function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictionary: Dictionary }) {
-  const sidebarTexts = dictionary.adminPanel?.sidebar || { dashboard: "Dashboard", manageBooks: "Manage Books", manageUsersSoon: "Manage Users (Soon)"};
+  const sidebarTexts = dictionary.adminPanel?.sidebar || { 
+    dashboard: "Dashboard", 
+    manageBooks: "Manage Books", 
+    manageUsers: "Manage Users", 
+    statusSoon: "(Soon)"
+  };
   return (
     <nav className="flex flex-col space-y-2 p-4">
       <Link href={`/${lang}/admin/panel`} passHref legacyBehavior>
@@ -50,8 +55,12 @@ function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictionary: 
           <BookCopy className="mr-2 h-4 w-4" /> {sidebarTexts.manageBooks}
         </Button>
       </Link>
-       <Button variant="ghost" className="justify-start w-full" disabled>
-          <Users className="mr-2 h-4 w-4" /> {sidebarTexts.manageUsersSoon}
+       <Button variant="ghost" className="justify-start w-full h-auto py-2 items-start" disabled>
+          <Users className="mr-2 h-4 w-4 mt-1 flex-shrink-0" /> 
+          <div className="flex flex-col text-left">
+            <span>{sidebarTexts.manageUsers}</span>
+            <span className="text-xs text-muted-foreground">{sidebarTexts.statusSoon}</span>
+          </div>
         </Button>
     </nav>
   );
@@ -80,4 +89,3 @@ export default async function AdminPanelLayout({ children, params: { lang } }: A
     </div>
   );
 }
-

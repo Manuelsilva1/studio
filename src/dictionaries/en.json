@@ -88,7 +88,8 @@
     "sidebar": {
         "dashboard": "Dashboard",
         "manageBooks": "Manage Books",
-        "manageUsersSoon": "Manage Users (Soon)"
+        "manageUsers": "Manage Users",
+        "statusSoon": "(Soon)"
     },
     "header": {
         "titleSuffix": "Admin",
