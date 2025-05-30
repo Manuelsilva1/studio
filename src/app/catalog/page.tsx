@@ -1,17 +1,19 @@
-"use client"; // Make this a client component to handle state and interactions
+"use client"; 
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Book } from '@/types';
 import { mockBooks, getGenres, getAuthors } from '@/lib/mock-data';
-import { getCatalogRecommendations, type CatalogRecommendationsInput } from '@/ai/flows/catalog-recommendations';
+// import { getCatalogRecommendations, type CatalogRecommendationsInput } from '@/ai/flows/catalog-recommendations'; // AI Import Removed
 import { PublicLayout } from '@/components/layout/public-layout';
 import { BookCard } from './components/book-card';
 import { FiltersClient, type CatalogFilters } from './components/filters-client';
-import { RecommendationsClient } from './components/recommendations-client';
+// import { RecommendationsClient } from './components/recommendations-client'; // AI Recommendations Client Removed
 import { Button } from '@/components/ui/button';
 import { Loader2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { CartProvider } from '@/context/cart-provider';
+
 
 const ITEMS_PER_PAGE = 8;
 const initialFilters: CatalogFilters = {
@@ -33,14 +35,13 @@ export default function CatalogPage() {
   const [genres] = useState<string[]>(getGenres());
   const [authors] = useState<string[]>(getAuthors());
 
-  const [recommendedBooks, setRecommendedBooks] = useState<Book[]>([]);
-  const [isRecommendationsLoading, setIsRecommendationsLoading] = useState(false);
+  // const [recommendedBooks, setRecommendedBooks] = useState<Book[]>([]); // AI State Removed
+  // const [isRecommendationsLoading, setIsRecommendationsLoading] = useState(false); // AI State Removed
   const { toast } = useToast();
 
   const applyFiltersAndSearch = useCallback(() => {
     let books = [...allBooks];
 
-    // Search
     if (searchTerm) {
       books = books.filter(book =>
         book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,7 +50,6 @@ export default function CatalogPage() {
       );
     }
 
-    // Filters
     if (activeFilters.genre !== 'all') {
       books = books.filter(book => book.genre === activeFilters.genre);
     }
@@ -63,7 +63,6 @@ export default function CatalogPage() {
       books = books.filter(book => book.price <= Number(activeFilters.maxPrice));
     }
     
-    // Sorting
     switch (activeFilters.sortBy) {
       case 'price_asc':
         books.sort((a, b) => a.price - b.price);
@@ -77,11 +76,10 @@ export default function CatalogPage() {
       case 'title_desc':
         books.sort((a, b) => b.title.localeCompare(a.title));
         break;
-      // Default 'relevance' or no sort
     }
 
     setFilteredBooks(books);
-    setCurrentPage(1); // Reset to first page after filtering
+    setCurrentPage(1); 
   }, [allBooks, searchTerm, activeFilters]);
 
 
@@ -104,45 +102,19 @@ export default function CatalogPage() {
     }
   };
 
-  const handleFilterChange = async (filters: CatalogFilters) => {
+  const handleFilterChange = (filters: CatalogFilters) => {
     setActiveFilters(filters);
-    // AI Recommendations
-    setIsRecommendationsLoading(true);
-    setRecommendedBooks([]);
-    try {
-      const aiInput: CatalogRecommendationsInput = {
-        filters: JSON.stringify(filters),
-        availableBooks: JSON.stringify(allBooks.map(b => ({id: b.id, title: b.title, genre: b.genre, author: b.author, themes: b.themes }))),
-      };
-      const result = await getCatalogRecommendations(aiInput);
-      const recommendedBookDetails = result.recommendedBooks
-        .map(title => allBooks.find(book => book.title === title))
-        .filter((book): book is Book => book !== undefined);
-      
-      // Filter out books already in the main filtered list to avoid duplicates
-      const uniqueRecommendations = recommendedBookDetails.filter(rb => !filteredBooks.some(fb => fb.id === rb.id));
-      setRecommendedBooks(uniqueRecommendations.slice(0,4)); // Show max 4 recommendations
-    } catch (error) {
-      console.error("Error fetching AI recommendations:", error);
-      toast({
-        title: "Recommendation Error",
-        description: "Could not fetch AI recommendations at this time.",
-        variant: "destructive",
-      });
-      setRecommendedBooks([]);
-    } finally {
-      setIsRecommendationsLoading(false);
-    }
+    // AI Recommendations logic removed
   };
 
   const handleResetFilters = () => {
     setActiveFilters(initialFilters);
     setSearchTerm('');
-    setRecommendedBooks([]);
+    // setRecommendedBooks([]); // AI State Removed
   };
 
   return (
-    <CartProvider> {/* Added CartProvider here as BookCard uses useCart */}
+    <CartProvider> 
       <PublicLayout>
         <div className="container mx-auto px-4 py-8">
           <h1 className="font-headline text-4xl font-bold mb-8 text-center text-primary">Book Catalog</h1>
@@ -205,13 +177,9 @@ export default function CatalogPage() {
               )}
             </div>
           </div>
-          <RecommendationsClient recommendedBooks={recommendedBooks} isLoading={isRecommendationsLoading} />
+          {/* <RecommendationsClient recommendedBooks={recommendedBooks} isLoading={isRecommendationsLoading} /> // AI Recommendations Client Removed */}
         </div>
       </PublicLayout>
     </CartProvider>
   );
 }
-// Need to wrap CatalogPage with CartProvider because BookCard (child) uses useCart
-// This is a quick fix for scaffolding. Ideally, CartProvider would be higher up.
-// For now, let's create a wrapper or put CartProvider in layout.
-// Putting in PublicLayout might be better. Let's adjust PublicLayout.

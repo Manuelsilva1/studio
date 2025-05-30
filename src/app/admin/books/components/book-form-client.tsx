@@ -5,14 +5,14 @@ import { useForm, type SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { Book } from '@/types';
-import { generateBookDescription, type GenerateBookDescriptionInput } from '@/ai/flows/auto-generate-book-description';
+// import { generateBookDescription, type GenerateBookDescriptionInput } from '@/ai/flows/auto-generate-book-description'; // AI Import Removed
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, Save, Sparkles, Trash2, Info } from 'lucide-react';
+import { Loader2, Save, Trash2, Info } from 'lucide-react'; // Sparkles icon removed
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation'; // For redirecting after save/delete
 
@@ -50,7 +50,7 @@ interface BookFormClientProps {
 
 export function BookFormClient({ book, onSave, onDelete }: BookFormClientProps) {
   const [isSaving, setIsSaving] = useState(false);
-  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+  // const [isGeneratingDesc, setIsGeneratingDesc] = useState(false); // AI State Removed
   const { toast } = useToast();
   const router = useRouter();
 
@@ -90,43 +90,8 @@ export function BookFormClient({ book, onSave, onDelete }: BookFormClientProps) 
     }
   }, [book, form]);
 
-
-  const handleGenerateDescription = async () => {
-    const { title, author, genre, targetAudience, themes } = form.getValues();
-    if (!title || !author || !genre) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide Title, Author, and Genre to generate a description.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsGeneratingDesc(true);
-    try {
-      const input: GenerateBookDescriptionInput = {
-        title,
-        author,
-        genre,
-        targetAudience: targetAudience || 'General Audience',
-        themes: Array.isArray(themes) ? themes.join(', ') : themes || 'Various themes',
-      };
-      const result = await generateBookDescription(input);
-      form.setValue('description', result.description, { shouldValidate: true });
-      toast({
-        title: "Description Generated!",
-        description: "AI has drafted a description for you.",
-      });
-    } catch (error) {
-      console.error("Error generating description:", error);
-      toast({
-        title: "Generation Failed",
-        description: "Could not generate description. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingDesc(false);
-    }
-  };
+  // AI Description Generation Function Removed
+  // const handleGenerateDescription = async () => { ... };
 
   const onSubmitHandler: SubmitHandler<BookFormData> = async (data) => {
     setIsSaving(true);
@@ -136,17 +101,16 @@ export function BookFormClient({ book, onSave, onDelete }: BookFormClientProps) 
         id: book?.id || String(Date.now()), // Create new ID if not editing
         ...data,
         themes: themesArray,
-        // Ensure price and stock are numbers
         price: Number(data.price),
         stock: Number(data.stock),
         publishedYear: data.publishedYear ? Number(data.publishedYear) : undefined,
       };
-      await onSave(bookToSave); // Call mock save
+      await onSave(bookToSave);
       toast({
         title: book ? "Book Updated!" : "Book Added!",
         description: `${data.title} has been successfully saved.`,
       });
-      router.push('/admin/books'); // Redirect to book list
+      router.push('/admin/books');
     } catch (error) {
       console.error("Error saving book:", error);
       toast({
@@ -161,7 +125,7 @@ export function BookFormClient({ book, onSave, onDelete }: BookFormClientProps) 
 
   const handleDelete = async () => {
     if (book && onDelete) {
-      setIsSaving(true); // Use same loading state
+      setIsSaving(true);
       try {
         await onDelete(book.id);
         toast({
@@ -226,10 +190,7 @@ export function BookFormClient({ book, onSave, onDelete }: BookFormClientProps) 
               <FormItem>
                 <div className="flex justify-between items-center">
                   <FormLabel>Description</FormLabel>
-                  <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={isGeneratingDesc}>
-                    {isGeneratingDesc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    AI Generate
-                  </Button>
+                  {/* AI Generate Button Removed */}
                 </div>
                 <FormControl><Textarea placeholder="Book description..." {...field} rows={5} /></FormControl>
                 <FormMessage />
@@ -238,8 +199,8 @@ export function BookFormClient({ book, onSave, onDelete }: BookFormClientProps) 
             <FormField control={form.control} name="content" render={({ field }) => (
               <FormItem>
                 <FormLabel>Full Content / Extended Summary (Optional)</FormLabel>
-                 <FormControl><Textarea placeholder="Full book content or a longer summary for AI..." {...field} rows={8} /></FormControl>
-                <FormDescription>Used for generating summaries on the book detail page.</FormDescription>
+                 <FormControl><Textarea placeholder="Full book content or a longer summary..." {...field} rows={8} /></FormControl>
+                <FormDescription>Previously used for AI summary generation.</FormDescription>
                 <FormMessage />
               </FormItem>
             )} />

@@ -5,10 +5,10 @@ import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CartItemRowClient } from './components/cart-item-row-client';
-import { OfferAssistantClient } from './components/offer-assistant-client';
+// import { OfferAssistantClient } from './components/offer-assistant-client'; // AI Offer Assistant Removed
 import Link from 'next/link';
 import { ShoppingCart, ArrowRight, PackageX } from 'lucide-react';
-import { CartProvider } from '@/context/cart-provider'; // Ensure provider is available
+import { CartProvider } from '@/context/cart-provider'; 
 
 function CartPageContent() {
   const { cartItems, getCartTotal, clearCart, getItemCount } = useCart();
@@ -79,7 +79,7 @@ function CartPageContent() {
             </Link>
           </CardFooter>
         </Card>
-        <OfferAssistantClient />
+        {/* <OfferAssistantClient /> // AI Offer Assistant Removed */}
       </div>
     </div>
   );

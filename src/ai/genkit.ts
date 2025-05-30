@@ -1,8 +1,2 @@
-import {genkit} from 'genkit';
-
-// Import de googleAI eliminado
-
-export const ai = genkit({
-  plugins: [/* No hay proveedor de IA configurado */],
-  // Configuración del modelo eliminada ya que era específica de googleAI
-});
+// This file is intentionally left empty as AI functionalities and Genkit setup have been removed.
+// If you wish to re-integrate Genkit, you'll need to configure it again.

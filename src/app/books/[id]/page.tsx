@@ -3,24 +3,22 @@ import { getBookById, mockBooks } from '@/lib/mock-data'; // Using mock data
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Star, BookOpenCheck } from 'lucide-react';
-import { SummaryClient } from './components/summary-client';
+import { ShoppingCart } from 'lucide-react';
+// import { SummaryClient } from './components/summary-client'; // AI Summary Client Removed
 import { LightboxClient } from './components/lightbox-client';
-import { CartProvider, useCart } from '@/context/cart-provider'; // useCart needs provider
-import { AddToCartButton } from './components/add-to-cart-button'; // Separate client component for button
+import { CartProvider, useCart } from '@/context/cart-provider'; 
+// import { AddToCartButton } from './components/add-to-cart-button'; // Integrated below
 
 export async function generateStaticParams() {
-  // For SSG, generate paths for all mock books
   return mockBooks.map(book => ({
     id: book.id,
   }));
 }
 
-// Client component to handle add to cart logic
 function AddToCartButtonWrapper({ book }: { book: import('@/types').Book }) {
-  "use client"; // This component needs to be a client component
+  "use client"; 
   const { addToCart } = useCart();
-  const { useToast } = await import('@/hooks/use-toast'); // Dynamically import for client-side use
+  const { useToast } = await import('@/hooks/use-toast'); 
   const { toast } = useToast();
 
 
@@ -49,7 +47,7 @@ export default async function BookDetailPage({ params }: { params: { id: string 
   }
 
   return (
-    <CartProvider> {/* Provider needed for AddToCartButtonWrapper */}
+    <CartProvider> 
       <PublicLayout>
         <div className="container mx-auto px-4 py-12">
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
@@ -94,11 +92,11 @@ export default async function BookDetailPage({ params }: { params: { id: string 
             </div>
           </div>
 
-          <SummaryClient book={book} />
+          {/* <SummaryClient book={book} /> // AI Summary Client Removed */}
+          {/* You can add other book details or sections here if needed */}
 
         </div>
       </PublicLayout>
     </CartProvider>
   );
 }
-

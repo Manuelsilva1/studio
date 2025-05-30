@@ -5,14 +5,14 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useCart } from '@/hooks/use-cart';
-import { checkoutRiskAnalysis, type CheckoutRiskAnalysisInput, type CheckoutRiskAnalysisOutput } from '@/ai/flows/checkout-risk-analysis';
+// import { checkoutRiskAnalysis, type CheckoutRiskAnalysisInput, type CheckoutRiskAnalysisOutput } from '@/ai/flows/checkout-risk-analysis'; // AI Import Removed
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, ShieldCheck, ShieldAlert, Send, Info } from 'lucide-react';
+// import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // AI Alert Removed
+import { Loader2, ShieldCheck, Send, Info } from 'lucide-react'; // ShieldAlert icon removed
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -32,7 +32,7 @@ export function CheckoutFormClient() {
   const { cartItems, getCartTotal, clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [isOrderSubmitted, setIsOrderSubmitted] = useState(false);
-  const [riskAnalysisResult, setRiskAnalysisResult] = useState<CheckoutRiskAnalysisOutput | null>(null);
+  // const [riskAnalysisResult, setRiskAnalysisResult] = useState<CheckoutRiskAnalysisOutput | null>(null); // AI State Removed
   const { toast } = useToast();
 
   const form = useForm<CheckoutFormData>({
@@ -44,42 +44,32 @@ export function CheckoutFormClient() {
       city: '',
       state: '',
       zip: '',
-      paymentMethod: 'Credit Card', // Default example
+      paymentMethod: 'Credit Card', 
     },
   });
 
   const onSubmit: SubmitHandler<CheckoutFormData> = async (data) => {
     setIsLoading(true);
-    setRiskAnalysisResult(null);
+    // setRiskAnalysisResult(null); // AI State Reset Removed
 
-    const cartContentsDescription = cartItems.map(item => `${item.quantity}x ${item.book.title}`).join(', ');
-
-    const analysisInput: CheckoutRiskAnalysisInput = {
-      ...data,
-      cartContents: cartContentsDescription,
-    };
+    // const cartContentsDescription = cartItems.map(item => `${item.quantity}x ${item.book.title}`).join(', '); // Not needed without AI
+    // const analysisInput: CheckoutRiskAnalysisInput = { ...data, cartContents: cartContentsDescription }; // Not needed
 
     try {
-      const analysis = await checkoutRiskAnalysis(analysisInput);
-      setRiskAnalysisResult(analysis);
+      // AI Risk Analysis Logic Removed
+      // const analysis = await checkoutRiskAnalysis(analysisInput);
+      // setRiskAnalysisResult(analysis);
 
-      if (analysis.missingFields.length === 0 && analysis.potentialIssues.length === 0) {
-        // Simulate order submission
-        console.log("Order submitted:", data, cartItems);
-        toast({
-          title: "Order Submitted!",
-          description: "Your order has been successfully placed. (Simulated)",
-        });
-        clearCart();
-        setIsOrderSubmitted(true);
-        form.reset();
-      } else {
-         toast({
-          title: "Review Needed",
-          description: "Please review the information below before resubmitting.",
-          variant: "default",
-        });
-      }
+      // Directly simulate order submission
+      console.log("Order submitted:", data, cartItems);
+      toast({
+        title: "Order Submitted!",
+        description: "Your order has been successfully placed. (Simulated)",
+      });
+      clearCart();
+      setIsOrderSubmitted(true);
+      form.reset();
+      
     } catch (error) {
       console.error("Checkout error:", error);
       toast({
@@ -235,38 +225,14 @@ export function CheckoutFormClient() {
               />
           </CardContent>
           <CardFooter className="flex flex-col items-stretch">
-            {riskAnalysisResult && (analysisResult.missingFields.length > 0 || analysisResult.potentialIssues.length > 0) && (
-              <Alert variant={analysisResult.missingFields.length > 0 ? "destructive" : "default"} className="mb-6">
-                <ShieldAlert className="h-5 w-5" />
-                <AlertTitle className="font-headline">AI Risk Analysis</AlertTitle>
-                <AlertDescription>
-                  {analysisResult.missingFields.length > 0 && (
-                    <>
-                      <p className="font-semibold mt-2">Missing Information:</p>
-                      <ul className="list-disc list-inside text-sm">
-                        {analysisResult.missingFields.map(field => <li key={field}>{field}</li>)}
-                      </ul>
-                    </>
-                  )}
-                  {analysisResult.potentialIssues.length > 0 && (
-                     <>
-                      <p className="font-semibold mt-2">Potential Issues:</p>
-                      <ul className="list-disc list-inside text-sm">
-                        {analysisResult.potentialIssues.map(issue => <li key={issue}>{issue}</li>)}
-                      </ul>
-                    </>
-                  )}
-                   <p className="text-xs mt-2">{analysisResult.riskAssessment}</p>
-                </AlertDescription>
-              </Alert>
-            )}
+            {/* AI Risk Analysis Alert Removed */}
             <Button type="submit" size="lg" disabled={isLoading} className="w-full font-headline text-lg">
               {isLoading ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
                 <Send className="mr-2 h-5 w-5" />
               )}
-              {riskAnalysisResult && (analysisResult.missingFields.length > 0 || analysisResult.potentialIssues.length > 0) ? 'Resubmit Order' : 'Place Order'}
+              Place Order
             </Button>
           </CardFooter>
         </Card>
