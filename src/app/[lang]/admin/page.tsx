@@ -1,6 +1,7 @@
 
 import { getDictionary } from '@/lib/dictionaries';
 import { LoginFormClient } from './components/login-form-client';
+import { PublicLayout } from '@/components/layout/public-layout'; // Import PublicLayout
 
 interface LoginPageProps {
   params: { lang: string };
@@ -21,5 +22,12 @@ export default async function LoginPage({ params }: LoginPageProps) {
     loggingIn: "Logging in..."
   };
 
-  return <LoginFormClient lang={lang} texts={loginTexts} />;
+  return (
+    <PublicLayout lang={lang} dictionary={dictionary}>
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] py-8 px-4">
+        <LoginFormClient lang={lang} texts={loginTexts} />
+      </div>
+    </PublicLayout>
+  );
 }
+

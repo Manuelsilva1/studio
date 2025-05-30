@@ -1,23 +1,18 @@
 
 import type { ReactNode } from 'react';
-import { PublicLayout } from '@/components/layout/public-layout';
-import { getDictionary } from '@/lib/dictionaries';
 
-interface AdminLoginLayoutProps {
+// This layout is for the /admin/* segment.
+// It's intentionally simple to allow child layouts (like for /admin/panel)
+// or child pages (like the /admin login page) to define their own specific structures.
+interface AdminSegmentLayoutProps {
   children: ReactNode;
-  params: { lang: string };
+  params: { lang: string }; // lang might be needed by children or for other context providers
 }
 
-export default async function AdminLoginLayout({ children, params }: AdminLoginLayoutProps) {
-  const dictionary = await getDictionary(params.lang);
-  // This layout is for the /admin route, which will be the login page.
-  // It uses PublicLayout for a consistent look with the rest of the site,
-  // but centers the content for a typical login form presentation.
-  return (
-    <PublicLayout lang={params.lang} dictionary={dictionary}>
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] py-8 px-4">
-        {children}
-      </div>
-    </PublicLayout>
-  );
+export default function AdminSegmentLayout({ children, params }: AdminSegmentLayoutProps) {
+  // This layout does not apply its own visual structure like PublicLayout.
+  // It passes children through, allowing the login page to use PublicLayout
+  // and the /admin/panel routes to use their own specific AdminPanelLayout.
+  return <>{children}</>;
 }
+
