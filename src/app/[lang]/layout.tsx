@@ -1,26 +1,42 @@
-import React from 'react';
+// src/app/[lang]/layout.tsx
+import type { ReactNode } from 'react';
+import { ClientLayoutProviders } from './components/client-layout-providers';
+import { getDictionary } from '@/lib/dictionaries';
+import type { Metadata, Viewport } from 'next';
+// Global CSS is in src/app/layout.tsx
+// Global fonts are initialized in src/app/layout.tsx and available via CSS variables
 
-// No CSS import for extreme minimalism
-// Minimal props, lang is used only on the html tag
+interface LangLayoutProps {
+  children: ReactNode;
+  params: { lang: string };
+}
 
-interface BasicLayoutProps {
-  children: React.ReactNode;
-  params: {
-    lang: string;
+export async function generateMetadata({ params: { lang } }: LangLayoutProps): Promise<Metadata> {
+  const dictionary = await getDictionary(lang);
+  return {
+    title: {
+      default: dictionary.siteName,
+      template: `%s | ${dictionary.siteName}`,
+    },
+    description: dictionary.description,
+    // icons: { icon: '/favicon.ico' } // Next.js handles favicon.ico from app/ or public/ automatically
   };
 }
 
-export default function BasicLayout({ children, params }: BasicLayoutProps): JSX.Element {
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' },
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' },
+  ],
+};
+
+export default function LangLayout({ children, params }: LangLayoutProps) {
   return (
-    <html lang={params.lang} suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>App ({params.lang})</title>
-      </head>
-      <body>
+    // This div takes on the flex properties to fill the body
+    <div data-lang={params.lang} className="flex-1 flex flex-col">
+      <ClientLayoutProviders>
         {children}
-      </body>
-    </html>
+      </ClientLayoutProviders>
+    </div>
   );
 }
