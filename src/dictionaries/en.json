@@ -2,6 +2,7 @@
 {
   "siteName": "CorreoLibro",
   "description": "Your friendly online bookstore for a great reading experience.",
+  "locale": "en-US",
   "header": {
     "catalog": "Catalog",
     "cart": "Cart",
@@ -90,6 +91,7 @@
         "manageBooks": "Manage Books",
         "manageUsers": "Manage Users",
         "pointOfSale": "Point of Sale",
+        "sales": "Sales",
         "statusSoon": "(Soon)"
     },
     "header": {
@@ -153,7 +155,39 @@
       "processingSale": "Processing...",
       "saleCompletedToastTitle": "Sale Completed!",
       "saleCompletedToastDesc": "The sale has been processed successfully.",
-      "errorCompletingSale": "Error completing sale."
+      "errorCompletingSale": "Error completing sale.",
+      "ticketDialog": {
+        "title": "Sale Receipt",
+        "saleId": "Sale ID:",
+        "date": "Date:",
+        "customer": "Customer:",
+        "item": "Item",
+        "qty": "Qty",
+        "price": "Price",
+        "total": "Total",
+        "subtotal": "Subtotal:",
+        "grandTotal": "Grand Total:",
+        "paymentMethod": "Payment Method:",
+        "cash": "Cash",
+        "card": "Card",
+        "notApplicableShort": "N/A",
+        "printButton": "Print (Simulated)",
+        "closeButton": "Close"
+      }
+    },
+    "salesPage": {
+      "title": "Sales History",
+      "noSalesFound": "No sales records found.",
+      "tableHeaderSaleId": "Sale ID",
+      "tableHeaderDate": "Date",
+      "tableHeaderCustomer": "Customer",
+      "tableHeaderTotalAmount": "Total Amount",
+      "tableHeaderPaymentMethod": "Payment Method",
+      "tableHeaderActions": "Actions",
+      "viewTicketButton": "View Ticket",
+      "cash": "Cash",
+      "card": "Card",
+      "notApplicable": "N/A"
     }
   }
 }

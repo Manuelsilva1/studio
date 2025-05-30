@@ -2,6 +2,7 @@
 {
   "siteName": "CorreoLibro",
   "description": "Tu librería en línea amigable para una gran experiencia de lectura.",
+  "locale": "es-ES",
   "header": {
     "catalog": "Catálogo",
     "cart": "Carrito",
@@ -90,6 +91,7 @@
         "manageBooks": "Gestionar Libros",
         "manageUsers": "Gestionar Usuarios",
         "pointOfSale": "Punto de Venta",
+        "sales": "Ventas",
         "statusSoon": "(Pronto)"
     },
     "header": {
@@ -153,7 +155,39 @@
       "processingSale": "Procesando...",
       "saleCompletedToastTitle": "¡Venta Completada!",
       "saleCompletedToastDesc": "La venta ha sido procesada exitosamente.",
-      "errorCompletingSale": "Error al completar la venta."
+      "errorCompletingSale": "Error al completar la venta.",
+      "ticketDialog": {
+        "title": "Recibo de Venta",
+        "saleId": "ID Venta:",
+        "date": "Fecha:",
+        "customer": "Cliente:",
+        "item": "Artículo",
+        "qty": "Cant.",
+        "price": "Precio",
+        "total": "Total",
+        "subtotal": "Subtotal:",
+        "grandTotal": "Total General:",
+        "paymentMethod": "Método de Pago:",
+        "cash": "Efectivo",
+        "card": "Tarjeta",
+        "notApplicableShort": "N/A",
+        "printButton": "Imprimir (Simulado)",
+        "closeButton": "Cerrar"
+      }
+    },
+    "salesPage": {
+      "title": "Historial de Ventas",
+      "noSalesFound": "No se encontraron registros de ventas.",
+      "tableHeaderSaleId": "ID Venta",
+      "tableHeaderDate": "Fecha",
+      "tableHeaderCustomer": "Cliente",
+      "tableHeaderTotalAmount": "Monto Total",
+      "tableHeaderPaymentMethod": "Método Pago",
+      "tableHeaderActions": "Acciones",
+      "viewTicketButton": "Ver Ticket",
+      "cash": "Efectivo",
+      "card": "Tarjeta",
+      "notApplicable": "N/A"
     }
   }
 }
