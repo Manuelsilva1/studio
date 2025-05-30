@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -135,11 +136,11 @@ export function FiltersClient({
             </Select>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 pt-2">
-            <Button type="submit" className="w-full sm:w-auto flex-grow">
+          <div className="flex flex-col gap-2 pt-2">
+            <Button type="submit" className="w-full">
               <Filter className="mr-2 h-4 w-4" /> Apply Filters
             </Button>
-            <Button type="button" variant="outline" onClick={handleReset} className="w-full sm:w-auto">
+            <Button type="button" variant="outline" onClick={handleReset} className="w-full">
                <RotateCcw className="mr-2 h-4 w-4" /> Reset Filters
             </Button>
           </div>
