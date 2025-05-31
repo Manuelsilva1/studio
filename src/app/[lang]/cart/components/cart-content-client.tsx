@@ -80,7 +80,7 @@ export function CartContentClient({ lang, dictionary }: CartContentClientProps) 
           <CardContent className="space-y-2">
             <div className="flex justify-between">
               <span>{texts.subtotal}</span>
-              <span>${getCartTotal().toFixed(2)}</span>
+              <span>UYU {getCartTotal().toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>{texts.shipping}</span>
@@ -88,7 +88,7 @@ export function CartContentClient({ lang, dictionary }: CartContentClientProps) 
             </div>
             <div className="flex justify-between font-bold text-lg pt-2 border-t">
               <span>{texts.total}</span>
-              <span>${getCartTotal().toFixed(2)}</span>
+              <span>UYU {getCartTotal().toFixed(2)}</span>
             </div>
           </CardContent>
           <CardFooter>

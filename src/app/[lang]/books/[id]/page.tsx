@@ -40,7 +40,7 @@ function AddToCartButtonWrapper({ book, dictionary }: { book: import('@/types').
   return (
     <Button size="lg" onClick={handleAddToCart} disabled={book.stock <= 0} className="w-full sm:w-auto">
       <ShoppingCart className="mr-2 h-5 w-5" />
-      {book.stock > 0 ? `${dictionary.catalogPage?.addToCartButton || 'Add to Cart'} - $${book.price.toFixed(2)}` : (dictionary.catalogPage?.outOfStockButton || 'Out of Stock')}
+      {book.stock > 0 ? `${dictionary.catalogPage?.addToCartButton || 'Add to Cart'} - UYU ${book.price.toFixed(2)}` : (dictionary.catalogPage?.outOfStockButton || 'Out of Stock')}
     </Button>
   );
 }

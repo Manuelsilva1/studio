@@ -253,7 +253,7 @@ export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientP
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField control={form.control} name="price" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price ($)</FormLabel>
+                  <FormLabel>Price (UYU)</FormLabel>
                   <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>

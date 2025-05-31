@@ -77,7 +77,7 @@
   },
   "checkoutForm": {
     "secureCheckout": "Secure Checkout",
-    "fillDetails": "Please fill in your details to complete the purchase. Total: ${total}",
+    "fillDetails": "Please fill in your details to complete the purchase. Total: UYU {total}",
     "fullNameLabel": "Full Name",
     "fullNamePlaceholder": "John Doe",
     "emailLabel": "Email Address",
@@ -143,7 +143,7 @@
         },
         "totalSalesCard": {
             "title": "Total Sales",
-            "amount": "${amount}",
+            "amount": "UYU {amount}",
             "fromLastMonth": "+{percentage}% from last month",
             "viewReportButton": "View Sales Report"
         },

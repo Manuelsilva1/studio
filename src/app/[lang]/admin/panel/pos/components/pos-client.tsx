@@ -221,7 +221,7 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                             <p className="text-xs text-muted-foreground truncate w-32" title={item.book.author}>{item.book.author}</p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">${item.book.price.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">UYU {item.book.price.toFixed(2)}</TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center space-x-1">
                             <Button variant="ghost" size="icon" onClick={() => updateOrderItemQuantity(item.book.id, -1)} className="h-6 w-6">
@@ -233,7 +233,7 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                             </Button>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">${(item.book.price * item.quantity).toFixed(2)}</TableCell>
+                        <TableCell className="text-right">UYU {(item.book.price * item.quantity).toFixed(2)}</TableCell>
                         <TableCell className="text-center">
                           <Button variant="ghost" size="icon" onClick={() => removeOrderItem(item.book.id)} className="text-destructive h-6 w-6">
                             <XCircle className="h-4 w-4" />
@@ -252,11 +252,11 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
               <div className="border-t pt-4 mt-4 space-y-2">
                   <div className="flex justify-between font-medium">
                     <span>{posTexts.subtotal}</span>
-                    <span>${orderTotal.toFixed(2)}</span>
+                    <span>UYU {orderTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold text-primary">
                     <span>{posTexts.grandTotal}</span>
-                    <span>${orderTotal.toFixed(2)}</span>
+                    <span>UYU {orderTotal.toFixed(2)}</span>
                   </div>
                 </div>
             )}

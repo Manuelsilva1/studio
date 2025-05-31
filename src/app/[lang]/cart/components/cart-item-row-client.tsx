@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -39,7 +40,7 @@ export function CartItemRowClient({ item, lang }: CartItemRowClientProps) {
             <h3 className="font-headline text-lg font-semibold">{item.book.title}</h3>
           </Link>
           <p className="text-sm text-muted-foreground">By {item.book.author}</p>
-          <p className="text-sm text-primary">${item.book.price.toFixed(2)}</p>
+          <p className="text-sm text-primary">UYU {item.book.price.toFixed(2)}</p>
         </div>
       </div>
 
@@ -60,7 +61,7 @@ export function CartItemRowClient({ item, lang }: CartItemRowClientProps) {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-md font-semibold w-20 text-right">${(item.book.price * item.quantity).toFixed(2)}</p>
+        <p className="text-md font-semibold w-20 text-right">UYU {(item.book.price * item.quantity).toFixed(2)}</p>
         <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.book.id)} className="text-destructive hover:text-destructive/80">
           <Trash2 className="h-5 w-5" />
           <span className="sr-only">Remove item</span>

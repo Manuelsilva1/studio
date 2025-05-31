@@ -110,7 +110,7 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
                   <TableCell>
                     <Badge variant="secondary">{book.genre}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">${book.price.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">UYU {book.price.toFixed(2)}</TableCell>
                   <TableCell className="text-right">{book.stock}</TableCell>
                   <TableCell className="text-center space-x-1">
                     <Link href={`/${lang}/books/${book.id}`} target="_blank" passHref legacyBehavior>

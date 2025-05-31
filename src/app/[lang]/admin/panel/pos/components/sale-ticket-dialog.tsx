@@ -72,7 +72,7 @@ export function SaleTicketDialog({ isOpen, onClose, saleRecord, dictionary }: Sa
               <div key={item.book.id} className="flex justify-between">
                 <span className="flex-1 truncate pr-1" title={item.book.title}>{item.book.title}</span>
                 <span className="w-8 text-center">x{item.quantity}</span>
-                <span className="w-16 text-right">${(item.priceAtSale * item.quantity).toFixed(2)}</span>
+                <span className="w-16 text-right">UYU {(item.priceAtSale * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -83,11 +83,11 @@ export function SaleTicketDialog({ isOpen, onClose, saleRecord, dictionary }: Sa
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span>{texts.subtotal}</span>
-            <span>${saleRecord.totalAmount.toFixed(2)}</span> 
+            <span>UYU {saleRecord.totalAmount.toFixed(2)}</span> 
           </div>
           <div className="flex justify-between font-bold text-md text-primary pt-1">
             <span>{texts.grandTotal}</span>
-            <span>${saleRecord.totalAmount.toFixed(2)}</span>
+            <span>UYU {saleRecord.totalAmount.toFixed(2)}</span>
           </div>
         </div>
 

@@ -155,7 +155,7 @@ export function SalesListClient({ initialSales, lang, dictionary, salesTexts }: 
                 <TableCell className="font-mono text-xs">{sale.id.substring(0, 8)}...</TableCell>
                 <TableCell>{new Date(sale.timestamp).toLocaleDateString(lang, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</TableCell>
                 <TableCell>{sale.customerName || salesTexts.notApplicable}</TableCell>
-                <TableCell className="text-right">${sale.totalAmount.toFixed(2)}</TableCell>
+                <TableCell className="text-right">UYU {sale.totalAmount.toFixed(2)}</TableCell>
                 <TableCell>{sale.paymentMethod === 'cash' ? salesTexts.cash : salesTexts.card}</TableCell>
                 <TableCell className="text-center">
                   <Button variant="outline" size="sm" onClick={() => handleViewTicket(sale)}>

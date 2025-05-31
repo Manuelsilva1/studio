@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -51,7 +52,7 @@ export function BookCard({ book, lang }: BookCardProps) {
         <CardDescription className="text-sm text-muted-foreground mb-2 truncate" title={book.author}>
           By {book.author}
         </CardDescription>
-        <p className="text-lg font-semibold text-primary mb-2">${book.price.toFixed(2)}</p>
+        <p className="text-lg font-semibold text-primary mb-2">UYU {book.price.toFixed(2)}</p>
         <p className="text-xs text-muted-foreground mb-3 line-clamp-2" title={book.description}>
           {book.description}
         </p>

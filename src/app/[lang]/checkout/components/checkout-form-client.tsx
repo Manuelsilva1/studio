@@ -40,7 +40,7 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
 
   const texts = dictionary.checkoutForm || { 
     secureCheckout: "Secure Checkout",
-    fillDetails: "Please fill in your details to complete the purchase. Total: ${total}",
+    fillDetails: "Please fill in your details to complete the purchase. Total: UYU {total}",
     fullNameLabel: "Full Name",
     fullNamePlaceholder: "John Doe",
     emailLabel: "Email Address",
@@ -148,7 +148,7 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
         <Card className="w-full max-w-2xl mx-auto shadow-xl rounded-lg">
           <CardHeader>
             <CardTitle className="font-headline text-3xl">{texts.secureCheckout}</CardTitle>
-            <CardDescription>{texts.fillDetails.replace('${total}', getCartTotal().toFixed(2))}</CardDescription>
+            <CardDescription>{texts.fillDetails.replace('{total}', getCartTotal().toFixed(2))}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
