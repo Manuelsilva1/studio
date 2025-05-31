@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Button, buttonVariants } from '@/components/ui/button'; // Import buttonVariants
+import { Button, buttonVariants } from '@/components/ui/button';
 import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary } from '@/lib/dictionaries';
@@ -33,7 +33,7 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
             </SheetTrigger>
             <SheetContent 
               side="left" 
-              className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]" // Added top-16 and calculated height
+              className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]"
             >
               <AdminPanelSidebarNav lang={lang} dictionary={dictionary} />
             </SheetContent>
@@ -67,14 +67,14 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
   };
 
   return (
-    <nav className="flex flex-col space-y-2 py-4"> {/* Changed p-4 to py-4 */}
+    <nav className="flex flex-col space-y-2 py-4">
       <SheetClose asChild>
         <Link 
           href={`/${lang}/admin/panel`} 
           scroll={false}
           className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
-          <LayoutDashboard className="mr-2 h-4 w-4" /> {sidebarTexts.dashboard}
+          <LayoutDashboard className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.dashboard}</span>
         </Link>
       </SheetClose>
       <SheetClose asChild>
@@ -83,7 +83,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           scroll={false}
           className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
-          <BookCopy className="mr-2 h-4 w-4" /> {sidebarTexts.manageBooks}
+          <BookCopy className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.manageBooks}</span>
         </Link>
       </SheetClose>
       <SheetClose asChild>
@@ -92,7 +92,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           scroll={false}
           className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
-          <Building2 className="mr-2 h-4 w-4" /> {sidebarTexts.manageEditorials}
+          <Building2 className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.manageEditorials}</span>
         </Link>
       </SheetClose>
       <SheetClose asChild>
@@ -101,7 +101,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           scroll={false}
           className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
-          <Store className="mr-2 h-4 w-4" /> {sidebarTexts.pointOfSale}
+          <Store className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.pointOfSale}</span>
         </Link>
       </SheetClose>
       <SheetClose asChild>
@@ -110,7 +110,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           scroll={false}
           className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
-          <Receipt className="mr-2 h-4 w-4" /> {sidebarTexts.sales}
+          <Receipt className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.sales}</span>
         </Link>
       </SheetClose>
        <SheetClose asChild>
@@ -136,7 +136,7 @@ export default async function AdminPanelLayout({ children, params: { lang } }: A
     <div className="flex min-h-screen flex-col">
       <AdminPanelHeader lang={lang} dictionary={dictionary} />
       
-      <main className="flex-1 overflow-y-auto"> {/* main content scrolls */}
+      <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {children}
         </div>
