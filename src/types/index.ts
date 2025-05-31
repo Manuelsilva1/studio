@@ -24,6 +24,7 @@ export interface Book {
   content?: string; // For book summary generation, can be a longer description or sample text
   publishedYear?: number;
   isbn?: string;
+  dateAdded?: string; // ISO string format for date added to store
 }
 
 export interface CartItem {
@@ -105,6 +106,8 @@ export type Dictionary = {
     free: string;
     total: string;
     proceedToCheckout: string;
+    addedToCartTitle?: string; // Optional, as seen in some files
+    addedToCartDescription?: string; // Optional
   };
   catalogPage: {
     pageTitle: string;
@@ -113,6 +116,17 @@ export type Dictionary = {
     previousPage: string;
     nextPage: string;
     pageIndicator: string;
+    addToCartButton?: string; // Optional
+    outOfStockButton?: string; // Optional
+    newArrivalsSection?: { // Added for New Arrivals
+      title: string;
+      noNewArrivals: string;
+    };
+  };
+  bookDetailPage?: { // Made optional as it's not in all dictionary uses
+    byAuthorPrefix?: string;
+    publishedPrefix?: string;
+    themesPrefix?: string;
   };
   checkoutForm: {
     secureCheckout: string;

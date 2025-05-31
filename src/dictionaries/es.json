@@ -46,7 +46,29 @@
     "nextPage": "Siguiente",
     "pageIndicator": "Página {currentPage} de {totalPages}",
     "addToCartButton": "Añadir al Carrito",
-    "outOfStockButton": "Agotado"
+    "outOfStockButton": "Agotado",
+    "newArrivalsSection": {
+      "title": "Novedades",
+      "noNewArrivals": "No hay libros nuevos en el último mes. ¡Vuelve pronto!"
+    },
+    "filtersSection": {
+      "filterBooksTitle": "Filtrar Libros",
+      "genreLabel": "Género",
+      "allGenres": "Todos los Géneros",
+      "authorLabel": "Autor",
+      "allAuthors": "Todos los Autores",
+      "minPriceLabel": "Precio Mín.",
+      "maxPriceLabel": "Precio Máx.",
+      "sortByLabel": "Ordenar Por",
+      "relevance": "Relevancia",
+      "priceAsc": "Precio: Menor a Mayor",
+      "priceDesc": "Precio: Mayor a Menor",
+      "titleAsc": "Título: A-Z",
+      "titleDesc": "Título: Z-A",
+      "dateAddedDesc": "Fecha Agregado: Más Nuevo",
+      "applyFilters": "Aplicar Filtros",
+      "resetFilters": "Restablecer Filtros"
+    }
   },
   "bookDetailPage": {
     "byAuthorPrefix": "Por",

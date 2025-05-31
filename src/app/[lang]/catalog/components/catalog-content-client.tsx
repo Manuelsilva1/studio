@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/types'; // Updated import
+import { NewArrivalsClient } from './new-arrivals-client'; // Import NewArrivalsClient
 
 const ITEMS_PER_PAGE = 8;
 const initialFilters: CatalogFilters = {
@@ -52,7 +53,7 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
       books = books.filter(book =>
         book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.genre.toLowerCase().includes(searchTerm.toLowerCase())
+        (book.genre && book.genre.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -81,6 +82,12 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
         break;
       case 'title_desc':
         books.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      case 'date_added_desc': // New sort option
+        books.sort((a, b) => {
+          if (!a.dateAdded || !b.dateAdded) return 0;
+          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+        });
         break;
     }
 
@@ -121,6 +128,8 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
       <h1 className="font-headline text-4xl font-bold mb-8 text-center text-primary">
         {texts.pageTitle}
       </h1>
+
+      <NewArrivalsClient allBooks={allBooks} lang={lang} dictionary={dictionary} />
       
       <div className="mb-8 relative">
         <Input 
@@ -141,7 +150,7 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
             onFilterChange={handleFilterChange}
             onResetFilters={handleResetFilters}
             initialFilters={initialFilters}
-            // dictionary={dictionary} 
+            dictionary={dictionary} 
           />
         </div>
 

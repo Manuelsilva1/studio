@@ -31,6 +31,14 @@ export const mockEditorials: Editorial[] = [
   },
 ];
 
+const today = new Date();
+const threeDaysAgo = new Date(new Date().setDate(today.getDate() - 3)).toISOString();
+const tenDaysAgo = new Date(new Date().setDate(today.getDate() - 10)).toISOString();
+const twentyDaysAgo = new Date(new Date().setDate(today.getDate() - 20)).toISOString();
+const fortyDaysAgo = new Date(new Date().setDate(today.getDate() - 40)).toISOString();
+const sixtyDaysAgo = new Date(new Date().setDate(today.getDate() - 60)).toISOString();
+
+
 export const mockBooks: Book[] = [
   {
     id: '1',
@@ -47,6 +55,7 @@ export const mockBooks: Book[] = [
     content: 'In my younger and more vulnerable years my father gave me some advice that I’ve been turning over in my mind ever since. "Whenever you feel like criticizing any one," he told me, "just remember that all the people in this world haven’t had the advantages that you’ve had."',
     publishedYear: 1925,
     isbn: '978-0743273565',
+    dateAdded: threeDaysAgo, // Added in last 7 days
   },
   {
     id: '2',
@@ -63,6 +72,7 @@ export const mockBooks: Book[] = [
     content: 'When he was nearly thirteen, my brother Jem got his arm badly broken at the elbow. When it healed, and Jem’s fears of never being able to play football were assuaged, he was seldom self-conscious about his injury.',
     publishedYear: 1960,
     isbn: '978-0061120084',
+    dateAdded: tenDaysAgo, // Added in last 30 days but not last 7
   },
   {
     id: '3',
@@ -79,6 +89,7 @@ export const mockBooks: Book[] = [
     content: 'It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin nuzzled into his breast in an effort to escape the vile wind, slipped quickly through the glass doors of Victory Mansions, though not quickly enough to prevent a swirl of gritty dust from entering along with him.',
     publishedYear: 1949,
     isbn: '978-0451524935',
+    dateAdded: twentyDaysAgo, // Added in last 30 days
   },
   {
     id: '4',
@@ -95,6 +106,7 @@ export const mockBooks: Book[] = [
     content: 'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.',
     publishedYear: 1813,
     isbn: '978-0141439518',
+    dateAdded: fortyDaysAgo, // Older than 30 days
   },
   {
     id: '5',
@@ -111,6 +123,41 @@ export const mockBooks: Book[] = [
     content: 'In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole, filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat: it was a hobbit-hole, and that means comfort.',
     publishedYear: 1937,
     isbn: '978-0547928227',
+    dateAdded: sixtyDaysAgo, // Older than 30 days
+  },
+  {
+    id: '6',
+    title: 'Brave New World',
+    author: 'Aldous Huxley',
+    genre: 'Dystopian',
+    description: 'A dystopian novel which explores a futuristic society driven by technology and conformity.',
+    coverImage: 'https://placehold.co/300x450/1B5E20/E8F5E9.png?text=Brave+New+World',
+    price: 11.25,
+    stock: 8,
+    editorialId: 'editorial_1',
+    targetAudience: 'Adults',
+    themes: ['Technology', 'Conformity', 'Utopia'],
+    content: 'A squat grey building of only thirty-four stories. Over the main entrance the words, CENTRAL LONDON HATCHERY AND CONDITIONING CENTRE, and, in a shield, the World State\'s motto: COMMUNITY, IDENTITY, STABILITY.',
+    publishedYear: 1932,
+    isbn: '978-0060850524',
+    dateAdded: new Date(new Date().setDate(today.getDate() - 1)).toISOString(), // Very recent
+  },
+  {
+    id: '7',
+    title: 'The Catcher in the Rye',
+    author: 'J.D. Salinger',
+    genre: 'Fiction',
+    description: 'A novel about a few days in the life of a troubled teenage boy, Holden Caulfield.',
+    coverImage: 'https://placehold.co/300x450/1B5E20/E8F5E9.png?text=Catcher+in+the+Rye',
+    price: 9.50,
+    stock: 22,
+    editorialId: 'editorial_2',
+    targetAudience: 'Young Adults',
+    themes: ['Alienation', 'Adolescence', 'Identity'],
+    content: 'If you really want to hear about it, the first thing you\'ll probably want to know is where I was born, and what my lousy childhood was like, and how my parents were occupied and all before they had me, and all that David Copperfield kind of crap, but I don\'t feel like going into it, if you want to know the truth.',
+    publishedYear: 1951,
+    isbn: '978-0316769488',
+    dateAdded: new Date(new Date().setDate(today.getDate() - 5)).toISOString(), // Recent (within 7 days)
   },
 ];
 
