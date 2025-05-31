@@ -67,7 +67,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
   };
 
   return (
-    <nav className="flex flex-col space-y-2 p-4">
+    <nav className="flex flex-col space-y-2 py-4">
       <SheetClose asChild>
         <Link 
           href={`/${lang}/admin/panel`} 
@@ -113,13 +113,15 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           <Receipt className="mr-2 h-4 w-4" /> {sidebarTexts.sales}
         </Link>
       </SheetClose>
-       <Button variant="ghost" className="justify-start w-full h-auto py-2 items-start" disabled>
+       <SheetClose asChild>
+        <Button variant="ghost" className="justify-start w-full h-auto py-2 items-start" disabled>
           <Users className="mr-2 h-4 w-4 mt-1 flex-shrink-0" /> 
           <div className="flex flex-col text-left">
             <span>{sidebarTexts.manageUsers}</span>
             <span className="text-xs text-muted-foreground">{sidebarTexts.statusSoon}</span>
           </div>
         </Button>
+      </SheetClose>
     </nav>
   );
 }
