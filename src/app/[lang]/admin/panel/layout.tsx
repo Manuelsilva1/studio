@@ -21,7 +21,7 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
   const adminTexts = dictionary.adminPanel?.header || { titleSuffix: "Admin", storefrontLink: "Storefront" };
   
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur h-16">
+    <header className="sticky top-0 z-60 w-full border-b bg-background/95 backdrop-blur h-16">
       <div className="container flex h-full items-center justify-between">
         <div className="flex items-center space-x-2">
           {/* Sheet for navigation, always visible */}
