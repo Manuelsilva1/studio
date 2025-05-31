@@ -6,7 +6,8 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2 } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { getDictionary, type Dictionary } from '@/lib/dictionaries';
+import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 interface AdminPanelLayoutProps {
   children: ReactNode;
@@ -107,3 +108,4 @@ export default async function AdminPanelLayout({ children, params: { lang } }: A
     </div>
   );
 }
+

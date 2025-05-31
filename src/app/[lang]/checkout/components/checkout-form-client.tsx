@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -12,10 +13,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Loader2, ShieldCheck, Send, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 const checkoutSchema = z.object({
-  name: z.string().min(2, "Full name is required"), // These messages should be internationalized
+  name: z.string().min(2, "Full name is required"), 
   email: z.string().email("Invalid email address"),
   address: z.string().min(5, "Street address is required"),
   city: z.string().min(2, "City is required"),
@@ -37,8 +38,7 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
   const [isOrderSubmitted, setIsOrderSubmitted] = useState(false);
   const { toast } = useToast();
 
-  // Placeholder texts, should come from dictionary
-  const texts = dictionary.checkoutForm || { // Fallback if checkoutForm is not in dictionary
+  const texts = dictionary.checkoutForm || { 
     secureCheckout: "Secure Checkout",
     fillDetails: "Please fill in your details to complete the purchase. Total: ${total}",
     fullNameLabel: "Full Name",
@@ -69,7 +69,6 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
     checkoutErrorToast: "Checkout Error",
     checkoutErrorToastDesc: "An unexpected error occurred. Please try again."
   };
-
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),

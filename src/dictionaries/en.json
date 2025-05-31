@@ -34,7 +34,9 @@
     "shipping": "Shipping",
     "free": "FREE",
     "total": "Total",
-    "proceedToCheckout": "Proceed to Checkout"
+    "proceedToCheckout": "Proceed to Checkout",
+    "addedToCartTitle": "Added to cart",
+    "addedToCartDescription": "has been added to your cart."
   },
   "catalogPage": {
     "pageTitle": "Book Catalog",
@@ -42,7 +44,14 @@
     "noBooksMatch": "No books match your criteria.",
     "previousPage": "Previous",
     "nextPage": "Next",
-    "pageIndicator": "Page {currentPage} of {totalPages}"
+    "pageIndicator": "Page {currentPage} of {totalPages}",
+    "addToCartButton": "Add to Cart",
+    "outOfStockButton": "Out of Stock"
+  },
+  "bookDetailPage": {
+    "byAuthorPrefix": "By",
+    "publishedPrefix": "Published",
+    "themesPrefix": "Themes"
   },
   "checkoutForm": {
     "secureCheckout": "Secure Checkout",

@@ -1,10 +1,10 @@
+
 // src/app/[lang]/layout.tsx
 import type { ReactNode } from 'react';
 import { ClientLayoutProviders } from './components/client-layout-providers';
 import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 import type { Metadata, Viewport } from 'next';
-// Global CSS is in src/app/layout.tsx
-// Global fonts are initialized in src/app/layout.tsx and available via CSS variables
 
 interface LangLayoutProps {
   children: ReactNode;
@@ -19,7 +19,6 @@ export async function generateMetadata({ params: { lang } }: LangLayoutProps): P
       template: `%s | ${dictionary.siteName}`,
     },
     description: dictionary.description,
-    // icons: { icon: '/favicon.ico' } // Next.js handles favicon.ico from app/ or public/ automatically
   };
 }
 
@@ -32,7 +31,6 @@ export const viewport: Viewport = {
 
 export default function LangLayout({ children, params }: LangLayoutProps) {
   return (
-    // This div takes on the flex properties to fill the body
     <div data-lang={params.lang} className="flex-1 flex flex-col">
       <ClientLayoutProviders>
         {children}

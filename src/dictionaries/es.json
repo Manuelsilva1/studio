@@ -34,7 +34,9 @@
     "shipping": "Envío",
     "free": "GRATIS",
     "total": "Total",
-    "proceedToCheckout": "Proceder al Pago"
+    "proceedToCheckout": "Proceder al Pago",
+    "addedToCartTitle": "Añadido al carrito",
+    "addedToCartDescription": "ha sido añadido a tu carrito."
   },
   "catalogPage": {
     "pageTitle": "Catálogo de Libros",
@@ -42,7 +44,14 @@
     "noBooksMatch": "No hay libros que coincidan con tus criterios.",
     "previousPage": "Anterior",
     "nextPage": "Siguiente",
-    "pageIndicator": "Página {currentPage} de {totalPages}"
+    "pageIndicator": "Página {currentPage} de {totalPages}",
+    "addToCartButton": "Añadir al Carrito",
+    "outOfStockButton": "Agotado"
+  },
+  "bookDetailPage": {
+    "byAuthorPrefix": "Por",
+    "publishedPrefix": "Publicado",
+    "themesPrefix": "Temas"
   },
   "checkoutForm": {
     "secureCheckout": "Pago Seguro",

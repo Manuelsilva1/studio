@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookCopy, PlusCircle, LineChart, Users } from "lucide-react";
 import Link from "next/link";
-import { getDictionary, type Dictionary } from '@/lib/dictionaries';
+import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 interface AdminDashboardPageProps {
   params: {
@@ -26,7 +27,6 @@ export default async function AdminDashboardPage({ params: { lang } }: AdminDash
   const salesPercentage = "10.2";
   const userCount = 78;
   const newUsersThisWeek = 5;
-
 
   return (
     <div className="space-y-8">
@@ -105,3 +105,4 @@ export default async function AdminDashboardPage({ params: { lang } }: AdminDash
     </div>
   );
 }
+

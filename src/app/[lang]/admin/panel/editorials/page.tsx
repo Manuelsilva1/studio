@@ -3,17 +3,17 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import type { Editorial } from '@/types';
+import type { Editorial, Dictionary } from '@/types'; // Updated import for Dictionary
 import { getEditorials, getEditorialById, saveEditorial, deleteEditorial } from '@/lib/mock-data'; 
 import { EditorialFormClient } from './components/editorial-form-client';
 import { EditorialListClient } from './components/editorial-list-client';
 import { Loader2 } from 'lucide-react';
-import { getDictionary } from '@/lib/dictionaries'; // Import getDictionary for server-side fetching initially
+import { getDictionary } from '@/lib/dictionaries'; // For initial dictionary fetch
 
 interface ManageEditorialsContentProps {
   params: { lang: string };
-  initialEditorials: Editorial[]; // Ensured to be an array by parent
-  texts: any; // Texts for editorials page, ensured to be a valid object by parent
+  initialEditorials: Editorial[]; 
+  texts: any; 
 }
 
 function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }: ManageEditorialsContentProps) {
@@ -22,7 +22,7 @@ function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }:
   const action = searchParams.get('action');
   const editorialId = searchParams.get('id');
 
-  const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials); // Already an array
+  const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials); 
   const [editingEditorial, setEditingEditorial] = useState<Editorial | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [keyForForm, setKeyForForm] = useState(Date.now()); 
@@ -32,14 +32,13 @@ function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }:
     if (action === 'edit' && editorialId) {
       setIsLoading(true);
       getEditorialById(editorialId).then(editorialToEdit => {
-        setEditingEditorial(editorialToEdit); // Will be undefined if not found
+        setEditingEditorial(editorialToEdit); 
         setIsLoading(false);
         setKeyForForm(Date.now());
       }).catch(error => {
         console.error("Error fetching editorial for editing:", error);
-        // Handle error, e.g., show toast, redirect, or set an error state
         setIsLoading(false);
-        setEditingEditorial(undefined); // Ensure it's undefined on error
+        setEditingEditorial(undefined); 
       });
     } else {
       setEditingEditorial(undefined); 
@@ -72,7 +71,7 @@ function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }:
   if (action === 'add') {
     return <EditorialFormClient 
               key={keyForForm} 
-              editorial={undefined} // Explicitly undefined for 'add'
+              editorial={undefined} 
               onSave={handleSaveEditorial} 
               onDelete={handleDeleteEditorial} 
               lang={lang} 
@@ -81,7 +80,7 @@ function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }:
   }
   
   if (action === 'edit' && editorialId) {
-    if (editingEditorial) { // Only render form if editorial is found
+    if (editingEditorial) { 
       return <EditorialFormClient 
                 key={keyForForm} 
                 editorial={editingEditorial} 
@@ -90,13 +89,11 @@ function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }:
                 lang={lang} 
                 texts={texts}
               />;
-    } else if (!isLoading) { // If not loading and no editorial found
+    } else if (!isLoading) { 
       return <div className="text-center py-10 text-muted-foreground">Editorial not found or failed to load.</div>;
     }
-    // If still loading (and not caught by the earlier isLoading block), default to loader
     return <div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
-
 
   return <EditorialListClient 
             initialEditorials={editorials} 
@@ -110,10 +107,8 @@ interface ManageEditorialsPageProps {
   params: { lang: string };
 }
 
-// This outer component is now a Server Component to fetch initial data
 export default async function ManageEditorialsPage({ params }: ManageEditorialsPageProps) {
-  const dictionary = await getDictionary(params.lang);
-  // Comprehensive fallback for editorialTexts
+  const dictionary: Dictionary = await getDictionary(params.lang); // Ensure type
   const editorialTexts = dictionary.adminPanel?.editorialsPage || {
     title: "Manage Publishers",
     addNewEditorial: "Add New Publisher",
@@ -153,7 +148,7 @@ export default async function ManageEditorialsPage({ params }: ManageEditorialsP
       <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
         <ManageEditorialsContent 
             params={params} 
-            initialEditorials={initialEditorialsData || []} // Ensure it's always an array
+            initialEditorials={initialEditorialsData || []} 
             texts={editorialTexts} 
         />
       </Suspense>

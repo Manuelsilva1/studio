@@ -1,7 +1,8 @@
 
 import { PublicLayout } from '@/components/layout/public-layout';
 import { CartProvider } from '@/context/cart-provider';
-import { getDictionary, type Dictionary } from '@/lib/dictionaries';
+import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 import { CatalogContentClient } from './components/catalog-content-client';
 
 interface CatalogPageProps {

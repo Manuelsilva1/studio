@@ -1,10 +1,11 @@
+
 import Link from 'next/link';
 import { BookOpen, ShoppingCart, Settings } from 'lucide-react';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 interface HeaderProps {
   lang: string;

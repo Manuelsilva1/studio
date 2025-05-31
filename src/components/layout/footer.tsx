@@ -1,4 +1,5 @@
-import type { Dictionary } from '@/lib/dictionaries';
+
+import type { Dictionary } from '@/types'; // Updated import
 
 interface FooterProps {
   dictionary: Dictionary;

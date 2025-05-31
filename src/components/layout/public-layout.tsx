@@ -1,7 +1,8 @@
+
 import type { ReactNode } from 'react';
 import { Header } from './header';
 import { Footer } from './footer';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 interface PublicLayoutProps {
   children: ReactNode;

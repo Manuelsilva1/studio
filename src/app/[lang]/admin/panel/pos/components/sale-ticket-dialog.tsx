@@ -2,7 +2,7 @@
 "use client";
 
 import type { SaleRecord } from '@/types';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 import {
   AlertDialog,
   AlertDialogContent,
@@ -11,7 +11,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-  AlertDialogAction, // We'll use this for a "Print (Simulated)" button
+  AlertDialogAction, 
 } from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -28,7 +28,7 @@ interface SaleTicketDialogProps {
 export function SaleTicketDialog({ isOpen, onClose, saleRecord, dictionary }: SaleTicketDialogProps) {
   if (!saleRecord) return null;
 
-  const texts = dictionary.adminPanel?.posPage?.ticketDialog || { // Fallback if not in dictionary
+  const texts = dictionary.adminPanel?.posPage?.ticketDialog || { 
     title: "Sale Receipt",
     saleId: "Sale ID:",
     date: "Date:",
@@ -49,11 +49,7 @@ export function SaleTicketDialog({ isOpen, onClose, saleRecord, dictionary }: Sa
 
 
   const handlePrint = () => {
-    // In a real app, this would trigger browser print dialog for the ticket content
     console.log("Simulating print for sale ID:", saleRecord.id);
-    // You might want to format the ticket specifically for printing here
-    // For now, just log it and allow closing.
-    // onClose(); // Or keep it open after "print"
   };
 
   return (
@@ -76,7 +72,7 @@ export function SaleTicketDialog({ isOpen, onClose, saleRecord, dictionary }: Sa
               <div key={item.book.id} className="flex justify-between">
                 <span className="flex-1 truncate pr-1" title={item.book.title}>{item.book.title}</span>
                 <span className="w-8 text-center">x{item.quantity}</span>
-                <span className="w-16 text-right">${(item.book.price * item.quantity).toFixed(2)}</span>
+                <span className="w-16 text-right">${(item.priceAtSale * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -87,9 +83,8 @@ export function SaleTicketDialog({ isOpen, onClose, saleRecord, dictionary }: Sa
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span>{texts.subtotal}</span>
-            <span>${saleRecord.totalAmount.toFixed(2)}</span> {/* Assuming totalAmount is subtotal before any taxes/discounts if applicable */}
+            <span>${saleRecord.totalAmount.toFixed(2)}</span> 
           </div>
-          {/* Add Tax/Discount rows here if needed in the future */}
           <div className="flex justify-between font-bold text-md text-primary pt-1">
             <span>{texts.grandTotal}</span>
             <span>${saleRecord.totalAmount.toFixed(2)}</span>

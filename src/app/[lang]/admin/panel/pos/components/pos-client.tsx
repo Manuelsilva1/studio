@@ -3,8 +3,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import type { Book } from '@/types';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Book, SaleRecord } from '@/types'; // Added SaleRecord
+import type { Dictionary } from '@/types'; // Updated import
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,12 +14,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Search, XCircle, PlusCircle, MinusCircle, ShoppingCart, DollarSign, CreditCard, Loader2 } from 'lucide-react';
+import { addSaleRecord } from '@/lib/mock-data'; // For storing the sale
+import { SaleTicketDialog } from './sale-ticket-dialog'; // For showing the ticket
 
 interface PosClientProps {
   lang: string;
-  dictionary: Dictionary; // Full dictionary for general component labels
+  dictionary: Dictionary; 
   allBooks: Book[];
-  posTexts: Dictionary['adminPanel']['posPage']; // Specific texts for POS page
+  posTexts: Dictionary['adminPanel']['posPage']; 
 }
 
 interface OrderItem {
@@ -35,6 +37,8 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
   const [customerName, setCustomerName] = useState('');
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const { toast } = useToast();
+  const [completedSale, setCompletedSale] = useState<SaleRecord | null>(null);
+  const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -46,7 +50,7 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
       book.title.toLowerCase().includes(lowerSearchTerm) ||
       book.author.toLowerCase().includes(lowerSearchTerm)
     );
-    setSearchResults(filtered.slice(0, 10)); // Limit results for performance
+    setSearchResults(filtered.slice(0, 10)); 
   }, [searchTerm, allBooks]);
 
   const addToOrder = (book: Book) => {
@@ -74,7 +78,7 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
       prevOrder.map(item => {
         if (item.book.id === bookId) {
           const newQuantity = item.quantity + change;
-          if (newQuantity <= 0) return null; // Will be filtered out
+          if (newQuantity <= 0) return null; 
           if (newQuantity > item.book.stock) {
             toast({ title: "Stock limit reached", description: `Max stock for ${item.book.title} is ${item.book.stock}.`, variant: "destructive" });
             return { ...item, quantity: item.book.stock };
@@ -100,190 +104,216 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
       return;
     }
     setIsProcessingSale(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    console.log("Sale Completed:", {
-      items: currentOrderItems.map(item => ({ id: item.book.id, title: item.book.title, quantity: item.quantity, price: item.book.price })),
+    
+    const saleRecord: SaleRecord = {
+      id: `sale_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      items: currentOrderItems.map(item => ({ 
+        book: item.book, 
+        quantity: item.quantity,
+        priceAtSale: item.book.price // Store price at time of sale
+      })),
       totalAmount: orderTotal,
       paymentMethod,
-      customerName: customerName || "N/A",
-      timestamp: new Date().toISOString()
-    });
+      customerName: customerName || undefined,
+    };
 
-    toast({
-      title: posTexts.saleCompletedToastTitle,
-      description: posTexts.saleCompletedToastDesc,
-    });
+    try {
+      await addSaleRecord(saleRecord);
+      setCompletedSale(saleRecord);
+      setIsTicketDialogOpen(true); // Open dialog
+      toast({
+        title: posTexts.saleCompletedToastTitle,
+        description: posTexts.saleCompletedToastDesc,
+      });
+      // Resetting the form is now handled in handleCloseTicketDialog
+    } catch (error) {
+      console.error("Error completing sale:", error);
+      toast({ title: posTexts.errorCompletingSale || "Error", description: "Could not process sale.", variant: "destructive"});
+    } finally {
+      setIsProcessingSale(false);
+    }
+  };
 
-    // Reset POS state
+  const handleCloseTicketDialog = () => {
+    setIsTicketDialogOpen(false);
+    setCompletedSale(null);
+    // Reset POS state after dialog is closed
     setCurrentOrderItems([]);
     setSearchTerm('');
     setSearchResults([]);
     setPaymentMethod('cash');
     setCustomerName('');
-    setIsProcessingSale(false);
   };
 
   return (
-    <div className="grid md:grid-cols-3 gap-6">
-      {/* Left Column: Search and Results */}
-      <Card className="md:col-span-1 shadow-lg rounded-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center">
-            <Search className="mr-2 h-5 w-5 text-primary" />
-            Book Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Input
-            type="text"
-            placeholder={posTexts.searchBooksPlaceholder}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="text-base"
-          />
-          <ScrollArea className="h-[300px] border rounded-md p-2">
-            {searchResults.length > 0 ? (
-              <ul className="space-y-2">
-                {searchResults.map(book => (
-                  <li key={book.id} className="flex items-center justify-between p-2 hover:bg-accent rounded-md">
-                    <div className="flex items-center space-x-2 overflow-hidden">
-                       <Image src={book.coverImage} alt={book.title} width={30} height={45} className="rounded object-cover" data-ai-hint="book cover search"/>
-                       <div className="flex-grow overflow-hidden">
-                         <p className="text-sm font-medium truncate" title={book.title}>{book.title}</p>
-                         <p className="text-xs text-muted-foreground truncate" title={book.author}>{book.author}</p>
-                       </div>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => addToOrder(book)} disabled={book.stock <= 0}>
-                       {posTexts.addToOrder} <PlusCircle className="ml-1 h-4 w-4" />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">{posTexts.noResults}</p>
-            )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
-
-      {/* Right Column: Current Order and Payment */}
-      <Card className="md:col-span-2 shadow-lg rounded-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center">
-            <ShoppingCart className="mr-2 h-5 w-5 text-primary" />
-            {posTexts.currentOrderTitle}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {currentOrderItems.length > 0 ? (
-            <ScrollArea className="h-[300px] mb-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{posTexts.bookColumn}</TableHead>
-                    <TableHead className="text-right">{posTexts.priceColumn}</TableHead>
-                    <TableHead className="text-center">{posTexts.quantityColumn}</TableHead>
-                    <TableHead className="text-right">{posTexts.totalColumn}</TableHead>
-                    <TableHead className="text-center">{posTexts.actionsColumn}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentOrderItems.map(item => (
-                    <TableRow key={item.book.id}>
-                      <TableCell className="flex items-center space-x-2">
-                        <Image src={item.book.coverImage} alt={item.book.title} width={40} height={60} className="rounded object-cover" data-ai-hint="book cover order"/>
-                        <div>
-                          <p className="font-medium truncate w-32" title={item.book.title}>{item.book.title}</p>
-                          <p className="text-xs text-muted-foreground truncate w-32" title={item.book.author}>{item.book.author}</p>
+    <>
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* Left Column: Search and Results */}
+        <Card className="md:col-span-1 shadow-lg rounded-lg">
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center">
+              <Search className="mr-2 h-5 w-5 text-primary" />
+              Book Search
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              type="text"
+              placeholder={posTexts.searchBooksPlaceholder}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="text-base"
+            />
+            <ScrollArea className="h-[300px] border rounded-md p-2">
+              {searchResults.length > 0 ? (
+                <ul className="space-y-2">
+                  {searchResults.map(book => (
+                    <li key={book.id} className="flex items-center justify-between p-2 hover:bg-accent rounded-md">
+                      <div className="flex items-center space-x-2 overflow-hidden">
+                        <Image src={book.coverImage} alt={book.title} width={30} height={45} className="rounded object-cover" data-ai-hint="book cover search"/>
+                        <div className="flex-grow overflow-hidden">
+                          <p className="text-sm font-medium truncate" title={book.title}>{book.title}</p>
+                          <p className="text-xs text-muted-foreground truncate" title={book.author}>{book.author}</p>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-right">${item.book.price.toFixed(2)}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center space-x-1">
-                          <Button variant="ghost" size="icon" onClick={() => updateOrderItemQuantity(item.book.id, -1)} className="h-6 w-6">
-                            <MinusCircle className="h-4 w-4" />
-                          </Button>
-                          <span>{item.quantity}</span>
-                          <Button variant="ghost" size="icon" onClick={() => updateOrderItemQuantity(item.book.id, 1)} className="h-6 w-6" disabled={item.quantity >= item.book.stock}>
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">${(item.book.price * item.quantity).toFixed(2)}</TableCell>
-                      <TableCell className="text-center">
-                        <Button variant="ghost" size="icon" onClick={() => removeOrderItem(item.book.id)} className="text-destructive h-6 w-6">
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => addToOrder(book)} disabled={book.stock <= 0}>
+                        {posTexts.addToOrder} <PlusCircle className="ml-1 h-4 w-4" />
+                      </Button>
+                    </li>
                   ))}
-                </TableBody>
-              </Table>
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">{posTexts.noResults}</p>
+              )}
             </ScrollArea>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-10">{posTexts.emptyOrder}</p>
-          )}
+          </CardContent>
+        </Card>
 
-          {currentOrderItems.length > 0 && (
-             <div className="border-t pt-4 mt-4 space-y-2">
-                <div className="flex justify-between font-medium">
-                  <span>{posTexts.subtotal}</span>
-                  <span>${orderTotal.toFixed(2)}</span>
+        {/* Right Column: Current Order and Payment */}
+        <Card className="md:col-span-2 shadow-lg rounded-lg">
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center">
+              <ShoppingCart className="mr-2 h-5 w-5 text-primary" />
+              {posTexts.currentOrderTitle}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {currentOrderItems.length > 0 ? (
+              <ScrollArea className="h-[300px] mb-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{posTexts.bookColumn}</TableHead>
+                      <TableHead className="text-right">{posTexts.priceColumn}</TableHead>
+                      <TableHead className="text-center">{posTexts.quantityColumn}</TableHead>
+                      <TableHead className="text-right">{posTexts.totalColumn}</TableHead>
+                      <TableHead className="text-center">{posTexts.actionsColumn}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentOrderItems.map(item => (
+                      <TableRow key={item.book.id}>
+                        <TableCell className="flex items-center space-x-2">
+                          <Image src={item.book.coverImage} alt={item.book.title} width={40} height={60} className="rounded object-cover" data-ai-hint="book cover order"/>
+                          <div>
+                            <p className="font-medium truncate w-32" title={item.book.title}>{item.book.title}</p>
+                            <p className="text-xs text-muted-foreground truncate w-32" title={item.book.author}>{item.book.author}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">${item.book.price.toFixed(2)}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center space-x-1">
+                            <Button variant="ghost" size="icon" onClick={() => updateOrderItemQuantity(item.book.id, -1)} className="h-6 w-6">
+                              <MinusCircle className="h-4 w-4" />
+                            </Button>
+                            <span>{item.quantity}</span>
+                            <Button variant="ghost" size="icon" onClick={() => updateOrderItemQuantity(item.book.id, 1)} className="h-6 w-6" disabled={item.quantity >= item.book.stock}>
+                              <PlusCircle className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">${(item.book.price * item.quantity).toFixed(2)}</TableCell>
+                        <TableCell className="text-center">
+                          <Button variant="ghost" size="icon" onClick={() => removeOrderItem(item.book.id)} className="text-destructive h-6 w-6">
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-10">{posTexts.emptyOrder}</p>
+            )}
+
+            {currentOrderItems.length > 0 && (
+              <div className="border-t pt-4 mt-4 space-y-2">
+                  <div className="flex justify-between font-medium">
+                    <span>{posTexts.subtotal}</span>
+                    <span>${orderTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold text-primary">
+                    <span>{posTexts.grandTotal}</span>
+                    <span>${orderTotal.toFixed(2)}</span>
+                  </div>
                 </div>
-                {/* Could add Tax, Discount here later */}
-                <div className="flex justify-between text-lg font-bold text-primary">
-                  <span>{posTexts.grandTotal}</span>
-                  <span>${orderTotal.toFixed(2)}</span>
-                </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex-col items-stretch space-y-6 pt-6 border-t">
+              <div>
+                <Label className="font-semibold text-lg">{posTexts.paymentMethodTitle}</Label>
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={(value: 'cash' | 'card') => setPaymentMethod(value)}
+                  className="flex space-x-4 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="cash" id="cash" />
+                    <Label htmlFor="cash" className="flex items-center cursor-pointer"><DollarSign className="mr-1 h-4 w-4"/>{posTexts.cash}</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="card" id="card" />
+                    <Label htmlFor="card" className="flex items-center cursor-pointer"><CreditCard className="mr-1 h-4 w-4"/>{posTexts.card}</Label>
+                  </div>
+                </RadioGroup>
               </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex-col items-stretch space-y-6 pt-6 border-t">
-            <div>
-              <Label className="font-semibold text-lg">{posTexts.paymentMethodTitle}</Label>
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={(value: 'cash' | 'card') => setPaymentMethod(value)}
-                className="flex space-x-4 mt-2"
+              <div>
+                  <Label htmlFor="customerName" className="font-semibold">{posTexts.customerNameLabel}</Label>
+                  <Input
+                      id="customerName"
+                      type="text"
+                      placeholder={posTexts.customerNamePlaceholder}
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="mt-1"
+                  />
+              </div>
+              <Button
+                  size="lg"
+                  onClick={handleCompleteSale}
+                  disabled={isProcessingSale || currentOrderItems.length === 0}
+                  className="w-full font-headline text-lg"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="cash" id="cash" />
-                  <Label htmlFor="cash" className="flex items-center cursor-pointer"><DollarSign className="mr-1 h-4 w-4"/>{posTexts.cash}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="card" id="card" />
-                  <Label htmlFor="card" className="flex items-center cursor-pointer"><CreditCard className="mr-1 h-4 w-4"/>{posTexts.card}</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            <div>
-                <Label htmlFor="customerName" className="font-semibold">{posTexts.customerNameLabel}</Label>
-                <Input
-                    id="customerName"
-                    type="text"
-                    placeholder={posTexts.customerNamePlaceholder}
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="mt-1"
-                />
-            </div>
-            <Button
-                size="lg"
-                onClick={handleCompleteSale}
-                disabled={isProcessingSale || currentOrderItems.length === 0}
-                className="w-full font-headline text-lg"
-            >
-                {isProcessingSale ? (
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                )}
-                {isProcessingSale ? posTexts.processingSale : posTexts.completeSaleButton}
-            </Button>
-        </CardFooter>
-      </Card>
-    </div>
+                  {isProcessingSale ? (
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                  )}
+                  {isProcessingSale ? posTexts.processingSale : posTexts.completeSaleButton}
+              </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      {completedSale && (
+        <SaleTicketDialog 
+          isOpen={isTicketDialogOpen}
+          onClose={handleCloseTicketDialog}
+          saleRecord={completedSale}
+          dictionary={dictionary} // Pass full dictionary
+        />
+      )}
+    </>
   );
 }

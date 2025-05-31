@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { PublicLayout } from '@/components/layout/public-layout';
 import { ArrowRight } from 'lucide-react';
 import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 interface SplashPageProps {
   params: {
@@ -13,7 +14,7 @@ interface SplashPageProps {
 }
 
 export default async function SplashPage({ params: { lang } }: SplashPageProps) {
-  const dictionary = await getDictionary(lang);
+  const dictionary: Dictionary = await getDictionary(lang);
 
   return (
     <PublicLayout lang={lang} dictionary={dictionary}>

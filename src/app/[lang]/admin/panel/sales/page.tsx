@@ -1,6 +1,7 @@
 
-import { getDictionary, type Dictionary } from '@/lib/dictionaries';
-import { getSaleRecords, type SaleRecord } from '@/lib/mock-data'; // Using mock data
+import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
+import { getSaleRecords, type SaleRecord } from '@/lib/mock-data'; 
 import { SalesListClient } from './components/sales-list-client';
 
 interface AdminSalesPageProps {
@@ -23,10 +24,22 @@ export default async function AdminSalesPage({ params: { lang } }: AdminSalesPag
     viewTicketButton: "View Ticket",
     cash: "Cash",
     card: "Card",
-    notApplicable: "N/A"
+    notApplicable: "N/A",
+    filterByYearLabel: "Year",
+    filterByMonthLabel: "Month",
+    filterByPaymentMethodLabel: "Payment Method",
+    allYears: "All Years",
+    allMonths: "All Months",
+    allPaymentMethods: "All",
+    resetFiltersButton: "Reset Filters",
+    months: {
+      january: "January", february: "February", march: "March", april: "April",
+      may: "May", june: "June", july: "July", august: "August",
+      september: "September", october: "October", november: "November", december: "December"
+    }
   };
   
-  const sales: SaleRecord[] = await getSaleRecords(); // Fetch sales records
+  const sales: SaleRecord[] = await getSaleRecords(); 
 
   return (
     <div className="space-y-8">

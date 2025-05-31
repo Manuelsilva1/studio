@@ -2,7 +2,8 @@
 import { PublicLayout } from '@/components/layout/public-layout';
 import { CheckoutFormClient } from './components/checkout-form-client';
 import { CartProvider } from '@/context/cart-provider';
-import { getDictionary, type Dictionary } from '@/lib/dictionaries';
+import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 interface CheckoutPageProps {
   params: { lang: string };

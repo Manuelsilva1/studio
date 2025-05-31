@@ -9,7 +9,7 @@ import { FiltersClient, type CatalogFilters } from './filters-client';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 const ITEMS_PER_PAGE = 8;
 const initialFilters: CatalogFilters = {
@@ -36,7 +36,7 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
   const [genres] = useState<string[]>(getGenres());
   const [authors] = useState<string[]>(getAuthors());
 
-  const texts = dictionary.catalogPage || { // Fallback if not in dictionary
+  const texts = dictionary.catalogPage || { 
     pageTitle: "Book Catalog",
     searchPlaceholder: "Search by title, author, or genre...",
     noBooksMatch: "No books match your criteria.",
@@ -87,7 +87,6 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
     setFilteredBooks(books);
     setCurrentPage(1); 
   }, [allBooks, searchTerm, activeFilters]);
-
 
   useEffect(() => {
     applyFiltersAndSearch();
@@ -142,7 +141,7 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
             onFilterChange={handleFilterChange}
             onResetFilters={handleResetFilters}
             initialFilters={initialFilters}
-            // dictionary={dictionary} // Pass dictionary to FiltersClient if it needs translated labels/buttons
+            // dictionary={dictionary} 
           />
         </div>
 

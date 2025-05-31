@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { SaleRecord } from '@/types';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -34,7 +34,11 @@ export function SalesListClient({ initialSales, lang, dictionary, salesTexts }: 
   }, [initialSales]);
 
   const monthOptions = useMemo(() => {
-    const monthsData = salesTexts.months;
+    const monthsData = salesTexts.months || { // Add fallback for monthsData
+      january: "January", february: "February", march: "March", april: "April",
+      may: "May", june: "June", july: "July", august: "August",
+      september: "September", october: "October", november: "November", december: "December"
+    };
     return [
       { value: '01', label: monthsData.january }, { value: '02', label: monthsData.february },
       { value: '03', label: monthsData.march }, { value: '04', label: monthsData.april },

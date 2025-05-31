@@ -1,5 +1,6 @@
 
 import { getDictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 import { LoginFormClient } from './components/login-form-client';
 import { PublicLayout } from '@/components/layout/public-layout'; // Import PublicLayout
 

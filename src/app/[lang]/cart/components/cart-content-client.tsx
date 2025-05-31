@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { CartItemRowClient } from './cart-item-row-client';
 import Link from 'next/link';
 import { ShoppingCart, ArrowRight, PackageX } from 'lucide-react';
-import type { Dictionary } from '@/lib/dictionaries';
+import type { Dictionary } from '@/types'; // Updated import
 
 interface CartContentClientProps {
   lang: string;
@@ -17,7 +17,7 @@ interface CartContentClientProps {
 export function CartContentClient({ lang, dictionary }: CartContentClientProps) {
   const { cartItems, getCartTotal, clearCart, getItemCount } = useCart();
 
-  const texts = dictionary.cartPage || { // Fallback if cartPage is not in dictionary
+  const texts = dictionary.cartPage || { 
     emptyCartTitle: "Your Cart is Empty",
     emptyCartMessage: "Looks like you haven't added any books yet.",
     startShopping: "Start Shopping",
