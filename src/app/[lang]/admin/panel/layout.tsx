@@ -49,27 +49,27 @@ function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictionary: 
   };
   return (
     <nav className="flex flex-col space-y-2 p-4">
-      <Link href={`/${lang}/admin/panel`} passHref legacyBehavior>
+      <Link href={`/${lang}/admin/panel`} passHref legacyBehavior scroll={false}>
         <Button variant="ghost" className="justify-start w-full">
           <LayoutDashboard className="mr-2 h-4 w-4" /> {sidebarTexts.dashboard}
         </Button>
       </Link>
-      <Link href={`/${lang}/admin/panel/books`} passHref legacyBehavior>
+      <Link href={`/${lang}/admin/panel/books`} passHref legacyBehavior scroll={false}>
         <Button variant="ghost" className="justify-start w-full">
           <BookCopy className="mr-2 h-4 w-4" /> {sidebarTexts.manageBooks}
         </Button>
       </Link>
-      <Link href={`/${lang}/admin/panel/editorials`} passHref legacyBehavior>
+      <Link href={`/${lang}/admin/panel/editorials`} passHref legacyBehavior scroll={false}>
         <Button variant="ghost" className="justify-start w-full">
           <Building2 className="mr-2 h-4 w-4" /> {sidebarTexts.manageEditorials}
         </Button>
       </Link>
-      <Link href={`/${lang}/admin/panel/pos`} passHref legacyBehavior>
+      <Link href={`/${lang}/admin/panel/pos`} passHref legacyBehavior scroll={false}>
         <Button variant="ghost" className="justify-start w-full">
           <Store className="mr-2 h-4 w-4" /> {sidebarTexts.pointOfSale}
         </Button>
       </Link>
-      <Link href={`/${lang}/admin/panel/sales`} passHref legacyBehavior>
+      <Link href={`/${lang}/admin/panel/sales`} passHref legacyBehavior scroll={false}>
         <Button variant="ghost" className="justify-start w-full">
           <Receipt className="mr-2 h-4 w-4" /> {sidebarTexts.sales}
         </Button>
