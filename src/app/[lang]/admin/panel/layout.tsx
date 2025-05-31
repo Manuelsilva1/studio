@@ -31,7 +31,10 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 pt-6 w-[250px] sm:w-[300px]">
+            <SheetContent 
+              side="left" 
+              className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]" // Adjusted top and height
+            >
               <AdminPanelSidebarNav lang={lang} dictionary={dictionary} />
             </SheetContent>
           </Sheet>
