@@ -30,13 +30,13 @@ export function Header({ lang, dictionary }: HeaderProps) {
               <ShoppingCart className="mr-2 h-4 w-4" /> {dictionary.header.cart}
             </Button>
           </Link>
-          <Link href={`/${lang}/admin`} legacyBehavior passHref>
-            <Button variant="ghost" className="text-sm font-medium">
-              <Settings className="mr-2 h-4 w-4" /> {dictionary.header.admin}
-            </Button>
-          </Link>
           <ThemeToggle />
           <LanguageSwitcher dictionary={dictionary} />
+          <Link href={`/${lang}/admin`} legacyBehavior passHref>
+            <Button variant="ghost" size="icon" aria-label={dictionary.header.admin}>
+              <Settings className="h-5 w-5" />
+            </Button>
+          </Link>
         </nav>
       </div>
     </header>
