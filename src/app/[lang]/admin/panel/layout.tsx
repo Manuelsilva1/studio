@@ -98,8 +98,8 @@ export default async function AdminPanelLayout({ children, params: { lang } }: A
       <div className="flex flex-1 overflow-hidden"> {/* This div groups sidebar and main content, taking remaining height */}
         
         {/* Sidebar */}
-        <aside className="hidden md:block w-[240px] shrink-0 border-r bg-background py-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-          {/* `top-16` matches header height. `h-[calc(100vh-4rem)]` fits viewport below header. `shrink-0` prevents shrinking. */}
+        <aside className="hidden md:block w-[240px] shrink-0 border-r bg-background sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+          {/* `py-6` removed. `top-16` matches header height. `h-[calc(100vh-4rem)]` fits viewport below header. `shrink-0` prevents shrinking. */}
           <AdminPanelSidebarNav lang={lang} dictionary={dictionary} />
         </aside>
         
