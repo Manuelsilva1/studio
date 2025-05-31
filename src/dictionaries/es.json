@@ -177,7 +177,7 @@
     },
     "salesPage": {
       "title": "Historial de Ventas",
-      "noSalesFound": "No se encontraron registros de ventas.",
+      "noSalesFound": "No se encontraron registros de ventas que coincidan con tus filtros.",
       "tableHeaderSaleId": "ID Venta",
       "tableHeaderDate": "Fecha",
       "tableHeaderCustomer": "Cliente",
@@ -187,7 +187,28 @@
       "viewTicketButton": "Ver Ticket",
       "cash": "Efectivo",
       "card": "Tarjeta",
-      "notApplicable": "N/A"
+      "notApplicable": "N/A",
+      "filterByYearLabel": "Año",
+      "filterByMonthLabel": "Mes",
+      "filterByPaymentMethodLabel": "Método de Pago",
+      "allYears": "Todos los Años",
+      "allMonths": "Todos los Meses",
+      "allPaymentMethods": "Todos",
+      "resetFiltersButton": "Restablecer Filtros",
+      "months": {
+        "january": "Enero",
+        "february": "Febrero",
+        "march": "Marzo",
+        "april": "Abril",
+        "may": "Mayo",
+        "june": "Junio",
+        "july": "Julio",
+        "august": "Agosto",
+        "september": "Septiembre",
+        "october": "Octubre",
+        "november": "Noviembre",
+        "december": "Diciembre"
+      }
     }
   }
 }

@@ -177,7 +177,7 @@
     },
     "salesPage": {
       "title": "Sales History",
-      "noSalesFound": "No sales records found.",
+      "noSalesFound": "No sales records found matching your filters.",
       "tableHeaderSaleId": "Sale ID",
       "tableHeaderDate": "Date",
       "tableHeaderCustomer": "Customer",
@@ -187,7 +187,28 @@
       "viewTicketButton": "View Ticket",
       "cash": "Cash",
       "card": "Card",
-      "notApplicable": "N/A"
+      "notApplicable": "N/A",
+      "filterByYearLabel": "Year",
+      "filterByMonthLabel": "Month",
+      "filterByPaymentMethodLabel": "Payment Method",
+      "allYears": "All Years",
+      "allMonths": "All Months",
+      "allPaymentMethods": "All",
+      "resetFiltersButton": "Reset Filters",
+      "months": {
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December"
+      }
     }
   }
 }
