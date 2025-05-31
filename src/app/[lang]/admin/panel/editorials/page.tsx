@@ -1,10 +1,8 @@
 
-"use client"; 
-
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Editorial, Dictionary } from '@/types'; // Updated import for Dictionary
-import { getEditorials, getEditorialById, saveEditorial, deleteEditorial } from '@/lib/mock-data'; 
+import { getEditorials, getEditorialById, saveEditorial, deleteEditorial } from '@/lib/mock-data';
 import { EditorialFormClient } from './components/editorial-form-client';
 import { EditorialListClient } from './components/editorial-list-client';
 import { Loader2 } from 'lucide-react';
@@ -12,8 +10,8 @@ import { getDictionary } from '@/lib/dictionaries'; // For initial dictionary fe
 
 interface ManageEditorialsContentProps {
   params: { lang: string };
-  initialEditorials: Editorial[]; 
-  texts: any; 
+  initialEditorials: Editorial[];
+  texts: any;
 }
 
 function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }: ManageEditorialsContentProps) {
@@ -22,40 +20,40 @@ function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }:
   const action = searchParams.get('action');
   const editorialId = searchParams.get('id');
 
-  const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials); 
+  const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials);
   const [editingEditorial, setEditingEditorial] = useState<Editorial | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
-  const [keyForForm, setKeyForForm] = useState(Date.now()); 
+  const [keyForForm, setKeyForForm] = useState(Date.now());
 
   useEffect(() => {
-    setEditorials(initialEditorials); 
+    setEditorials(initialEditorials);
     if (action === 'edit' && editorialId) {
       setIsLoading(true);
       getEditorialById(editorialId).then(editorialToEdit => {
-        setEditingEditorial(editorialToEdit); 
+        setEditingEditorial(editorialToEdit);
         setIsLoading(false);
         setKeyForForm(Date.now());
       }).catch(error => {
         console.error("Error fetching editorial for editing:", error);
         setIsLoading(false);
-        setEditingEditorial(undefined); 
+        setEditingEditorial(undefined);
       });
     } else {
-      setEditingEditorial(undefined); 
+      setEditingEditorial(undefined);
       setKeyForForm(Date.now());
     }
   }, [action, editorialId, initialEditorials, lang]);
 
   const handleSaveEditorial = async (data: Editorial) => {
     await saveEditorial(data);
-    const updatedEditorials = await getEditorials(); 
+    const updatedEditorials = await getEditorials();
     setEditorials(updatedEditorials);
-    router.push(`/${lang}/admin/panel/editorials`); 
+    router.push(`/${lang}/admin/panel/editorials`);
   };
 
   const handleDeleteEditorial = async (id: string) => {
     await deleteEditorial(id);
-    const updatedEditorials = await getEditorials(); 
+    const updatedEditorials = await getEditorials();
     setEditorials(updatedEditorials);
     router.push(`/${lang}/admin/panel/editorials`);
   };
@@ -67,39 +65,39 @@ function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }:
       </div>
     );
   }
-  
+
   if (action === 'add') {
-    return <EditorialFormClient 
-              key={keyForForm} 
-              editorial={undefined} 
-              onSave={handleSaveEditorial} 
-              onDelete={handleDeleteEditorial} 
-              lang={lang} 
+    return <EditorialFormClient
+              key={keyForForm}
+              editorial={undefined}
+              onSave={handleSaveEditorial}
+              onDelete={handleDeleteEditorial}
+              lang={lang}
               texts={texts}
             />;
   }
-  
+
   if (action === 'edit' && editorialId) {
-    if (editingEditorial) { 
-      return <EditorialFormClient 
-                key={keyForForm} 
-                editorial={editingEditorial} 
-                onSave={handleSaveEditorial} 
-                onDelete={handleDeleteEditorial} 
-                lang={lang} 
+    if (editingEditorial) {
+      return <EditorialFormClient
+                key={keyForForm}
+                editorial={editingEditorial}
+                onSave={handleSaveEditorial}
+                onDelete={handleDeleteEditorial}
+                lang={lang}
                 texts={texts}
               />;
-    } else if (!isLoading) { 
+    } else if (!isLoading) {
       return <div className="text-center py-10 text-muted-foreground">Editorial not found or failed to load.</div>;
     }
     return <div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
 
-  return <EditorialListClient 
-            initialEditorials={editorials} 
-            onDeleteEditorial={handleDeleteEditorial} 
-            lang={lang} 
-            texts={texts} 
+  return <EditorialListClient
+            initialEditorials={editorials}
+            onDeleteEditorial={handleDeleteEditorial}
+            lang={lang}
+            texts={texts}
           />;
 }
 
@@ -146,13 +144,12 @@ export default async function ManageEditorialsPage({ params }: ManageEditorialsP
     <div className="space-y-8">
       <h1 className="font-headline text-3xl font-bold text-primary">{editorialTexts.title || "Manage Publishers"}</h1>
       <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
-        <ManageEditorialsContent 
-            params={params} 
-            initialEditorials={initialEditorialsData || []} 
-            texts={editorialTexts} 
+        <ManageEditorialsContent
+            params={params}
+            initialEditorials={initialEditorialsData || []}
+            texts={editorialTexts}
         />
       </Suspense>
     </div>
   );
 }
-
