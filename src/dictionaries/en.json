@@ -193,7 +193,10 @@
       "tableHeaderActions": "Actions",
       "toastEditorialSaved": "Publisher Saved!",
       "toastEditorialDeleted": "Publisher Deleted!",
-      "toastError": "An error occurred"
+      "toastError": "An error occurred",
+      "toastErrorEditorialSave": "Could not save publisher.",
+      "toastErrorEditorialDelete": "Could not delete publisher.",
+      "editorialNotFound": "Publisher not found or failed to load."
     },
     "categoriesPage": {
       "title": "Manage Categories",

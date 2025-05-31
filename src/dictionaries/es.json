@@ -193,7 +193,10 @@
       "tableHeaderActions": "Acciones",
       "toastEditorialSaved": "¡Editorial Guardada!",
       "toastEditorialDeleted": "¡Editorial Eliminada!",
-      "toastError": "Ocurrió un error"
+      "toastError": "Ocurrió un error",
+      "toastErrorEditorialSave": "No se pudo guardar la editorial.",
+      "toastErrorEditorialDelete": "No se pudo eliminar la editorial.",
+      "editorialNotFound": "Editorial no encontrada o falló al cargar."
     },
     "categoriesPage": {
       "title": "Gestionar Categorías",

@@ -5,7 +5,7 @@ import type { Dictionary } from '@/types';
 import { getEditorials } from '@/lib/mock-data';
 import { getDictionary } from '@/lib/dictionaries';
 import { Loader2 } from 'lucide-react';
-import { ManageEditorialsContent } from './components/manage-editorials-content'; // Import the new client component
+import { ManageEditorialsContent } from './components/manage-editorials-content';
 
 interface ManageEditorialsPageProps {
   params: { lang: string };
@@ -42,8 +42,12 @@ export default async function ManageEditorialsPage({ params }: ManageEditorialsP
     tableHeaderActions: "Actions",
     toastEditorialSaved: "Publisher Saved!",
     toastEditorialDeleted: "Publisher Deleted!",
-    toastError: "An error occurred"
+    toastError: "An error occurred",
+    toastErrorEditorialSave: "Could not save publisher.", // Added
+    toastErrorEditorialDelete: "Could not delete publisher.", // Added
+    editorialNotFound: "Publisher not found or failed to load." // Added
   };
+  // Fetch initial data on the server
   const initialEditorialsData = await getEditorials();
 
   return (
@@ -51,8 +55,8 @@ export default async function ManageEditorialsPage({ params }: ManageEditorialsP
       <h1 className="font-headline text-3xl font-bold text-primary">{editorialTexts.title || "Manage Publishers"}</h1>
       <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
         <ManageEditorialsContent
-            params={params}
-            initialEditorials={initialEditorialsData || []}
+            params={params} // Pass params directly, which includes lang
+            initialEditorials={initialEditorialsData || []} // Pass server-fetched data
             texts={editorialTexts}
         />
       </Suspense>
