@@ -6,7 +6,7 @@ export function CorreoLibroLogo(props: SVGProps<SVGSVGElement>) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 100 100"
       fill="currentColor"
-      aria-label="CorreoLibro Logo"
+      aria-label="Librería 33 Logo"
       {...props}
     >
       <path d="M20 10 H80 V20 H20z" />

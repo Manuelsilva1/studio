@@ -33,7 +33,7 @@ interface RootLayoutProps {
 // they can be overridden by [lang]/layout.tsx if needed,
 // but [lang]/layout.tsx will primarily handle its own metadata.
 export const metadata = {
-  title: 'CorreoLibro', // Generic fallback
+  title: 'Librería 33', // Generic fallback
   description: 'Your friendly online bookstore.', // Generic fallback
 };
 

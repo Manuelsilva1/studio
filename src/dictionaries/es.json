@@ -1,6 +1,6 @@
 
 {
-  "siteName": "CorreoLibro",
+  "siteName": "Librería 33",
   "description": "Tu librería en línea amigable para una gran experiencia de lectura.",
   "locale": "es-ES",
   "header": {
@@ -11,10 +11,10 @@
     "changeLanguage": "Cambiar idioma"
   },
   "footer": {
-    "copyright": "© {year} CorreoLibro. Todos los derechos reservados."
+    "copyright": "© {year} Librería 33. Todos los derechos reservados."
   },
   "splashPage": {
-    "welcome": "Bienvenido a CorreoLibro",
+    "welcome": "Bienvenido a Librería 33",
     "tagline": "Descubre tu próximo libro favorito de nuestro extenso catálogo y disfruta de ofertas exclusivas.",
     "enterCatalog": "Entrar al Catálogo"
   },
@@ -77,7 +77,7 @@
   },
   "loginPage": {
     "title": "Acceso de Administrador",
-    "description": "Accede al Panel de Administración de CorreoLibro.",
+    "description": "Accede al Panel de Administración de Librería 33.",
     "usernameLabel": "Usuario",
     "usernamePlaceholder": "Ingresa tu usuario",
     "passwordLabel": "Contraseña",

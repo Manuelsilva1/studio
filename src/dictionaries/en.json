@@ -1,6 +1,6 @@
 
 {
-  "siteName": "CorreoLibro",
+  "siteName": "Librería 33",
   "description": "Your friendly online bookstore for a great reading experience.",
   "locale": "en-US",
   "header": {
@@ -11,10 +11,10 @@
     "changeLanguage": "Change language"
   },
   "footer": {
-    "copyright": "© {year} CorreoLibro. All rights reserved."
+    "copyright": "© {year} Librería 33. All rights reserved."
   },
   "splashPage": {
-    "welcome": "Welcome to CorreoLibro",
+    "welcome": "Welcome to Librería 33",
     "tagline": "Discover your next favorite book from our extensive catalog and enjoy exclusive offers.",
     "enterCatalog": "Enter Catalog"
   },
@@ -77,7 +77,7 @@
   },
   "loginPage": {
     "title": "Admin Login",
-    "description": "Access the CorreoLibro Admin Panel.",
+    "description": "Access the Librería 33 Admin Panel.",
     "usernameLabel": "Username",
     "usernamePlaceholder": "Enter username",
     "passwordLabel": "Password",
