@@ -1,3 +1,4 @@
+
 // src/app/layout.tsx
 import type { ReactNode } from 'react';
 import './globals.css'; // Import global styles
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     // by Next.js convention if [lang]/layout.tsx included <html>.
     // Since we're following the user's structure of <html> only in root,
     // this 'en' is a static fallback. Actual language context is via params.lang.
+    // suppressHydrationWarning is added here to prevent issues with next-themes
     <html lang="en" className={`${roboto.variable} ${openSans.variable} ${sourceCodePro.variable}`} suppressHydrationWarning={true}>
       <head>
         <meta charSet="utf-8" />
