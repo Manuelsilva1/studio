@@ -5,12 +5,14 @@ import { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { Book } from '@/types';
+import type { Book, Editorial } from '@/types'; // Import Editorial
+import { getEditorials } from '@/lib/mock-data'; // To fetch editorials for dropdown
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select
 import { Loader2, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -21,6 +23,7 @@ const bookSchema = z.object({
   genre: z.string().min(2, "Genre is required"),
   description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description too long"),
   coverImage: z.string().url("Must be a valid URL for cover image (e.g., https://placehold.co/...)"),
+  editorialId: z.string().optional(), // Added editorialId
   price: z.preprocess(
     (val) => parseFloat(String(val)),
     z.number().min(0, "Price cannot be negative")
@@ -46,12 +49,22 @@ interface BookFormClientProps {
   onSave: (data: Book) => Promise<void>; 
   onDelete?: (bookId: string) => Promise<void>;
   lang: string; 
+  // No dictionary needed here unless specific labels are from dictionary
 }
 
 export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [editorials, setEditorials] = useState<Editorial[]>([]);
   const { toast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    async function fetchEditorialsData() {
+      const data = await getEditorials();
+      setEditorials(data);
+    }
+    fetchEditorialsData();
+  }, []);
 
   const form = useForm<BookFormData>({
     resolver: zodResolver(bookSchema),
@@ -61,12 +74,14 @@ export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientP
       stock: book.stock ?? 0,
       themes: book.themes?.join(', ') ?? '',
       publishedYear: book.publishedYear ?? undefined,
+      editorialId: book.editorialId ?? '',
     } : {
       title: '',
       author: '',
       genre: '',
       description: '',
       coverImage: 'https://placehold.co/300x450.png',
+      editorialId: '',
       price: 0,
       stock: 0,
       targetAudience: '',
@@ -85,6 +100,7 @@ export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientP
         stock: book.stock ?? 0,
         themes: book.themes?.join(', ') ?? '',
         publishedYear: book.publishedYear ?? undefined,
+        editorialId: book.editorialId ?? '',
       });
     }
   }, [book, form]);
@@ -100,6 +116,7 @@ export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientP
         price: Number(data.price),
         stock: Number(data.stock),
         publishedYear: data.publishedYear ? Number(data.publishedYear) : undefined,
+        editorialId: data.editorialId || undefined, // Ensure it's undefined if empty
       };
       await onSave(bookToSave);
       toast({
@@ -166,6 +183,7 @@ export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientP
                 </FormItem>
               )} />
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <FormField control={form.control} name="genre" render={({ field }) => (
                 <FormItem>
@@ -174,14 +192,39 @@ export function BookFormClient({ book, onSave, onDelete, lang }: BookFormClientP
                   <FormMessage />
                 </FormItem>
               )} />
-              <FormField control={form.control} name="isbn" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="editorialId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Publisher (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a publisher" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">No Publisher</SelectItem>
+                        {editorials.map((editorial) => (
+                          <SelectItem key={editorial.id} value={editorial.id}>
+                            {editorial.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField control={form.control} name="isbn" render={({ field }) => (
                 <FormItem>
                   <FormLabel>ISBN (Optional)</FormLabel>
                   <FormControl><Input placeholder="978-xxxxxxxxxx" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
-              )} />
-            </div>
+            )} />
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem>
                 <div className="flex justify-between items-center">

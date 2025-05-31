@@ -1,4 +1,14 @@
 
+export interface Editorial {
+  id: string;
+  name: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+}
+
 export interface Book {
   id: string;
   title: string;
@@ -8,6 +18,7 @@ export interface Book {
   coverImage: string;
   price: number;
   stock: number;
+  editorialId?: string; // ID de la editorial
   targetAudience?: string;
   themes?: string[];
   content?: string; // For book summary generation, can be a longer description or sample text

@@ -93,9 +93,10 @@ export type Dictionary = {
       dashboard: string;
       manageBooks: string;
       manageUsers: string;
+      statusSoon: string;
       pointOfSale: string;
       sales: string;
-      statusSoon: string;
+      manageEditorials: string; // Nueva entrada
     };
     header: {
       titleSuffix: string;
@@ -133,6 +134,38 @@ export type Dictionary = {
     };
     booksPage: {
       title: string;
+      // texts for book form if needed here
+    };
+    editorialsPage: { // Nueva sección para editoriales
+      title: string;
+      addNewEditorial: string;
+      editEditorial: string;
+      editorialNameLabel: string;
+      editorialNamePlaceholder: string;
+      contactPersonLabel: string;
+      contactPersonPlaceholder: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      phoneLabel: string;
+      phonePlaceholder: string;
+      addressLabel: string;
+      addressPlaceholder: string;
+      notesLabel: string;
+      notesPlaceholder: string;
+      deleteConfirmationTitle: string;
+      deleteConfirmationMessage: string;
+      deleteButton: string;
+      cancelButton: string;
+      saveButton: string;
+      addButton: string;
+      noEditorialsFound: string;
+      tableHeaderName: string;
+      tableHeaderContact: string;
+      tableHeaderEmail: string;
+      tableHeaderActions: string;
+      toastEditorialSaved: string;
+      toastEditorialDeleted: string;
+      toastError: string;
     };
     posPage: {
       title: string;
@@ -146,7 +179,7 @@ export type Dictionary = {
       quantityColumn: string;
       totalColumn: string;
       actionsColumn: string;
-      orderSummaryTitle: string; // This was missing from type, but present in JSONs
+      orderSummaryTitle: string;
       subtotal: string;
       grandTotal: string;
       paymentMethodTitle: string;
@@ -158,7 +191,7 @@ export type Dictionary = {
       processingSale: string;
       saleCompletedToastTitle: string;
       saleCompletedToastDesc: string;
-      errorCompletingSale: string; // This was missing from type, but present in JSONs
+      errorCompletingSale: string;
       ticketDialog: {
         title: string;
         saleId: string;
@@ -191,6 +224,18 @@ export type Dictionary = {
       cash: string;
       card: string;
       notApplicable: string;
+      filterByYearLabel: string;
+      filterByMonthLabel: string;
+      filterByPaymentMethodLabel: string;
+      allYears: string;
+      allMonths: string;
+      allPaymentMethods: string;
+      resetFiltersButton: string;
+      months: {
+        january: string; february: string; march: string; april: string;
+        may: string; june: string; july: string; august: string;
+        september: string; october: string; november: string; december: string;
+      };
     };
   };
 };

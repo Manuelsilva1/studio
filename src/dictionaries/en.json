@@ -90,9 +90,10 @@
         "dashboard": "Dashboard",
         "manageBooks": "Manage Books",
         "manageUsers": "Manage Users",
+        "statusSoon": "(Soon)",
         "pointOfSale": "Point of Sale",
         "sales": "Sales",
-        "statusSoon": "(Soon)"
+        "manageEditorials": "Manage Publishers"
     },
     "header": {
         "titleSuffix": "Admin",
@@ -130,6 +131,37 @@
     },
     "booksPage": {
         "title": "Manage Books"
+    },
+    "editorialsPage": {
+      "title": "Manage Publishers",
+      "addNewEditorial": "Add New Publisher",
+      "editEditorial": "Edit Publisher",
+      "editorialNameLabel": "Publisher Name",
+      "editorialNamePlaceholder": "e.g., Penguin Books",
+      "contactPersonLabel": "Contact Person (Optional)",
+      "contactPersonPlaceholder": "e.g., John Doe",
+      "emailLabel": "Email (Optional)",
+      "emailPlaceholder": "e.g., contact@publisher.com",
+      "phoneLabel": "Phone (Optional)",
+      "phonePlaceholder": "e.g., 555-123-4567",
+      "addressLabel": "Address (Optional)",
+      "addressPlaceholder": "e.g., 123 Publishing St, City",
+      "notesLabel": "Notes (Optional)",
+      "notesPlaceholder": "Any relevant notes...",
+      "deleteConfirmationTitle": "Are you sure?",
+      "deleteConfirmationMessage": "This will permanently delete the publisher \"{name}\". This action cannot be undone.",
+      "deleteButton": "Delete Publisher",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Publisher",
+      "addButton": "Add Publisher",
+      "noEditorialsFound": "No publishers found.",
+      "tableHeaderName": "Name",
+      "tableHeaderContact": "Contact Person",
+      "tableHeaderEmail": "Email",
+      "tableHeaderActions": "Actions",
+      "toastEditorialSaved": "Publisher Saved!",
+      "toastEditorialDeleted": "Publisher Deleted!",
+      "toastError": "An error occurred"
     },
     "posPage": {
       "title": "Point of Sale",

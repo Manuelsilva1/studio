@@ -90,9 +90,10 @@
         "dashboard": "Panel",
         "manageBooks": "Gestionar Libros",
         "manageUsers": "Gestionar Usuarios",
+        "statusSoon": "(Pronto)",
         "pointOfSale": "Punto de Venta",
         "sales": "Ventas",
-        "statusSoon": "(Pronto)"
+        "manageEditorials": "Gestionar Editoriales"
     },
     "header": {
         "titleSuffix": "Admin",
@@ -130,6 +131,37 @@
     },
      "booksPage": {
         "title": "Gestionar Libros"
+    },
+    "editorialsPage": {
+      "title": "Gestionar Editoriales",
+      "addNewEditorial": "Añadir Nueva Editorial",
+      "editEditorial": "Editar Editorial",
+      "editorialNameLabel": "Nombre de la Editorial",
+      "editorialNamePlaceholder": "Ej: Ediciones Salamandra",
+      "contactPersonLabel": "Persona de Contacto (Opcional)",
+      "contactPersonPlaceholder": "Ej: Ana López",
+      "emailLabel": "Correo Electrónico (Opcional)",
+      "emailPlaceholder": "Ej: contacto@editorial.com",
+      "phoneLabel": "Teléfono (Opcional)",
+      "phonePlaceholder": "Ej: 555-123-4567",
+      "addressLabel": "Dirección (Opcional)",
+      "addressPlaceholder": "Ej: Calle Falsa 123, Ciudad",
+      "notesLabel": "Notas (Opcional)",
+      "notesPlaceholder": "Cualquier nota relevante...",
+      "deleteConfirmationTitle": "¿Estás seguro?",
+      "deleteConfirmationMessage": "Esto eliminará permanentemente la editorial \"{name}\". Esta acción no se puede deshacer.",
+      "deleteButton": "Eliminar Editorial",
+      "cancelButton": "Cancelar",
+      "saveButton": "Guardar Editorial",
+      "addButton": "Añadir Editorial",
+      "noEditorialsFound": "No se encontraron editoriales.",
+      "tableHeaderName": "Nombre",
+      "tableHeaderContact": "Contacto",
+      "tableHeaderEmail": "Correo",
+      "tableHeaderActions": "Acciones",
+      "toastEditorialSaved": "¡Editorial Guardada!",
+      "toastEditorialDeleted": "¡Editorial Eliminada!",
+      "toastError": "Ocurrió un error"
     },
     "posPage": {
       "title": "Punto de Venta",
