@@ -33,7 +33,7 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
             </SheetTrigger>
             <SheetContent 
               side="left" 
-              className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]"
+              className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]" // Added top-16 and calculated height
             >
               <AdminPanelSidebarNav lang={lang} dictionary={dictionary} />
             </SheetContent>
@@ -67,12 +67,12 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
   };
 
   return (
-    <nav className="flex flex-col space-y-2 py-4">
+    <nav className="flex flex-col space-y-2 py-4"> {/* Changed p-4 to py-4 */}
       <SheetClose asChild>
         <Link 
           href={`/${lang}/admin/panel`} 
           scroll={false}
-          className={buttonVariants({ variant: "ghost", className: "justify-start w-full" })}
+          className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
           <LayoutDashboard className="mr-2 h-4 w-4" /> {sidebarTexts.dashboard}
         </Link>
@@ -81,7 +81,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
         <Link 
           href={`/${lang}/admin/panel/books`} 
           scroll={false}
-          className={buttonVariants({ variant: "ghost", className: "justify-start w-full" })}
+          className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
           <BookCopy className="mr-2 h-4 w-4" /> {sidebarTexts.manageBooks}
         </Link>
@@ -90,7 +90,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
         <Link 
           href={`/${lang}/admin/panel/editorials`} 
           scroll={false}
-          className={buttonVariants({ variant: "ghost", className: "justify-start w-full" })}
+          className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
           <Building2 className="mr-2 h-4 w-4" /> {sidebarTexts.manageEditorials}
         </Link>
@@ -99,7 +99,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
         <Link 
           href={`/${lang}/admin/panel/pos`} 
           scroll={false}
-          className={buttonVariants({ variant: "ghost", className: "justify-start w-full" })}
+          className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
           <Store className="mr-2 h-4 w-4" /> {sidebarTexts.pointOfSale}
         </Link>
@@ -108,13 +108,13 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
         <Link 
           href={`/${lang}/admin/panel/sales`} 
           scroll={false}
-          className={buttonVariants({ variant: "ghost", className: "justify-start w-full" })}
+          className={buttonVariants({ variant: "ghost", className: "justify-start w-full pl-2" })}
         >
           <Receipt className="mr-2 h-4 w-4" /> {sidebarTexts.sales}
         </Link>
       </SheetClose>
        <SheetClose asChild>
-        <Button variant="ghost" className="justify-start w-full h-auto py-2 items-start" disabled>
+        <Button variant="ghost" className="justify-start w-full h-auto py-2 items-start pl-2" disabled>
           <Users className="mr-2 h-4 w-4 mt-1 flex-shrink-0" /> 
           <div className="flex flex-col text-left">
             <span>{sidebarTexts.manageUsers}</span>
@@ -136,7 +136,7 @@ export default async function AdminPanelLayout({ children, params: { lang } }: A
     <div className="flex min-h-screen flex-col">
       <AdminPanelHeader lang={lang} dictionary={dictionary} />
       
-      <main className="flex-1 overflow-y-auto"> 
+      <main className="flex-1 overflow-y-auto"> {/* main content scrolls */}
         <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {children}
         </div>
