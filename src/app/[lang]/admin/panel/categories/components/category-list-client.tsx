@@ -38,9 +38,8 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
   const handleDeleteConfirmation = async () => {
     if (categoryToDelete) {
       try {
-        await onDeleteCategory(categoryToDelete.id); 
+        await onDeleteCategory(categoryToDelete.id);
         // The parent component (ManageCategoriesContent) will refresh the list
-        // setCategories(prev => prev.filter(c => c.id !== categoryToDelete.id)); 
         toast({ title: texts.toastCategoryDeleted || "Category Deleted", description: `${categoryToDelete.name} has been deleted.` });
       } catch (error) {
         toast({ title: texts.toastError || "Error", description: `Failed to delete ${categoryToDelete.name}.`, variant: "destructive" });
@@ -50,15 +49,18 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
     }
   };
 
+  // Fallback for lang if it's unexpectedly undefined.
+  const currentLang = lang || 'en';
+
   return (
     <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => { if (!open) setCategoryToDelete(null); }}>
       <div className="space-y-6">
         <div className="flex justify-end items-center">
-          <Link href={`/${lang}/admin/panel/categories?action=add`} passHref legacyBehavior>
-            <Button>
+          <Button asChild>
+            <Link href={`/${currentLang}/admin/panel/categories?action=add`}>
               <PlusCircle className="mr-2 h-4 w-4" /> {texts.addNewCategory || "Add New Category"}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {categories.length > 0 ? (
@@ -78,11 +80,11 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
                     {category.description || '-'}
                   </TableCell>
                   <TableCell className="text-center space-x-1">
-                    <Link href={`/${lang}/admin/panel/categories?action=edit&id=${category.id}`} passHref legacyBehavior>
-                      <Button variant="ghost" size="icon" title={texts.editCategory || "Edit Category"}>
+                    <Button asChild variant="ghost" size="icon" title={texts.editCategory || "Edit Category"}>
+                      <Link href={`/${currentLang}/admin/panel/categories?action=edit&id=${category.id}`}>
                         <Edit className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                     <Button variant="ghost" size="icon" title={texts.deleteButton || "Delete Category"} onClick={() => setCategoryToDelete(category)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -95,9 +97,11 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
           <div className="text-center py-10 border rounded-md">
             <Tags className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground">{texts.noCategoriesFound || "No categories found."}</p>
-            <Link href={`/${lang}/admin/panel/categories?action=add`} passHref legacyBehavior>
-                <Button variant="link" className="mt-2">{texts.addNewCategory || "Add New Category"}</Button>
-            </Link>
+            <Button asChild variant="link" className="mt-2">
+                <Link href={`/${currentLang}/admin/panel/categories?action=add`}>
+                    {texts.addNewCategory || "Add New Category"}
+                </Link>
+            </Button>
           </div>
         )}
         
@@ -121,3 +125,5 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
     </AlertDialog>
   );
 }
+
+    
