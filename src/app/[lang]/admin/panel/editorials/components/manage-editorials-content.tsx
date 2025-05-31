@@ -12,10 +12,10 @@ import { Loader2 } from 'lucide-react';
 interface ManageEditorialsContentProps {
   params: { lang: string };
   initialEditorials: Editorial[];
-  texts: any; // Using 'any' for texts prop from parent dictionary for simplicity here
+  texts: any;
 }
 
-export function ManageEditorialsContent({ params: { lang }, initialEditorials, texts }: ManageEditorialsContentProps) {
+export function ManageEditorialsContent({ params, initialEditorials, texts }: ManageEditorialsContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const action = searchParams.get('action');
@@ -23,7 +23,7 @@ export function ManageEditorialsContent({ params: { lang }, initialEditorials, t
 
   const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials);
   const [editingEditorial, setEditingEditorial] = useState<Editorial | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false); // For edit form loading specifically
+  const [isLoading, setIsLoading] = useState(false);
   const [keyForForm, setKeyForForm] = useState(Date.now());
 
   useEffect(() => {
@@ -41,27 +41,22 @@ export function ManageEditorialsContent({ params: { lang }, initialEditorials, t
       });
     } else {
       setEditingEditorial(undefined);
-      setKeyForForm(Date.now()); // Reset form key if not editing
+      setKeyForForm(Date.now());
     }
-  }, [action, editorialId, initialEditorials, lang]); // Added lang
+  }, [action, editorialId, initialEditorials, params.lang]); // Use params.lang in dependency array
 
   const handleSaveEditorial = async (data: Editorial) => {
-    setIsLoading(true); // Show loading on form save/submit
+    setIsLoading(true);
     await saveEditorial(data);
-    router.push(`/${lang}/admin/panel/editorials`); // Navigate back to list, which will re-fetch
-    // No need to setIsLoading(false) here as the component will unmount or re-render due to navigation
+    router.push(`/${params.lang}/admin/panel/editorials`);
   };
 
   const handleDeleteEditorial = async (id: string) => {
-    // setIsLoading(true); // List client handles its own loading/toast for delete confirmation
     await deleteEditorial(id);
-    // To refresh the list, navigate. The list will re-fetch via its parent page.
-    // A more optimistic update would be to filter 'editorials' state here, but navigation
-    // ensures fresh data from the "source of truth".
-    router.push(`/${lang}/admin/panel/editorials`);
+    router.push(`/${params.lang}/admin/panel/editorials`);
   };
 
-  if (isLoading && action === 'edit' && editorialId) { // This loader is for when fetching an editorial for the edit form
+  if (isLoading && action === 'edit' && editorialId) {
     return (
       <div className="flex justify-center items-center min-h-[300px]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -74,8 +69,8 @@ export function ManageEditorialsContent({ params: { lang }, initialEditorials, t
               key={keyForForm}
               editorial={undefined}
               onSave={handleSaveEditorial}
-              onDelete={undefined} // No delete for 'add'
-              lang={lang}
+              onDelete={undefined}
+              lang={params.lang} // Pass params.lang directly
               texts={texts}
             />;
   }
@@ -86,21 +81,20 @@ export function ManageEditorialsContent({ params: { lang }, initialEditorials, t
                 key={keyForForm}
                 editorial={editingEditorial}
                 onSave={handleSaveEditorial}
-                onDelete={handleDeleteEditorial} // Pass delete handler for edit form
-                lang={lang}
+                onDelete={handleDeleteEditorial}
+                lang={params.lang} // Pass params.lang directly
                 texts={texts}
               />;
-    } else if (!isLoading) { // Only show "not found" if not actively loading
+    } else if (!isLoading) {
       return <div className="text-center py-10 text-muted-foreground">Editorial not found or failed to load.</div>;
     }
-    // Fallback to loader if in 'edit' mode but editorial is not yet loaded and not in error state
     return <div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
 
   return <EditorialListClient
-            initialEditorials={editorials} // Use the state variable that's updated from props
+            initialEditorials={editorials}
             onDeleteEditorial={handleDeleteEditorial}
-            lang={lang}
+            lang={params.lang} // Pass params.lang directly
             texts={texts}
           />;
 }
