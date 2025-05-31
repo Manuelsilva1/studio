@@ -8,7 +8,7 @@ import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary } from '@/lib/dictionaries';
 import type { Dictionary } from '@/types';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet'; // Added SheetClose
 
 interface AdminPanelLayoutProps {
   children: ReactNode;
@@ -68,31 +68,41 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
   // The p-4 here will apply in the mobile sheet
   return (
     <nav className="flex flex-col space-y-2 p-4">
-      <Link href={`/${lang}/admin/panel`} passHref legacyBehavior scroll={false}>
-        <Button variant="ghost" className="justify-start w-full">
-          <LayoutDashboard className="mr-2 h-4 w-4" /> {sidebarTexts.dashboard}
-        </Button>
-      </Link>
-      <Link href={`/${lang}/admin/panel/books`} passHref legacyBehavior scroll={false}>
-        <Button variant="ghost" className="justify-start w-full">
-          <BookCopy className="mr-2 h-4 w-4" /> {sidebarTexts.manageBooks}
-        </Button>
-      </Link>
-      <Link href={`/${lang}/admin/panel/editorials`} passHref legacyBehavior scroll={false}>
-        <Button variant="ghost" className="justify-start w-full">
-          <Building2 className="mr-2 h-4 w-4" /> {sidebarTexts.manageEditorials}
-        </Button>
-      </Link>
-      <Link href={`/${lang}/admin/panel/pos`} passHref legacyBehavior scroll={false}>
-        <Button variant="ghost" className="justify-start w-full">
-          <Store className="mr-2 h-4 w-4" /> {sidebarTexts.pointOfSale}
-        </Button>
-      </Link>
-      <Link href={`/${lang}/admin/panel/sales`} passHref legacyBehavior scroll={false}>
-        <Button variant="ghost" className="justify-start w-full">
-          <Receipt className="mr-2 h-4 w-4" /> {sidebarTexts.sales}
-        </Button>
-      </Link>
+      <SheetClose asChild>
+        <Link href={`/${lang}/admin/panel`} passHref legacyBehavior scroll={false}>
+          <Button variant="ghost" className="justify-start w-full">
+            <LayoutDashboard className="mr-2 h-4 w-4" /> {sidebarTexts.dashboard}
+          </Button>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link href={`/${lang}/admin/panel/books`} passHref legacyBehavior scroll={false}>
+          <Button variant="ghost" className="justify-start w-full">
+            <BookCopy className="mr-2 h-4 w-4" /> {sidebarTexts.manageBooks}
+          </Button>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link href={`/${lang}/admin/panel/editorials`} passHref legacyBehavior scroll={false}>
+          <Button variant="ghost" className="justify-start w-full">
+            <Building2 className="mr-2 h-4 w-4" /> {sidebarTexts.manageEditorials}
+          </Button>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link href={`/${lang}/admin/panel/pos`} passHref legacyBehavior scroll={false}>
+          <Button variant="ghost" className="justify-start w-full">
+            <Store className="mr-2 h-4 w-4" /> {sidebarTexts.pointOfSale}
+          </Button>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link href={`/${lang}/admin/panel/sales`} passHref legacyBehavior scroll={false}>
+          <Button variant="ghost" className="justify-start w-full">
+            <Receipt className="mr-2 h-4 w-4" /> {sidebarTexts.sales}
+          </Button>
+        </Link>
+      </SheetClose>
        <Button variant="ghost" className="justify-start w-full h-auto py-2 items-start" disabled>
           <Users className="mr-2 h-4 w-4 mt-1 flex-shrink-0" /> 
           <div className="flex flex-col text-left">
