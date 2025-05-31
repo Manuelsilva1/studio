@@ -11,41 +11,34 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ManageCategoriesContentProps {
-  params: { lang?: string };
+  params: { lang: string }; // lang is now string, not string | undefined
   initialCategories: Category[];
   texts: any; // Dictionary texts for categories
 }
 
 export function ManageCategoriesContent({ params, initialCategories, texts }: ManageCategoriesContentProps) {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname(); // Retained for potential future use, but lang is primary
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  let derivedLang = 'en'; 
-  if (params && typeof params.lang === 'string' && params.lang.trim() !== '') {
-    derivedLang = params.lang;
-  } else if (pathname) {
-    const segments = pathname.split('/');
-    if (segments.length > 1 && (segments[1] === 'en' || segments[1] === 'es')) {
-      derivedLang = segments[1];
-    }
-  }
-  const lang = derivedLang;
+  const lang = params.lang; // Directly use lang from params
 
   const action = searchParams.get('action');
   const categoryId = searchParams.get('id');
 
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Initialize to false
   const [keyForForm, setKeyForForm] = useState(Date.now());
 
   useEffect(() => {
-    setCategories(initialCategories); // Initialize with fetched data
-    if (action === 'edit' && categoryId) {
+    setCategories(initialCategories); 
+    let shouldLoadSpecificCategory = action === 'edit' && categoryId;
+
+    if (shouldLoadSpecificCategory) {
       setIsLoading(true);
-      getCategoryById(categoryId).then(categoryToEdit => {
+      getCategoryById(categoryId as string).then(categoryToEdit => {
         setEditingCategory(categoryToEdit);
         setIsLoading(false);
         setKeyForForm(Date.now());
@@ -53,13 +46,22 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
         console.error("Error fetching category for editing:", error);
         setIsLoading(false);
         setEditingCategory(undefined);
-        toast({ title: texts.toastError, description: "Failed to load category for editing.", variant: "destructive" });
+        // Ensure texts and toastError exist before calling toast
+        if (texts && texts.toastError) {
+            toast({ title: texts.toastError, description: "Failed to load category for editing.", variant: "destructive" });
+        } else {
+            console.error("Dictionary texts for toast not available.");
+        }
       });
     } else {
       setEditingCategory(undefined);
       setKeyForForm(Date.now());
+      // if action is 'add' or viewing list, ensure isLoading is false if not already loading something else.
+      if (action === 'add' || !action) {
+        setIsLoading(false);
+      }
     }
-  }, [action, categoryId, initialCategories, lang, toast, texts.toastError]);
+  }, [action, categoryId, initialCategories, lang, toast, texts]); // Removed texts.toastError from deps, texts is enough
 
   const refreshCategories = async () => {
     setIsLoading(true);
@@ -67,7 +69,11 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
       const updatedCategories = await getCategories();
       setCategories(updatedCategories);
     } catch (error) {
-      toast({ title: texts.toastError, description: "Failed to refresh categories.", variant: "destructive" });
+      if (texts && texts.toastError) {
+        toast({ title: texts.toastError, description: "Failed to refresh categories.", variant: "destructive" });
+      } else {
+        console.error("Dictionary texts for toast not available.");
+      }
     }
     setIsLoading(false);
   };
@@ -80,10 +86,14 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
       await refreshCategories(); 
       router.push(`/${lang}/admin/panel/categories`);
     } catch (error: any) {
-       if (error.message === "DUPLICATE_CATEGORY_NAME") {
-        toast({ title: texts.toastError, description: texts.errorDuplicateName, variant: "destructive" });
+      let errorDesc = "Could not save category.";
+      if (error.message === "DUPLICATE_CATEGORY_NAME" && texts && texts.errorDuplicateName) {
+        errorDesc = texts.errorDuplicateName;
+      }
+      if (texts && texts.toastError) {
+        toast({ title: texts.toastError, description: errorDesc, variant: "destructive" });
       } else {
-        toast({ title: texts.toastError, description: "Could not save category.", variant: "destructive" });
+        console.error("Dictionary texts for toast not available. Save error:", errorDesc);
       }
     } finally {
       setIsLoading(false);
@@ -97,14 +107,19 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
       await refreshCategories();
       router.push(`/${lang}/admin/panel/categories`);
     } catch (error) {
-       toast({ title: texts.toastError, description: "Could not delete category.", variant: "destructive" });
+       if (texts && texts.toastError) {
+        toast({ title: texts.toastError, description: "Could not delete category.", variant: "destructive" });
+       } else {
+        console.error("Dictionary texts for toast not available.");
+       }
     } finally {
         setIsLoading(false);
     }
   };
   
 
-  if (isLoading && (action === 'edit' && categoryId || !action)) { // Show loader when loading list or edit form
+  // Adjusted loading condition: show loader if isLoading is true AND (it's an edit action OR no action (list view trying to load/refresh))
+  if (isLoading && ( (action === 'edit' && categoryId) || !action) ) { 
     return (
       <div className="flex justify-center items-center min-h-[300px]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -124,6 +139,10 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
   }
 
   if (action === 'edit' && categoryId) {
+    // If still loading specifically for the edit form after the initial check
+    if (isLoading) {
+        return <div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+    }
     if (editingCategory) {
       return <CategoryFormClient
                 key={keyForForm}
@@ -133,13 +152,12 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
                 lang={lang}
                 texts={texts}
               />;
-    } else if (!isLoading) { // Was loading, but now finished and no category found
+    } else { // No longer loading, but no category found for editing
       return <div className="text-center py-10 text-muted-foreground">Category not found or failed to load.</div>;
     }
-     // Still loading the edit form specifically
-    return <div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
 
+  // Default to list view
   return <CategoryListClient
             initialCategories={categories}
             onDeleteCategory={handleDeleteCategory}
@@ -147,3 +165,4 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
             texts={texts}
           />;
 }
+
