@@ -1,3 +1,4 @@
+
 export interface Book {
   id: string;
   title: string;
@@ -40,3 +41,18 @@ export type GenAIAvailableOffer = {
   couponCode: string;
   conditions: string;
 };
+
+export interface SaleItem {
+  book: Book; // Or just bookId if you prefer to not duplicate all book data
+  quantity: number;
+  priceAtSale: number; // Price of the book at the time of sale
+}
+
+export interface SaleRecord {
+  id: string;
+  timestamp: string; // ISO string format for dates
+  items: SaleItem[];
+  totalAmount: number;
+  paymentMethod: 'cash' | 'card';
+  customerName?: string; // Optional customer name
+}

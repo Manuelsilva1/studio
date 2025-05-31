@@ -1,4 +1,5 @@
-import type { Book, Offer } from '@/types';
+
+import type { Book, Offer, SaleRecord, SaleItem } from '@/types';
 
 export const mockBooks: Book[] = [
   {
@@ -101,6 +102,49 @@ export const mockOffers: Offer[] = [
     conditions: 'Applies when two books from "Fantasy" genre are in cart.',
   },
 ];
+
+// MOCK SALES DATA
+let mockSales: SaleRecord[] = [
+  {
+    id: 'sale_1721316011518', // Example ID
+    timestamp: new Date('2024-07-18T10:00:00Z').toISOString(),
+    items: [
+      { book: mockBooks[0], quantity: 1, priceAtSale: mockBooks[0].price },
+      { book: mockBooks[1], quantity: 1, priceAtSale: mockBooks[1].price }
+    ],
+    totalAmount: mockBooks[0].price + mockBooks[1].price,
+    paymentMethod: 'card',
+    customerName: 'Alice Wonderland'
+  },
+  {
+    id: 'sale_1721316022123', // Example ID
+    timestamp: new Date('2024-07-18T11:30:00Z').toISOString(),
+    items: [
+      { book: mockBooks[2], quantity: 2, priceAtSale: mockBooks[2].price }
+    ],
+    totalAmount: mockBooks[2].price * 2,
+    paymentMethod: 'cash',
+    customerName: 'Bob The Builder'
+  }
+];
+
+export async function addSaleRecord(sale: SaleRecord): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      mockSales.unshift(sale); // Add to the beginning of the array
+      resolve();
+    }, 100); // Simulate async operation
+  });
+}
+
+export async function getSaleRecords(): Promise<SaleRecord[]> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve([...mockSales]); // Return a copy, sorted by newest first
+    }, 100); // Simulate async operation
+  });
+}
+
 
 export const getBookById = (id: string): Book | undefined => mockBooks.find(book => book.id === id);
 
