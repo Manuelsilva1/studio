@@ -9,22 +9,29 @@ export interface Editorial {
   notes?: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export interface Book {
   id: string;
   title: string;
   author: string;
-  genre: string;
+  genre: string; // This might be replaced or supplemented by categoryId later
   description: string;
   coverImage: string;
   price: number;
   stock: number;
-  editorialId?: string; // ID de la editorial
+  editorialId?: string; 
+  // categoryId?: string; // Future: Link books to categories
   targetAudience?: string;
   themes?: string[];
-  content?: string; // For book summary generation, can be a longer description or sample text
+  content?: string; 
   publishedYear?: number;
   isbn?: string;
-  dateAdded?: string; // ISO string format for date added to store
+  dateAdded?: string; 
 }
 
 export interface CartItem {
@@ -37,10 +44,9 @@ export interface Offer {
   name: string;
   description: string;
   couponCode: string;
-  conditions: string; // e.g., "min_purchase_50", "category_fiction"
+  conditions: string; 
 }
 
-// For GenAI flow inputs, ensuring consistency
 export type GenAICartItem = {
   name: string;
   price: number;
@@ -55,21 +61,20 @@ export type GenAIAvailableOffer = {
 };
 
 export interface SaleItem {
-  book: Book; // Or just bookId if you prefer to not duplicate all book data
+  book: Book; 
   quantity: number;
-  priceAtSale: number; // Price of the book at the time of sale
+  priceAtSale: number; 
 }
 
 export interface SaleRecord {
   id: string;
-  timestamp: string; // ISO string format for dates
+  timestamp: string; 
   items: SaleItem[];
   totalAmount: number;
   paymentMethod: 'cash' | 'card';
-  customerName?: string; // Optional customer name
+  customerName?: string; 
 }
 
-// Moved Dictionary type here
 export type Dictionary = {
   siteName: string;
   description: string;
@@ -106,8 +111,8 @@ export type Dictionary = {
     free: string;
     total: string;
     proceedToCheckout: string;
-    addedToCartTitle?: string; // Optional, as seen in some files
-    addedToCartDescription?: string; // Optional
+    addedToCartTitle?: string; 
+    addedToCartDescription?: string; 
   };
   catalogPage: {
     pageTitle: string;
@@ -116,14 +121,32 @@ export type Dictionary = {
     previousPage: string;
     nextPage: string;
     pageIndicator: string;
-    addToCartButton?: string; // Optional
-    outOfStockButton?: string; // Optional
-    newArrivalsSection?: { // Added for New Arrivals
+    addToCartButton?: string; 
+    outOfStockButton?: string; 
+    newArrivalsSection?: { 
       title: string;
       noNewArrivals: string;
     };
+    filtersSection?: { // Made optional as it's not in all dictionary uses
+      filterBooksTitle: string;
+      genreLabel: string;
+      allGenres: string;
+      authorLabel: string;
+      allAuthors: string;
+      minPriceLabel: string;
+      maxPriceLabel: string;
+      sortByLabel: string;
+      relevance: string;
+      priceAsc: string;
+      priceDesc: string;
+      titleAsc: string;
+      titleDesc: string;
+      dateAddedDesc: string;
+      applyFilters: string;
+      resetFilters: string;
+    }
   };
-  bookDetailPage?: { // Made optional as it's not in all dictionary uses
+  bookDetailPage?: { 
     byAuthorPrefix?: string;
     publishedPrefix?: string;
     themesPrefix?: string;
@@ -178,6 +201,7 @@ export type Dictionary = {
       pointOfSale: string;
       sales: string;
       manageEditorials: string;
+      manageCategories: string; // New
     };
     header: {
       titleSuffix: string;
@@ -246,6 +270,29 @@ export type Dictionary = {
       toastEditorialSaved: string;
       toastEditorialDeleted: string;
       toastError: string;
+    };
+    categoriesPage: { // New
+      title: string;
+      addNewCategory: string;
+      editCategory: string;
+      categoryNameLabel: string;
+      categoryNamePlaceholder: string;
+      categoryDescriptionLabel: string;
+      categoryDescriptionPlaceholder: string;
+      deleteConfirmationTitle: string;
+      deleteConfirmationMessage: string;
+      deleteButton: string;
+      cancelButton: string;
+      saveButton: string;
+      addButton: string;
+      noCategoriesFound: string;
+      tableHeaderName: string;
+      tableHeaderDescription: string;
+      tableHeaderActions: string;
+      toastCategorySaved: string;
+      toastCategoryDeleted: string;
+      toastError: string;
+      errorDuplicateName: string;
     };
     posPage: {
       title: string;

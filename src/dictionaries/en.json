@@ -124,7 +124,8 @@
         "statusSoon": "(Soon)",
         "pointOfSale": "Point of Sale",
         "sales": "Sales",
-        "manageEditorials": "Manage Publishers"
+        "manageEditorials": "Manage Publishers",
+        "manageCategories": "Manage Categories"
     },
     "header": {
         "titleSuffix": "Admin",
@@ -193,6 +194,29 @@
       "toastEditorialSaved": "Publisher Saved!",
       "toastEditorialDeleted": "Publisher Deleted!",
       "toastError": "An error occurred"
+    },
+    "categoriesPage": {
+      "title": "Manage Categories",
+      "addNewCategory": "Add New Category",
+      "editCategory": "Edit Category",
+      "categoryNameLabel": "Category Name",
+      "categoryNamePlaceholder": "e.g., Fiction, History",
+      "categoryDescriptionLabel": "Description (Optional)",
+      "categoryDescriptionPlaceholder": "Briefly describe the category...",
+      "deleteConfirmationTitle": "Are you sure?",
+      "deleteConfirmationMessage": "This will permanently delete the category \"{name}\". This action cannot be undone.",
+      "deleteButton": "Delete Category",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Category",
+      "addButton": "Add Category",
+      "noCategoriesFound": "No categories found.",
+      "tableHeaderName": "Name",
+      "tableHeaderDescription": "Description",
+      "tableHeaderActions": "Actions",
+      "toastCategorySaved": "Category Saved!",
+      "toastCategoryDeleted": "Category Deleted!",
+      "toastError": "An error occurred",
+      "errorDuplicateName": "A category with this name already exists."
     },
     "posPage": {
       "title": "Point of Sale",

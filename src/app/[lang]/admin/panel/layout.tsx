@@ -3,13 +3,13 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Button, buttonVariants } from '@/components/ui/button'; // Keep buttonVariants for the "Manage Users" button
-import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button'; 
+import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu, Tags } from 'lucide-react'; // Added Tags
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary } from '@/lib/dictionaries';
 import type { Dictionary } from '@/types';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils'; // Import cn for combining classes
+import { cn } from '@/lib/utils'; 
 
 interface AdminPanelLayoutProps {
   children: ReactNode;
@@ -33,7 +33,7 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
             </SheetTrigger>
             <SheetContent 
               side="left" 
-              className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]" // Positioned under header
+              className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]" 
             >
               <AdminPanelSidebarNav lang={lang} dictionary={dictionary} />
             </SheetContent>
@@ -63,16 +63,15 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
     statusSoon: "(Soon)",
     pointOfSale: "Point of Sale",
     sales: "Sales", 
-    manageEditorials: "Manage Publishers"
+    manageEditorials: "Manage Publishers",
+    manageCategories: "Manage Categories" // Default if not in dictionary
   };
 
-  // Define base classes for sidebar links, omitting `justify-center` and adding `justify-start`
-  // Based on: buttonVariants base + ghost variant + default size + custom overrides
   const navLinkClasses = cn(
-    "inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0", // Base from buttonVariants (without justify-center)
-    "hover:bg-accent hover:text-accent-foreground", // Ghost variant
-    "h-10 py-2", // Default size (height and vertical padding)
-    "justify-start w-full pl-2 pr-4" // Custom layout: justify-start, full width, specific horizontal padding
+    "inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0", 
+    "hover:bg-accent hover:text-accent-foreground", 
+    "h-10 py-2", 
+    "justify-start w-full pl-2 pr-4" 
   );
 
   return (
@@ -93,6 +92,15 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           className={navLinkClasses}
         >
           <BookCopy className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.manageBooks}</span>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link 
+          href={`/${lang}/admin/panel/categories`} 
+          scroll={false}
+          className={navLinkClasses}
+        >
+          <Tags className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.manageCategories}</span>
         </Link>
       </SheetClose>
       <SheetClose asChild>
@@ -123,7 +131,6 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
         </Link>
       </SheetClose>
        <SheetClose asChild>
-        {/* This button has more custom styling (multi-line), so it keeps its buttonVariants usage */}
         <Button 
           variant="ghost" 
           className="justify-start w-full h-auto py-2 items-start pl-2" 

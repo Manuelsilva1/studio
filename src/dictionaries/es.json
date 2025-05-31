@@ -124,7 +124,8 @@
         "statusSoon": "(Pronto)",
         "pointOfSale": "Punto de Venta",
         "sales": "Ventas",
-        "manageEditorials": "Gestionar Editoriales"
+        "manageEditorials": "Gestionar Editoriales",
+        "manageCategories": "Gestionar Categorías"
     },
     "header": {
         "titleSuffix": "Admin",
@@ -193,6 +194,29 @@
       "toastEditorialSaved": "¡Editorial Guardada!",
       "toastEditorialDeleted": "¡Editorial Eliminada!",
       "toastError": "Ocurrió un error"
+    },
+    "categoriesPage": {
+      "title": "Gestionar Categorías",
+      "addNewCategory": "Añadir Nueva Categoría",
+      "editCategory": "Editar Categoría",
+      "categoryNameLabel": "Nombre de Categoría",
+      "categoryNamePlaceholder": "Ej: Ficción, Historia",
+      "categoryDescriptionLabel": "Descripción (Opcional)",
+      "categoryDescriptionPlaceholder": "Describe brevemente la categoría...",
+      "deleteConfirmationTitle": "¿Estás seguro?",
+      "deleteConfirmationMessage": "Esto eliminará permanentemente la categoría \"{name}\". Esta acción no se puede deshacer.",
+      "deleteButton": "Eliminar Categoría",
+      "cancelButton": "Cancelar",
+      "saveButton": "Guardar Categoría",
+      "addButton": "Añadir Categoría",
+      "noCategoriesFound": "No se encontraron categorías.",
+      "tableHeaderName": "Nombre",
+      "tableHeaderDescription": "Descripción",
+      "tableHeaderActions": "Acciones",
+      "toastCategorySaved": "¡Categoría Guardada!",
+      "toastCategoryDeleted": "¡Categoría Eliminada!",
+      "toastError": "Ocurrió un error",
+      "errorDuplicateName": "Ya existe una categoría con este nombre."
     },
     "posPage": {
       "title": "Punto de Venta",
