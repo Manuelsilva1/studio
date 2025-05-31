@@ -34,7 +34,7 @@ interface RootLayoutProps {
 // but [lang]/layout.tsx will primarily handle its own metadata.
 export const metadata = {
   title: 'Librería 33', // Generic fallback
-  description: 'Your friendly online bookstore.', // Generic fallback
+  description: 'Your friendly online bookstore for a great reading experience.', // Generic fallback
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     // by Next.js convention if [lang]/layout.tsx included <html>.
     // Since we're following the user's structure of <html> only in root,
     // this 'en' is a static fallback. Actual language context is via params.lang.
-    <html lang="en" className={`${roboto.variable} ${openSans.variable} ${sourceCodePro.variable}`}>
+    <html lang="en" className={`${roboto.variable} ${openSans.variable} ${sourceCodePro.variable}`} suppressHydrationWarning={true}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
