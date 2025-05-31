@@ -1,5 +1,4 @@
 
-import 'server-only'; // Ensures this runs only on the server
 import type { Dictionary } from '@/types'; // Import Dictionary type from @/types
 
 const dictionaries: Record<string, () => Promise<Dictionary>> = {
