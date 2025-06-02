@@ -29,8 +29,9 @@ interface StatsClientProps {
 
 type SalesPeriod = 'daily' | 'weekly' | 'monthly';
 
-interface SalesOverTimeData {
-  date: string; // Formatted date string
+interface ProcessedSalesData {
+  chartKey: string; // YYYY-MM-DD or YYYY-MM, used by XAxis
+  displayLabel: string; // Formatted date for tooltips/legends e.g. 'P' or 'MMM yyyy'
   totalSales: number;
   count: number;
 }
@@ -51,13 +52,11 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82Ca9D'
 export function StatsClient({ initialSales, texts, lang, dictionary }: StatsClientProps) {
   const [sales, setSales] = useState<SaleRecord[]>(initialSales);
   const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>('daily');
-  // Initialize dateRange to undefined to prevent hydration mismatch
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [totalRevenueInDateRange, setTotalRevenueInDateRange] = useState<number | null>(null);
 
   const currentLocale = dateLocales[lang] || enLocale;
 
-  // Set initial dateRange on the client side after mount
   useEffect(() => {
     const end = new Date();
     const start = subMonths(end, 1);
@@ -74,30 +73,44 @@ export function StatsClient({ initialSales, texts, lang, dictionary }: StatsClie
 
     sales.forEach(sale => {
       const saleDate = parseISO(sale.timestamp);
-      let key = '';
+      let currentChartKey = ''; // This will be 'yyyy-MM-dd' or 'yyyy-MM'
 
       if (salesPeriod === 'daily') {
-        key = format(saleDate, 'yyyy-MM-dd', { locale: currentLocale });
+        currentChartKey = format(saleDate, 'yyyy-MM-dd');
       } else if (salesPeriod === 'weekly') {
-        key = format(startOfWeek(saleDate, { locale: currentLocale }), 'yyyy-MM-dd', { locale: currentLocale });
+        currentChartKey = format(startOfWeek(saleDate, { locale: currentLocale }), 'yyyy-MM-dd');
       } else if (salesPeriod === 'monthly') {
-        key = format(saleDate, 'yyyy-MM', { locale: currentLocale });
+        currentChartKey = format(saleDate, 'yyyy-MM');
       }
 
-      if (!aggregatedSales[key]) {
-        aggregatedSales[key] = { totalSales: 0, count: 0 };
+      if (!aggregatedSales[currentChartKey]) {
+        aggregatedSales[currentChartKey] = { totalSales: 0, count: 0 };
       }
-      aggregatedSales[key].totalSales += sale.totalAmount;
-      aggregatedSales[key].count += 1;
+      aggregatedSales[currentChartKey].totalSales += sale.totalAmount;
+      aggregatedSales[currentChartKey].count += 1;
     });
     
-    const dataPoints: SalesOverTimeData[] = Object.entries(aggregatedSales)
-      .map(([date, { totalSales, count }]) => ({
-        date: salesPeriod === 'monthly' ? format(parseISO(date + '-01'), 'MMM yyyy', { locale: currentLocale }) : format(parseISO(date), 'P', { locale: currentLocale }),
-        totalSales,
-        count,
-      }))
-      .sort((a, b) => parseISO(a.date === format(parseISO(a.date), 'MMM yyyy', {locale: currentLocale}) ? a.date.split(" ").reverse().join("-") + "-01" : a.date).getTime() - parseISO(b.date === format(parseISO(b.date), 'MMM yyyy', {locale: currentLocale}) ? b.date.split(" ").reverse().join("-") + "-01" : b.date).getTime());
+    const dataPoints: ProcessedSalesData[] = Object.entries(aggregatedSales)
+      .map(([key, { totalSales, count }]) => {
+        // key is 'yyyy-MM-dd' or 'yyyy-MM'
+        let currentDisplayLabel = '';
+        if (salesPeriod === 'monthly') { // key is 'yyyy-MM'
+          currentDisplayLabel = format(parseISO(key + '-01'), 'MMM yyyy', { locale: currentLocale });
+        } else { // key is 'yyyy-MM-dd'
+          currentDisplayLabel = format(parseISO(key), 'P', { locale: currentLocale }); 
+        }
+        return {
+          chartKey: key, 
+          displayLabel: currentDisplayLabel,
+          totalSales,
+          count,
+        };
+      })
+      .sort((a, b) => {
+        const dateA = (salesPeriod === 'monthly' ? parseISO(a.chartKey + '-01') : parseISO(a.chartKey));
+        const dateB = (salesPeriod === 'monthly' ? parseISO(b.chartKey + '-01') : parseISO(b.chartKey));
+        return dateA.getTime() - dateB.getTime();
+      });
 
     return dataPoints;
   }, [sales, salesPeriod, currentLocale]);
@@ -113,7 +126,7 @@ export function StatsClient({ initialSales, texts, lang, dictionary }: StatsClie
 
     sales.forEach(sale => {
       sale.items.forEach(item => {
-        const genre = item.book.genre || 'Unknown'; // Use genre as category
+        const genre = item.book.genre || 'Unknown'; 
         if (!categorySales[genre]) {
           categorySales[genre] = { unitsSold: 0, revenue: 0 };
         }
@@ -124,8 +137,8 @@ export function StatsClient({ initialSales, texts, lang, dictionary }: StatsClie
     
     return Object.entries(categorySales)
       .map(([genre, data]) => ({ genre, ...data }))
-      .sort((a, b) => b.unitsSold - a.unitsSold) // Sort by units sold
-      .slice(0, 10); // Top 10
+      .sort((a, b) => b.unitsSold - a.unitsSold) 
+      .slice(0, 10); 
   }, [sales]);
 
   const bestSellingCategoriesChartConfig = {
@@ -205,10 +218,26 @@ export function StatsClient({ initialSales, texts, lang, dictionary }: StatsClie
             <ChartContainer config={salesOverTimeChartConfig} className="w-full h-full">
               <LineChart data={salesOverTimeChartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                <XAxis dataKey="date" tickFormatter={(tick) => salesPeriod === 'monthly' ? tick : format(parseISO(tick), 'dd MMM', { locale: currentLocale })} />
+                <XAxis
+                  dataKey="chartKey" // Use the raw, parsable date key
+                  tickFormatter={(tick: string) => { // tick is 'chartKey'
+                    if (salesPeriod === 'monthly') { // tick is 'yyyy-MM'
+                      return format(parseISO(tick + '-01'), 'MMM yyyy', { locale: currentLocale });
+                    } else { // tick is 'yyyy-MM-dd'
+                      return format(parseISO(tick), 'dd MMM', { locale: currentLocale });
+                    }
+                  }}
+                />
                 <YAxis yAxisId="left" stroke="hsl(var(--chart-1))" />
                 <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip
+                  content={<ChartTooltipContent
+                    labelFormatter={(value, payload) => { // value here is chartKey
+                      const point = payload && payload.length > 0 ? payload[0].payload as ProcessedSalesData : null;
+                      return point ? point.displayLabel : String(value);
+                    }}
+                  />}
+                />
                 <ChartLegend content={<ChartLegendContent />} />
                 <Line yAxisId="left" type="monotone" dataKey="totalSales" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} name={texts.totalSales} />
                 <Line yAxisId="right" type="monotone" dataKey="count" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} name={texts.salesCount} />
