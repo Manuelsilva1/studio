@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button, buttonVariants } from '@/components/ui/button'; 
-import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu, Tags, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu, Tags, BarChart3, FileSpreadsheet } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary } from '@/lib/dictionaries';
 import type { Dictionary } from '@/types';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet'; // Added SheetHeader, SheetTitle
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet'; 
 import { cn } from '@/lib/utils'; 
 
 interface AdminPanelLayoutProps {
@@ -22,7 +22,7 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
   const adminTexts = dictionary.adminPanel?.header || { 
     titleSuffix: "Admin", 
     storefrontLink: "Storefront",
-    navigationMenuTitle: "Navigation Menu" // Fallback
+    navigationMenuTitle: "Navigation Menu"
   };
   
   return (
@@ -31,7 +31,7 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
         <div className="flex items-center space-x-2">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Toggle Menu">
+              <Button variant="ghost" size="icon" aria-label={adminTexts.navigationMenuTitle}>
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -72,7 +72,8 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
     sales: "Sales", 
     manageEditorials: "Manage Publishers",
     manageCategories: "Manage Categories",
-    statistics: "Statistics"
+    statistics: "Statistics",
+    reports: "Reports"
   };
 
   const navLinkClasses = cn(
@@ -145,6 +146,15 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           className={navLinkClasses}
         >
           <BarChart3 className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.statistics}</span>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link 
+          href={`/${lang}/admin/panel/reports`} 
+          scroll={false}
+          className={navLinkClasses}
+        >
+          <FileSpreadsheet className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.reports}</span>
         </Link>
       </SheetClose>
        <SheetClose asChild>

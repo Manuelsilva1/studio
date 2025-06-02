@@ -126,7 +126,8 @@
         "sales": "Ventas",
         "manageEditorials": "Gestionar Editoriales",
         "manageCategories": "Gestionar Categorías",
-        "statistics": "Estadísticas"
+        "statistics": "Estadísticas",
+        "reports": "Informes"
     },
     "header": {
         "titleSuffix": "Admin",
@@ -327,6 +328,39 @@
       "month": "Mes",
       "pickAStartDate": "Selecciona una fecha de inicio",
       "pickAnEndDate": "Selecciona una fecha de fin"
+    },
+    "reportsPage": {
+      "title": "Informes",
+      "generateReportButton": "Generar Informe",
+      "exportPDFButton": "Exportar a PDF",
+      "exportExcelButton": "Exportar a Excel",
+      "dateRangeLabel": "Rango de Fechas",
+      "pickDateRange": "Seleccione un rango de fechas",
+      "summaryLevelLabel": "Nivel de Resumen",
+      "summaryNone": "Ninguno",
+      "summaryDaily": "Diario",
+      "summaryWeekly": "Semanal",
+      "summaryMonthly": "Mensual",
+      "reportSectionTitle": "Informe para: {startDate} - {endDate}",
+      "overallSummaryTitle": "Resumen General",
+      "totalSales": "Ventas Totales (UYU)",
+      "totalOrders": "Pedidos Totales",
+      "salesByPaymentMethodTitle": "Ventas por Método de Pago",
+      "paymentMethod": "Método de Pago",
+      "salesByBookCategoryTitle": "Ventas por Categoría de Libro",
+      "category": "Categoría",
+      "quantitySold": "Cantidad Vendida",
+      "topSellingProductsTitle": "Productos Más Vendidos",
+      "product": "Producto",
+      "revenue": "Ingresos (UYU)",
+      "periodicSummaryTitle": "Resumen de Ventas {periodType}",
+      "period": "Período",
+      "noDataForReport": "No hay datos de ventas disponibles para los criterios seleccionados.",
+      "generatingReport": "Generando informe...",
+      "exportPDFSimulated": "Exportación a PDF simulada.",
+      "exportExcelSimulated": "Exportación a Excel simulada.",
+      "errorGeneratingReport": "Error al generar el informe. Por favor, inténtelo de nuevo.",
+      "pleaseSelectDateRange": "Por favor, seleccione un rango de fechas para generar el informe."
     }
   }
 }

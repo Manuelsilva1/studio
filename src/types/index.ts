@@ -1,5 +1,4 @@
 
-
 export interface Editorial {
   id: string;
   name: string;
@@ -203,11 +202,13 @@ export type Dictionary = {
       sales: string;
       manageEditorials: string;
       manageCategories: string;
-      statistics: string; // New
+      statistics: string;
+      reports: string; // New
     };
     header: {
       titleSuffix: string;
       storefrontLink: string;
+      navigationMenuTitle: string;
     };
     footer: {
       text: string;
@@ -272,6 +273,9 @@ export type Dictionary = {
       toastEditorialSaved: string;
       toastEditorialDeleted: string;
       toastError: string;
+      toastErrorEditorialSave: string;
+      toastErrorEditorialDelete: string;
+      editorialNotFound: string;
     };
     categoriesPage: { 
       title: string;
@@ -366,7 +370,7 @@ export type Dictionary = {
         september: string; october: string; november: string; december: string;
       };
     };
-    statsPage: { // New section for Statistics
+    statsPage: {
       title: string;
       salesOverTimeTitle: string;
       selectPeriod: string;
@@ -385,12 +389,45 @@ export type Dictionary = {
       startDate: string;
       endDate: string;
       calculateRevenue: string;
-      revenueForPeriod: string; // e.g., "Revenue for {startDate} - {endDate}: UYU {amount}"
+      revenueForPeriod: string; 
       noSalesInRange: string;
       monthlyComparisonTitle: string;
       month: string;
       pickAStartDate: string;
       pickAnEndDate: string;
+    };
+    reportsPage: { // New section for Reports
+      title: string;
+      generateReportButton: string;
+      exportPDFButton: string;
+      exportExcelButton: string;
+      dateRangeLabel: string;
+      pickDateRange: string;
+      summaryLevelLabel: string;
+      summaryNone: string;
+      summaryDaily: string;
+      summaryWeekly: string;
+      summaryMonthly: string;
+      reportSectionTitle: string;
+      overallSummaryTitle: string;
+      totalSales: string;
+      totalOrders: string;
+      salesByPaymentMethodTitle: string;
+      paymentMethod: string;
+      salesByBookCategoryTitle: string;
+      category: string;
+      quantitySold: string;
+      topSellingProductsTitle: string;
+      product: string;
+      revenue: string;
+      periodicSummaryTitle: string; // e.g., "Daily Sales Summary"
+      period: string; // "Date" or "Week Starting" or "Month"
+      noDataForReport: string;
+      generatingReport: string;
+      exportPDFSimulated: string;
+      exportExcelSimulated: string;
+      errorGeneratingReport: string;
+      pleaseSelectDateRange: string;
     };
   };
 };
