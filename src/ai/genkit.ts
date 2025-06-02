@@ -1,33 +1,37 @@
 'use server';
 
-import { genkit, googleAI } from 'genkit';
+// This file is intentionally kept minimal.
+// Genkit initialization and AI model configurations
+// would be placed here if AI features were active.
+// For now, it serves as a placeholder.
 
-// IMPORTANT: You need to set your GEMINI_API_KEY in the .env file for this flow to work.
-// Add a line like this to your .env file:
-// GEMINI_API_KEY=your_actual_api_key_here
+// Example of how it might be structured if Genkit were in use:
+/*
+import { genkit, googleAI } from 'genkit';
+import { configureGenkit } from 'genkit';
 
 if (!process.env.GEMINI_API_KEY && process.env.NODE_ENV === 'production') {
-  // In production, we might want to throw an error or have a more robust check.
-  // For now, a warning if it's missing is good for development.
   console.warn(
-    'GEMINI_API_KEY is not set. AI features requiring it may not work. Please add it to your .env file.'
+    'GEMINI_API_KEY is not set. AI features requiring it may not work.'
   );
 } else if (!process.env.GEMINI_API_KEY) {
-    console.log('GEMINI_API_KEY is not set. Using Genkit with potentially limited or unconfigured models. Please add GEMINI_API_KEY to your .env file for full functionality.');
+    console.log('GEMINI_API_KEY is not set. Using Genkit with potentially limited models.');
 }
 
-
-// Export the configured 'ai' object for use in defining flows, prompts, etc.
-// This instance uses the Google AI plugin, configured to use the GEMINI_API_KEY
-// from your environment variables.
 export const ai = genkit({
   plugins: [
-    googleAI(), // Ensure you have @genkit-ai/google-ai or similar installed if not core
+    googleAI(),
   ],
-  // Note: logLevel and enableTracing are typically set in configureGenkit() for global settings,
-  // not directly in genkit() in Genkit v1.x.
-  // If you need to configure these globally, you would use:
-  // import { configureGenkit } from 'genkit';
-  // configureGenkit({ plugins: [googleAI()], logLevel: 'debug', enableTracing: true });
-  // However, the example flows provided in the prompt use an exported 'ai' object.
 });
+
+// If global configuration is needed:
+// configureGenkit({
+//   plugins: [googleAI()],
+//   logLevel: 'debug',
+//   enableTracing: true,
+// });
+*/
+
+// Marking the ai export as any for now as it's not configured.
+// If you re-enable AI, ensure this is properly typed.
+export const ai: any = {};
