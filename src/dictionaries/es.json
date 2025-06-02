@@ -342,6 +342,8 @@
       "summaryDaily": "Diario",
       "summaryWeekly": "Semanal",
       "summaryMonthly": "Mensual",
+      "editorialFilterLabel": "Editorial",
+      "allEditorials": "Todas las Editoriales",
       "reportSectionTitle": "Informe para: {startDate} - {endDate}",
       "overallSummaryTitle": "Resumen General",
       "totalSales": "Ventas Totales (UYU)",
@@ -362,6 +364,8 @@
       "generatingReport": "Generando informe...",
       "exportPDFSimulated": "Exportación a PDF simulada.",
       "exportExcelSimulated": "Exportación a Excel simulada.",
+      "reportFor": "Informe para",
+      "editorial": "Editorial",
       "errorGeneratingReport": "Error al generar el informe. Por favor, inténtelo de nuevo.",
       "pleaseSelectDateRange": "Por favor, seleccione un rango de fechas para generar el informe."
     }

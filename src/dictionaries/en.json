@@ -342,6 +342,8 @@
       "summaryDaily": "Daily",
       "summaryWeekly": "Weekly",
       "summaryMonthly": "Monthly",
+      "editorialFilterLabel": "Publisher",
+      "allEditorials": "All Publishers",
       "reportSectionTitle": "Report for: {startDate} - {endDate}",
       "overallSummaryTitle": "Overall Summary",
       "totalSales": "Total Sales (UYU)",
@@ -362,8 +364,11 @@
       "generatingReport": "Generating report...",
       "exportPDFSimulated": "PDF export simulated.",
       "exportExcelSimulated": "Excel export simulated.",
+      "reportFor": "Report for",
+      "editorial": "Publisher",
       "errorGeneratingReport": "Error generating report. Please try again.",
       "pleaseSelectDateRange": "Please select a date range to generate the report."
     }
   }
 }
+
