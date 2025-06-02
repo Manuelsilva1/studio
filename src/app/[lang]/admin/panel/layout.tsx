@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button, buttonVariants } from '@/components/ui/button'; 
-import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu, Tags } from 'lucide-react'; // Added Tags
+import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu, Tags, BarChart3 } from 'lucide-react'; // Added BarChart3
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary } from '@/lib/dictionaries';
 import type { Dictionary } from '@/types';
@@ -64,7 +64,8 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
     pointOfSale: "Point of Sale",
     sales: "Sales", 
     manageEditorials: "Manage Publishers",
-    manageCategories: "Manage Categories" // Default if not in dictionary
+    manageCategories: "Manage Categories",
+    statistics: "Statistics" // Default if not in dictionary
   };
 
   const navLinkClasses = cn(
@@ -128,6 +129,15 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
           className={navLinkClasses}
         >
           <Receipt className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.sales}</span>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link 
+          href={`/${lang}/admin/panel/stats`} 
+          scroll={false}
+          className={navLinkClasses}
+        >
+          <BarChart3 className="mr-2 h-4 w-4" /> <span className="text-left">{sidebarTexts.statistics}</span>
         </Link>
       </SheetClose>
        <SheetClose asChild>

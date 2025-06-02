@@ -125,7 +125,8 @@
         "pointOfSale": "Punto de Venta",
         "sales": "Ventas",
         "manageEditorials": "Gestionar Editoriales",
-        "manageCategories": "Gestionar Categorías"
+        "manageCategories": "Gestionar Categorías",
+        "statistics": "Estadísticas"
     },
     "header": {
         "titleSuffix": "Admin",
@@ -299,6 +300,32 @@
         "november": "Noviembre",
         "december": "Diciembre"
       }
+    },
+    "statsPage": {
+      "title": "Estadísticas de Ventas",
+      "salesOverTimeTitle": "Ventas a lo Largo del Tiempo",
+      "selectPeriod": "Seleccionar Período:",
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "monthly": "Mensual",
+      "totalSales": "Ventas Totales (UYU)",
+      "salesCount": "Número de Ventas",
+      "noSalesData": "No hay datos de ventas para el período seleccionado.",
+      "bestSellingCategoriesTitle": "Categorías Más Vendidas",
+      "category": "Categoría",
+      "unitsSold": "Unidades Vendidas",
+      "revenue": "Ingresos (UYU)",
+      "totalRevenueTitle": "Ingresos Totales",
+      "selectDateRange": "Seleccionar Rango de Fechas:",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "calculateRevenue": "Calcular Ingresos",
+      "revenueForPeriod": "Ingresos para {startDate} - {endDate}: UYU {amount}",
+      "noSalesInRange": "No hay ventas en el rango de fechas seleccionado.",
+      "monthlyComparisonTitle": "Comparativa Mensual de Ventas",
+      "month": "Mes",
+      "pickAStartDate": "Selecciona una fecha de inicio",
+      "pickAnEndDate": "Selecciona una fecha de fin"
     }
   }
 }

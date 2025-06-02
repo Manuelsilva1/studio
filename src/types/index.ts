@@ -1,4 +1,5 @@
 
+
 export interface Editorial {
   id: string;
   name: string;
@@ -127,7 +128,7 @@ export type Dictionary = {
       title: string;
       noNewArrivals: string;
     };
-    filtersSection?: { // Made optional as it's not in all dictionary uses
+    filtersSection?: { 
       filterBooksTitle: string;
       genreLabel: string;
       allGenres: string;
@@ -201,7 +202,8 @@ export type Dictionary = {
       pointOfSale: string;
       sales: string;
       manageEditorials: string;
-      manageCategories: string; // New
+      manageCategories: string;
+      statistics: string; // New
     };
     header: {
       titleSuffix: string;
@@ -271,7 +273,7 @@ export type Dictionary = {
       toastEditorialDeleted: string;
       toastError: string;
     };
-    categoriesPage: { // New
+    categoriesPage: { 
       title: string;
       addNewCategory: string;
       editCategory: string;
@@ -363,6 +365,32 @@ export type Dictionary = {
         may: string; june: string; july: string; august: string;
         september: string; october: string; november: string; december: string;
       };
+    };
+    statsPage: { // New section for Statistics
+      title: string;
+      salesOverTimeTitle: string;
+      selectPeriod: string;
+      daily: string;
+      weekly: string;
+      monthly: string;
+      totalSales: string;
+      salesCount: string;
+      noSalesData: string;
+      bestSellingCategoriesTitle: string;
+      category: string;
+      unitsSold: string;
+      revenue: string;
+      totalRevenueTitle: string;
+      selectDateRange: string;
+      startDate: string;
+      endDate: string;
+      calculateRevenue: string;
+      revenueForPeriod: string; // e.g., "Revenue for {startDate} - {endDate}: UYU {amount}"
+      noSalesInRange: string;
+      monthlyComparisonTitle: string;
+      month: string;
+      pickAStartDate: string;
+      pickAnEndDate: string;
     };
   };
 };
