@@ -51,14 +51,18 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82Ca9D'
 export function StatsClient({ initialSales, texts, lang, dictionary }: StatsClientProps) {
   const [sales, setSales] = useState<SaleRecord[]>(initialSales);
   const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>('daily');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const end = new Date();
-    const start = subMonths(end, 1);
-    return { from: start, to: end };
-  });
+  // Initialize dateRange to undefined to prevent hydration mismatch
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [totalRevenueInDateRange, setTotalRevenueInDateRange] = useState<number | null>(null);
 
   const currentLocale = dateLocales[lang] || enLocale;
+
+  // Set initial dateRange on the client side after mount
+  useEffect(() => {
+    const end = new Date();
+    const start = subMonths(end, 1);
+    setDateRange({ from: start, to: end });
+  }, []);
 
   useEffect(() => {
     setSales(initialSales);
@@ -324,3 +328,4 @@ export function StatsClient({ initialSales, texts, lang, dictionary }: StatsClie
     </div>
   );
 }
+
