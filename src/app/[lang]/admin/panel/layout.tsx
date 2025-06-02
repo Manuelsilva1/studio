@@ -8,7 +8,7 @@ import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary } from '@/lib/dictionaries';
 import type { Dictionary } from '@/types';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet'; 
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose, SheetTrigger } from '@/components/ui/sheet'; 
 import { cn } from '@/lib/utils'; 
 
 interface AdminPanelLayoutProps {
@@ -196,3 +196,4 @@ export default async function AdminPanelLayout({ children, params: { lang } }: A
     </div>
   );
 }
+
