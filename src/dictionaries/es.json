@@ -130,7 +130,8 @@
     },
     "header": {
         "titleSuffix": "Admin",
-        "storefrontLink": "Tienda"
+        "storefrontLink": "Tienda",
+        "navigationMenuTitle": "Menú de Navegación"
     },
     "footer": {
         "text": "Panel de Administración"

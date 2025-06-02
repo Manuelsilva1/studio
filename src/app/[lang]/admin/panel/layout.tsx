@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button, buttonVariants } from '@/components/ui/button'; 
-import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu, Tags, BarChart3 } from 'lucide-react'; // Added BarChart3
+import { LayoutDashboard, BookCopy, Users, Home, Store, Receipt, Building2, Menu, Tags, BarChart3 } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getDictionary } from '@/lib/dictionaries';
 import type { Dictionary } from '@/types';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet'; // Added SheetHeader, SheetTitle
 import { cn } from '@/lib/utils'; 
 
 interface AdminPanelLayoutProps {
@@ -19,7 +19,11 @@ interface AdminPanelLayoutProps {
 }
 
 async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary: Dictionary }) {
-  const adminTexts = dictionary.adminPanel?.header || { titleSuffix: "Admin", storefrontLink: "Storefront" };
+  const adminTexts = dictionary.adminPanel?.header || { 
+    titleSuffix: "Admin", 
+    storefrontLink: "Storefront",
+    navigationMenuTitle: "Navigation Menu" // Fallback
+  };
   
   return (
     <header className="sticky top-0 z-[60] w-full border-b bg-background/95 backdrop-blur h-16">
@@ -35,6 +39,9 @@ async function AdminPanelHeader({ lang, dictionary }: { lang: string, dictionary
               side="left" 
               className="p-0 pt-6 w-[250px] sm:w-[300px] top-16 h-[calc(100vh-4rem)]" 
             >
+              <SheetHeader>
+                <SheetTitle className="sr-only">{adminTexts.navigationMenuTitle}</SheetTitle>
+              </SheetHeader>
               <AdminPanelSidebarNav lang={lang} dictionary={dictionary} />
             </SheetContent>
           </Sheet>
@@ -65,7 +72,7 @@ async function AdminPanelSidebarNav({ lang, dictionary }: { lang: string, dictio
     sales: "Sales", 
     manageEditorials: "Manage Publishers",
     manageCategories: "Manage Categories",
-    statistics: "Statistics" // Default if not in dictionary
+    statistics: "Statistics"
   };
 
   const navLinkClasses = cn(
