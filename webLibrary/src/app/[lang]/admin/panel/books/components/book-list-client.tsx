@@ -23,35 +23,39 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 interface BookListClientProps {
-  initialBooks: Book[];
-  onDeleteBook: (bookId: string) => Promise<void>;
+  books: Book[]; // Changed from initialBooks to books, as it will be updated
+  onDeleteBook: (bookId: string | number) => Promise<void>; // ID can be string or number
   lang: string;
 }
 
-export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListClientProps) {
-  const [books, setBooks] = useState<Book[]>(initialBooks);
+export function BookListClient({ books, onDeleteBook, lang }: BookListClientProps) {
+  // Removed local books state, directly use the prop 'books' as it's managed by parent
   const [searchTerm, setSearchTerm] = useState('');
   const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    setBooks(initialBooks);
-  }, [initialBooks]);
+  // No longer need useEffect to setBooks, as 'books' prop will re-render the component
 
   const filteredBooks = books.filter(book => 
-    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.genre.toLowerCase().includes(searchTerm.toLowerCase())
+    book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || // Use titulo
+    book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (book.isbn && book.isbn.toLowerCase().includes(searchTerm.toLowerCase())) || // Search by ISBN
+    // For categoriaId, direct search might not be user-friendly.
+    // A more advanced filter would fetch categories and allow filtering by category name.
+    // For now, let's keep it simple or remove category from simple search.
+    (book.categoriaId && String(book.categoriaId).toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleDeleteConfirmation = async () => {
-    if (bookToDelete) {
+    if (bookToDelete && bookToDelete.id) { // Ensure ID exists
       try {
         await onDeleteBook(bookToDelete.id); 
-        setBooks(prevBooks => prevBooks.filter(b => b.id !== bookToDelete.id));
-        toast({ title: "Book Deleted", description: `${bookToDelete.title} has been deleted.` });
+        // The parent component (ManageBooksContent) will re-fetch and pass updated 'books'
+        // So, no need to setBooks locally: setBooks(prevBooks => prevBooks.filter(b => b.id !== bookToDelete.id));
+        toast({ title: "Book Deleted", description: `${bookToDelete.titulo} has been deleted.` });
       } catch (error) {
-        toast({ title: "Error", description: `Failed to delete ${bookToDelete.title}.`, variant: "destructive" });
+        // Error toast is handled by the parent (ManageBooksContent) which calls onDeleteBook
+        // toast({ title: "Error", description: `Failed to delete ${bookToDelete.titulo}.`, variant: "destructive" });
       } finally {
         setBookToDelete(null);
       }
@@ -62,7 +66,7 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
     <AlertDialog open={!!bookToDelete} onOpenChange={(open) => { if (!open) setBookToDelete(null); }}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="relative w-full sm:max-w-xs">
+          <div className="relative w-full sm:max-w-md"> {/* Increased width for better usability */}
             <Input 
               type="text"
               placeholder="Search books..."
@@ -86,7 +90,8 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
                 <TableHead className="w-[80px]">Image</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Author</TableHead>
-                <TableHead>Genre</TableHead>
+                <TableHead>ISBN</TableHead>
+                <TableHead>Category ID</TableHead> 
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Stock</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
@@ -97,20 +102,21 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
                 <TableRow key={book.id}>
                   <TableCell>
                     <Image
-                      src={book.coverImage}
-                      alt={book.title}
+                      src={book.coverImage || '/placeholder-image.png'} // Fallback image
+                      alt={book.titulo}
                       width={50}
                       height={75}
                       className="rounded object-cover"
-                      data-ai-hint="book cover admin"
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{book.title}</TableCell>
-                  <TableCell>{book.author}</TableCell>
+                  <TableCell className="font-medium">{book.titulo}</TableCell>
+                  <TableCell>{book.autor}</TableCell>
+                  <TableCell>{book.isbn || 'N/A'}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{book.genre}</Badge>
+                    {/* Display Categoria ID, or fetch and display name in a more advanced version */}
+                    <Badge variant="outline">{book.categoriaId || 'N/A'}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">UYU {book.price.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">UYU {book.precio.toFixed(2)}</TableCell>
                   <TableCell className="text-right">{book.stock}</TableCell>
                   <TableCell className="text-center space-x-1">
                     <Link href={`/${lang}/books/${book.id}`} target="_blank" passHref legacyBehavior>
@@ -123,7 +129,7 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
                         <Edit className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" title="Delete Book" onClick={() => setBookToDelete(book)}>
+                    <Button variant="ghost" size="icon" title="Delete Book" onClick={() => setBookToDelete(book)} disabled={!book.id}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
@@ -144,7 +150,7 @@ export function BookListClient({ initialBooks, onDeleteBook, lang }: BookListCli
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete the book
-                "{bookToDelete?.title}" from the records.
+                "{bookToDelete?.titulo}" from the records. {/* Use titulo */}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

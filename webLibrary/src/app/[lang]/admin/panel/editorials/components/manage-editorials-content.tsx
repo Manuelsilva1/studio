@@ -1,10 +1,16 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useSearchParams, useRouter } from 'next/navigation';
-import type { Editorial } from '@/types';
-import { getEditorialById, saveEditorial, deleteEditorial, getEditorials } from '@/lib/mock-data'; // Added getEditorials
+import type { Editorial, ApiResponseError } from '@/types'; // Added ApiResponseError
+// Import actual API service functions
+import {
+  getEditorials as apiGetEditorials,
+  createEditorial as apiCreateEditorial,
+  updateEditorial as apiUpdateEditorial,
+  deleteEditorial as apiDeleteEditorial
+} from '@/services/api';
 import { EditorialFormClient } from './editorial-form-client';
 import { EditorialListClient } from './editorial-list-client';
 import { Loader2 } from 'lucide-react';
@@ -26,110 +32,80 @@ export function ManageEditorialsContent({ params, initialEditorials, texts }: Ma
   const action = searchParams.get('action');
   const editorialId = searchParams.get('id');
 
-  const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials);
+  const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials); // Use initial for first paint
   const [editingEditorial, setEditingEditorial] = useState<Editorial | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start true for initial list load
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [keyForForm, setKeyForForm] = useState(Date.now());
 
-  useEffect(() => {
-    // Function to refresh editorials list
-    const refreshEditorials = async () => {
-      setIsLoading(true);
-      try {
-        const updatedEditorials = await getEditorials();
-        setEditorials(updatedEditorials);
-      } catch (error) {
-        if (texts && texts.toastError) {
-          toast({ title: texts.toastError, description: "Failed to refresh publishers.", variant: "destructive" });
-        } else {
-          console.error("Dictionary texts for toast not available for refreshing publishers.");
-        }
-      }
-      setIsLoading(false);
-    };
-    
-    // Set initial editorials and then decide if specific actions are needed
-    setEditorials(initialEditorials);
-    let shouldLoadSpecificEditorial = action === 'edit' && editorialId;
-
-    if (shouldLoadSpecificEditorial) {
-      setIsLoading(true);
-      getEditorialById(editorialId as string).then(editorialToEdit => {
-        setEditingEditorial(editorialToEdit);
-        setIsLoading(false);
-        setKeyForForm(Date.now());
-      }).catch(error => {
-        console.error("Error fetching editorial for editing:", error);
-        setIsLoading(false);
-        setEditingEditorial(undefined);
-        if (texts && texts.toastError) {
-            toast({ title: texts.toastError, description: "Failed to load publisher for editing.", variant: "destructive" });
-        } else {
-            console.error("Dictionary texts for toast not available for loading editorial.");
-        }
-      });
-    } else {
-      setEditingEditorial(undefined);
-      setKeyForForm(Date.now());
-      // If action is 'add' or viewing list, ensure isLoading reflects this if we aren't loading/refreshing.
-      // If initialEditorials were passed, list is already "loaded" unless a refresh is triggered.
-      if (action === 'add' || !action) {
-         // Potentially call refreshEditorials here if initial data might be stale or if it's the first load after action
-        if (!initialEditorials || initialEditorials.length === 0 || (action === 'add' && !editorialId)) {
-            // Only refresh if there are no initial editorials or it's an add action without an id
-            // refreshEditorials(); // This might be too aggressive on every render.
-        } else {
-            setIsLoading(false); // Data is assumed to be fresh from props
-        }
-      }
-    }
-  }, [action, editorialId, initialEditorials, lang, toast, texts]);
-
-
-  const handleSaveEditorial = async (data: Editorial) => {
+  const fetchEditorialsList = useCallback(async () => {
     setIsLoading(true);
     try {
-      await saveEditorial(data);
-      // Instead of router.push, which was causing a full page reload and re-fetching initial props,
-      // we will fetch the updated list and reset the URL query params.
-      const updatedEditorials = await getEditorials();
-      setEditorials(updatedEditorials);
-      router.push(`/${lang}/admin/panel/editorials`, { scroll: false }); // Navigate without query params, avoid full reload
-      // Toast is now handled in EditorialFormClient after successful save for immediate feedback
-    } catch (error: any) {
-        let errorDesc = texts.toastErrorEditorialSave || "Could not save publisher.";
-        // Add specific error handling if saveEditorial throws typed errors
-        if (texts && texts.toastError) {
-          toast({ title: texts.toastError, description: errorDesc, variant: "destructive" });
-        } else {
-          console.error("Dictionary texts for toast not available. Save error:", errorDesc);
-        }
+      const fetchedEditorials = await apiGetEditorials();
+      setEditorials(fetchedEditorials);
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      toast({ title: texts.toastError, description: apiError.message || "Failed to load publishers.", variant: "destructive" });
+      setEditorials([]);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
+    }
+  }, [toast, texts.toastError]);
+
+  useEffect(() => {
+    fetchEditorialsList(); // Fetch on initial mount
+  }, [fetchEditorialsList]);
+
+  useEffect(() => {
+    if (action === 'edit' && editorialId) {
+      const editorialToEdit = editorials.find(ed => String(ed.id) === editorialId);
+      setEditingEditorial(editorialToEdit);
+      if (!editorialToEdit && editorials.length > 0) {
+         toast({ title: texts.toastError, description: texts.editorialNotFound || `Publisher with ID ${editorialId} not found.`, variant: "destructive"});
+         router.push(`/${lang}/admin/panel/editorials`);
+      }
+    } else {
+      setEditingEditorial(undefined);
+    }
+    setKeyForForm(Date.now());
+  }, [action, editorialId, editorials, lang, router, toast, texts.toastError, texts.editorialNotFound]);
+
+
+  const handleSaveEditorial = async (data: Partial<Editorial>) => {
+    setIsFormSubmitting(true);
+    try {
+      if (data.id) {
+        await apiUpdateEditorial(data.id, data);
+        toast({ title: texts.toastEditorialSaved, description: `${data.nombre} has been updated.` });
+      } else {
+        await apiCreateEditorial(data);
+        toast({ title: texts.toastEditorialSaved, description: `${data.nombre} has been created.` });
+      }
+      await fetchEditorialsList();
+      router.push(`/${lang}/admin/panel/editorials`);
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      toast({ title: texts.toastError, description: apiError.message || texts.toastErrorEditorialSave, variant: "destructive" });
+    } finally {
+      setIsFormSubmitting(false);
     }
   };
 
-  const handleDeleteEditorial = async (id: string) => {
-    setIsLoading(true);
+  const handleDeleteEditorial = async (id: string | number) => {
+    setIsLoading(true); // Use main loading for delete action as it affects the list
     try {
-      await deleteEditorial(id);
-      // Similar to save, refresh list and reset URL
-      const updatedEditorials = await getEditorials();
-      setEditorials(updatedEditorials);
-      router.push(`/${lang}/admin/panel/editorials`, { scroll: false });
-      // Toast handled in EditorialFormClient or list component after confirmation
+      await apiDeleteEditorial(id);
+      toast({ title: texts.toastEditorialDeleted, description: `Publisher ID ${id} has been deleted.` });
+      await fetchEditorialsList();
     } catch (error) {
-       if (texts && texts.toastError) {
-        toast({ title: texts.toastError, description: texts.toastErrorEditorialDelete || "Could not delete publisher.", variant: "destructive" });
-       } else {
-        console.error("Dictionary texts for toast not available for deleting publisher.");
-       }
+      const apiError = error as ApiResponseError;
+      toast({ title: texts.toastError, description: apiError.message || texts.toastErrorEditorialDelete, variant: "destructive" });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
   
-  if (isLoading && ( (action === 'edit' && editorialId) || (!action && editorials.length === 0) ) ) { 
+  if (isLoading && (!action || (action !== 'add' && !editingEditorial) )) {
     return (
       <div className="flex justify-center items-center min-h-[300px]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -137,7 +113,7 @@ export function ManageEditorialsContent({ params, initialEditorials, texts }: Ma
     );
   }
   
-  if (action === 'add') {
+  if (action === 'add' || (action === 'edit' && editingEditorial)) {
     return <EditorialFormClient
               key={keyForForm}
               editorial={undefined}

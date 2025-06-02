@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Book } from '@/types';
-import { mockBooks, getGenres, getAuthors } from '@/lib/mock-data';
-// import { getCatalogRecommendations, type CatalogRecommendationsInput } from '@/ai/flows/catalog-recommendations'; // AI Import Removed
+// Removed mock imports: import { mockBooks, getGenres, getAuthors } from '@/lib/mock-data';
+// TODO: This non-localized page should be removed or refactored to use API services and /lang/ structure.
+// For now, it will display an empty catalog or error.
+// import { getCatalogRecommendations, type CatalogRecommendationsInput } from '@/ai/flows/catalog-recommendations'; 
 import { PublicLayout } from '@/components/layout/public-layout';
 import { BookCard } from './components/book-card';
 import { FiltersClient, type CatalogFilters } from './components/filters-client';
@@ -25,56 +27,81 @@ const initialFilters: CatalogFilters = {
 };
 
 export default function CatalogPage() {
-  const [allBooks] = useState<Book[]>(mockBooks);
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>(allBooks);
+  const [allBooks, setAllBooks] = useState<Book[]>([]); // Initialize with empty array
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [displayedBooks, setDisplayedBooks]  = useState<Book[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState<CatalogFilters>(initialFilters);
   
-  const [genres] = useState<string[]>(getGenres());
-  const [authors] = useState<string[]>(getAuthors());
+  const [genres, setGenres] = useState<string[]>([]); // Initialize with empty array
+  const [authors, setAuthors] = useState<string[]>([]); // Initialize with empty array
+  const [isLoading, setIsLoading] = useState(true); // Added loading state
 
-  // const [recommendedBooks, setRecommendedBooks] = useState<Book[]>([]); // AI State Removed
-  // const [isRecommendationsLoading, setIsRecommendationsLoading] = useState(false); // AI State Removed
   const { toast } = useToast();
 
+  useEffect(() => {
+    // TODO: Fetch books, genres, authors from API if this page is to be used.
+    // Example:
+    // async function loadData() {
+    //   setIsLoading(true);
+    //   try {
+    //     const fetchedBooks = await apiGetBooks(); // Assuming apiGetBooks is imported
+    //     setAllBooks(fetchedBooks);
+    //     setFilteredBooks(fetchedBooks); 
+    //     // Derive genres/authors from fetchedBooks or fetch separately
+    //     const uniqueGenres = Array.from(new Set(fetchedBooks.map(b => b.categoriaId?.toString()).filter(Boolean) as string[]));
+    //     setGenres(uniqueGenres);
+    //     const uniqueAuthors = Array.from(new Set(fetchedBooks.map(b => b.autor)));
+    //     setAuthors(uniqueAuthors);
+    //   } catch (error) {
+    //     console.error("Failed to load catalog data:", error);
+    //     toast({ title: "Error", description: "Could not load catalog.", variant: "destructive"});
+    //   }
+    //   setIsLoading(false);
+    // }
+    // loadData();
+    setIsLoading(false); // Set to false for now
+  }, [toast]);
+
+
   const applyFiltersAndSearch = useCallback(() => {
-    let books = [...allBooks];
+    let books = [...allBooks]; // Will be empty if data not fetched
 
     if (searchTerm) {
       books = books.filter(book =>
-        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.genre.toLowerCase().includes(searchTerm.toLowerCase())
+        book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || // Use API Book fields
+        book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (book.categoriaId && String(book.categoriaId).toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
-    if (activeFilters.genre !== 'all') {
-      books = books.filter(book => book.genre === activeFilters.genre);
+    // Filters need to use API Book fields (e.g. categoriaId, autor, precio)
+    if (activeFilters.genre !== 'all') { // 'genre' here refers to categoriaId in the filter state
+      books = books.filter(book => String(book.categoriaId) === activeFilters.genre);
     }
     if (activeFilters.author !== 'all') {
-      books = books.filter(book => book.author === activeFilters.author);
+      books = books.filter(book => book.autor === activeFilters.author);
     }
     if (activeFilters.minPrice !== '') {
-      books = books.filter(book => book.price >= Number(activeFilters.minPrice));
+      books = books.filter(book => book.precio >= Number(activeFilters.minPrice));
     }
     if (activeFilters.maxPrice !== '') {
-      books = books.filter(book => book.price <= Number(activeFilters.maxPrice));
+      books = books.filter(book => book.precio <= Number(activeFilters.maxPrice));
     }
     
     switch (activeFilters.sortBy) {
       case 'price_asc':
-        books.sort((a, b) => a.price - b.price);
+        books.sort((a, b) => a.precio - b.precio);
         break;
       case 'price_desc':
-        books.sort((a, b) => b.price - a.price);
+        books.sort((a, b) => b.precio - a.precio);
         break;
       case 'title_asc':
-        books.sort((a, b) => a.title.localeCompare(b.title));
+        books.sort((a, b) => a.titulo.localeCompare(b.titulo));
         break;
       case 'title_desc':
-        books.sort((a, b) => b.title.localeCompare(a.title));
+        books.sort((a, b) => b.titulo.localeCompare(a.titulo));
         break;
     }
 

@@ -1,8 +1,8 @@
 
 import { Suspense } from 'react';
 import { getDictionary } from '@/lib/dictionaries';
-import type { Dictionary, SaleRecord } from '@/types';
-import { getSaleRecords } from '@/lib/mock-data';
+import type { Dictionary } from '@/types'; // SaleRecord removed
+// Removed mock import: import { getSaleRecords } from '@/lib/mock-data';
 import { Loader2 } from 'lucide-react';
 import { StatsClient } from './components/stats-client';
 
@@ -40,17 +40,18 @@ export default async function AdminStatsPage({ params }: AdminStatsPageProps) {
     pickAnEndDate: "Pick an end date",
   };
 
-  const initialSalesData: SaleRecord[] = await getSaleRecords();
+  // initialSalesData is no longer fetched here; StatsClient fetches its own data.
+  // const initialSalesData: SaleRecord[] = await getSaleRecords();
 
   return (
     <div className="space-y-8">
       <h1 className="font-headline text-3xl font-bold text-primary">{statsTexts.title}</h1>
       <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
         <StatsClient
-          initialSales={initialSalesData}
+          // initialSales prop removed
           texts={statsTexts}
           lang={lang}
-          dictionary={dictionary} // Pass the full dictionary for locale-specific date formatting if needed
+          dictionary={dictionary} 
         />
       </Suspense>
     </div>

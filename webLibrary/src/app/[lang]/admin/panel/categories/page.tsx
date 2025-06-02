@@ -2,7 +2,7 @@
 // src/app/[lang]/admin/panel/categories/page.tsx
 import { Suspense } from 'react';
 import type { Dictionary } from '@/types';
-import { getCategories } from '@/lib/mock-data';
+// Removed mock import: import { getCategories } from '@/lib/mock-data';
 import { getDictionary } from '@/lib/dictionaries';
 import { Loader2 } from 'lucide-react';
 import { ManageCategoriesContent } from './components/manage-categories-content';
@@ -36,7 +36,8 @@ export default async function ManageCategoriesPage({ params }: ManageCategoriesP
     toastError: "An error occurred",
     errorDuplicateName: "A category with this name already exists."
   };
-  const initialCategoriesData = await getCategories();
+  // initialCategoriesData is no longer fetched here; ManageCategoriesContent fetches client-side.
+  // const initialCategoriesData = await getCategories(); 
 
   return (
     <div className="space-y-8">
@@ -44,7 +45,8 @@ export default async function ManageCategoriesPage({ params }: ManageCategoriesP
       <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
         <ManageCategoriesContent
             params={params}
-            initialCategories={initialCategoriesData || []}
+            // initialCategories is not passed anymore, client component fetches its own data.
+            // initialCategories={initialCategoriesData || []} 
             texts={categoryTexts}
         />
       </Suspense>

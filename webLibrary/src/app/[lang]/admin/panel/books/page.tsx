@@ -4,85 +4,109 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Book } from '@/types';
-import { mockBooks } from '@/lib/mock-data'; 
 import { BookFormClient } from './components/book-form-client';
 import { BookListClient } from './components/book-list-client';
 import { Loader2 } from 'lucide-react';
-// import { getDictionary } from '@/lib/dictionaries'; // Dictionary might be needed for titles
+import { getBooks, getBookById, createBook, updateBook, deleteBook as apiDeleteBook } from '@/services/api'; // Import API functions
+import type { Book, ApiResponseError } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
-let adminMockBooks: Book[] = [...mockBooks];
-
-async function getAdminBooks(): Promise<Book[]> {
-  return new Promise(resolve => setTimeout(() => resolve([...adminMockBooks]), 200));
-}
-
-async function getAdminBookById(id: string): Promise<Book | undefined> {
-  return new Promise(resolve => setTimeout(() => resolve(adminMockBooks.find(b => b.id === id)), 100));
-}
-
-async function saveAdminBook(bookData: Book, lang: string, router: ReturnType<typeof useRouter>): Promise<void> {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const index = adminMockBooks.findIndex(b => b.id === bookData.id);
-      if (index !== -1) {
-        adminMockBooks[index] = bookData; 
-      } else {
-        adminMockBooks.unshift({ ...bookData, id: String(Date.now()) }); 
-      }
-      router.push(`/${lang}/admin/panel/books`); 
-      resolve();
-    }, 300);
-  });
-}
-
-async function deleteAdminBook(bookId: string, lang: string, router: ReturnType<typeof useRouter>): Promise<void> {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      adminMockBooks = adminMockBooks.filter(b => b.id !== bookId);
-      router.push(`/${lang}/admin/panel/books`);
-      resolve();
-    }, 300);
-  });
-}
+// Removed mock data and functions
 
 interface ManageBooksContentProps {
   params: { lang: string };
-  // dictionaryTexts: any; // To pass translated texts
 }
 
 function ManageBooksContent({ params: { lang } }: ManageBooksContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { toast } = useToast();
   const action = searchParams.get('action');
-  const bookId = searchParams.get('id');
+  const bookId = searchParams.get('id'); // This will be string or null
 
   const [books, setBooks] = useState<Book[]>([]);
   const [editingBook, setEditingBook] = useState<Book | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
-  const [keyForForm, setKeyForForm] = useState(Date.now()); 
+  const [isFormLoading, setIsFormLoading] = useState(false); // For loading book to edit
+  const [keyForForm, setKeyForForm] = useState(Date.now()); // To reset form
+
+  const fetchBooksList = async () => {
+    setIsLoading(true);
+    try {
+      const fetchedBooks = await getBooks();
+      setBooks(fetchedBooks);
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      toast({ title: "Error fetching books", description: apiError.message, variant: "destructive" });
+      setBooks([]); // Set to empty or handle error display
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchBooksList();
+  }, [lang]); // Fetch books when lang changes, or on initial load
 
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const fetchedBooks = await getAdminBooks();
-      setBooks(fetchedBooks);
+    async function loadEditingBook() {
       if (action === 'edit' && bookId) {
-        const bookToEdit = await getAdminBookById(bookId);
-        setEditingBook(bookToEdit);
+        setIsFormLoading(true);
+        setEditingBook(undefined); // Clear previous editing book
+        try {
+          const bookToEdit = await getBookById(bookId);
+          setEditingBook(bookToEdit);
+        } catch (error) {
+          const apiError = error as ApiResponseError;
+          toast({ title: `Error fetching book ${bookId}`, description: apiError.message, variant: "destructive" });
+          router.push(`/${lang}/admin/panel/books`); // Redirect if book not found or error
+        } finally {
+          setIsFormLoading(false);
+        }
       } else {
-        setEditingBook(undefined); 
+        setEditingBook(undefined);
       }
-      setIsLoading(false);
-      setKeyForForm(Date.now()); 
+      setKeyForForm(Date.now()); // Reset form when action or bookId changes
     }
-    loadData();
-  }, [action, bookId, lang]);
+    loadEditingBook();
+  }, [action, bookId, lang, router, toast]);
 
-  const handleSaveBook = (bookData: Book) => saveAdminBook(bookData, lang, router);
-  const handleDeleteBook = (id: string) => deleteAdminBook(id, lang, router);
+  const handleSaveBook = async (bookData: Partial<Book>) => { // Use Partial<Book> for payload
+    setIsFormLoading(true);
+    try {
+      if (bookData.id) { // Existing book ID means update
+        await updateBook(bookData.id, bookData);
+        toast({ title: "Book Updated", description: `${bookData.titulo} has been updated.` });
+      } else { // No ID means create
+        await createBook(bookData);
+        toast({ title: "Book Created", description: `${bookData.titulo} has been created.` });
+      }
+      await fetchBooksList(); // Refresh book list
+      router.push(`/${lang}/admin/panel/books`); // Navigate back to list view
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      toast({ title: "Save Failed", description: apiError.message, variant: "destructive" });
+    } finally {
+      setIsFormLoading(false);
+    }
+  };
+  
+  const handleDeleteBook = async (idToDelete: string | number) => {
+    // setIsLoading(true); // Or use a more specific loading state for delete
+    try {
+      await apiDeleteBook(idToDelete);
+      toast({ title: "Book Deleted", description: `Book ID ${idToDelete} has been deleted.` });
+      await fetchBooksList(); // Refresh book list
+      // No need to navigate if already on the list page and it refreshes
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      toast({ title: "Delete Failed", description: apiError.message, variant: "destructive" });
+    } finally {
+      // setIsLoading(false);
+    }
+  };
 
-
-  if (isLoading) {
+  if (isLoading && !action) { // Main list loading
     return (
       <div className="flex justify-center items-center min-h-[300px]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

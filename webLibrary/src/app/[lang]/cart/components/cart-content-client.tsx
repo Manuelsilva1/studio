@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CartItemRowClient } from './cart-item-row-client';
 import Link from 'next/link';
-import { ShoppingCart, ArrowRight, PackageX } from 'lucide-react';
-import type { Dictionary } from '@/types'; // Updated import
+import { ShoppingCart, ArrowRight, PackageX, Loader2, AlertTriangle } from 'lucide-react'; // Added Loader2, AlertTriangle
+import type { Dictionary } from '@/types';
 
 interface CartContentClientProps {
   lang: string;
@@ -15,7 +15,8 @@ interface CartContentClientProps {
 }
 
 export function CartContentClient({ lang, dictionary }: CartContentClientProps) {
-  const { cartItems, getCartTotal, clearCart, getItemCount } = useCart();
+  // Updated to use new cart context structure
+  const { cart, isLoading, error, getCartTotal, clearCart, getItemCount, fetchCart } = useCart();
 
   const texts = dictionary.cartPage || { 
     emptyCartTitle: "Your Cart is Empty",
@@ -29,10 +30,40 @@ export function CartContentClient({ lang, dictionary }: CartContentClientProps) 
     shipping: "Shipping",
     free: "FREE",
     total: "Total",
-    proceedToCheckout: "Proceed to Checkout"
+    proceedToCheckout: "Proceed to Checkout",
+    loadingCart: "Loading your cart...", // Added for loading state
+    errorLoadingCart: "Error loading cart", // Added for error state
+    retry: "Retry", // Added for retry button
   };
 
-  if (cartItems.length === 0) {
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Loader2 className="h-16 w-16 animate-spin text-primary mb-6" />
+        <p className="text-xl text-muted-foreground">{texts.loadingCart}</p>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <AlertTriangle className="mx-auto h-16 w-16 text-destructive mb-6" />
+        <h2 className="font-headline text-2xl font-semibold mb-4 text-destructive">
+          {texts.errorLoadingCart}
+        </h2>
+        <p className="text-muted-foreground mb-8">{error}</p>
+        <Button onClick={() => fetchCart()} variant="outline"> 
+          <ShoppingCart className="mr-2 h-5 w-5" /> {texts.retry}
+        </Button>
+      </div>
+    );
+  }
+
+  // Handle empty cart (after loading and no error)
+  if (!cart || cart.items.length === 0) {
     return (
       <div className="text-center py-20">
         <PackageX className="mx-auto h-24 w-24 text-muted-foreground mb-6" />
@@ -47,6 +78,7 @@ export function CartContentClient({ lang, dictionary }: CartContentClientProps) 
     );
   }
 
+  // Main content when cart has items
   return (
     <div className="grid md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
@@ -58,13 +90,15 @@ export function CartContentClient({ lang, dictionary }: CartContentClientProps) 
             </CardTitle>
           </CardHeader>
           <CardContent className="divide-y">
-            {cartItems.map(item => (
-              <CartItemRowClient key={item.book.id} item={item} lang={lang} />
+            {/* Ensure cart.items exists before mapping */}
+            {cart.items.map(item => (
+              // Use item.id (CartItem's own ID) as key, assuming it's unique
+              <CartItemRowClient key={item.id || item.libroId} item={item} lang={lang} dictionary={dictionary} />
             ))}
           </CardContent>
-          {cartItems.length > 0 && (
+          {cart.items.length > 0 && (
             <CardFooter className="flex justify-end pt-4">
-                <Button variant="outline" onClick={clearCart} className="text-destructive hover:text-destructive/80 hover:border-destructive/50">
+                <Button variant="outline" onClick={async () => await clearCart()} className="text-destructive hover:text-destructive/80 hover:border-destructive/50">
                   {texts.clearCart}
                 </Button>
             </CardFooter>
@@ -92,11 +126,14 @@ export function CartContentClient({ lang, dictionary }: CartContentClientProps) 
             </div>
           </CardContent>
           <CardFooter>
-            <Link href={`/${lang}/checkout`} passHref legacyBehavior className="w-full">
-              <Button size="lg" className="w-full font-headline text-lg">
-                {texts.proceedToCheckout} <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+            {/* Ensure cart.items is not empty before showing checkout button */}
+            {cart.items.length > 0 && (
+              <Link href={`/${lang}/checkout`} passHref legacyBehavior className="w-full">
+                <Button size="lg" className="w-full font-headline text-lg">
+                  {texts.proceedToCheckout} <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            )}
           </CardFooter>
         </Card>
       </div>

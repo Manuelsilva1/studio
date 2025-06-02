@@ -20,29 +20,28 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 interface CategoryListClientProps {
-  initialCategories: Category[];
-  onDeleteCategory: (categoryId: string) => Promise<void>;
+  categories: Category[]; // Changed from initialCategories to categories
+  onDeleteCategory: (categoryId: string | number) => Promise<void>; // ID can be string or number
   lang: string;
   texts: any; // Dictionary texts for categories
 }
 
-export function CategoryListClient({ initialCategories, onDeleteCategory, lang, texts }: CategoryListClientProps) {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+export function CategoryListClient({ categories, onDeleteCategory, lang, texts }: CategoryListClientProps) {
+  // Removed local categories state, directly use the prop 'categories'
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    setCategories(initialCategories);
-  }, [initialCategories]);
+  // No longer need useEffect to setCategories, as 'categories' prop will re-render the component
 
   const handleDeleteConfirmation = async () => {
-    if (categoryToDelete) {
+    if (categoryToDelete && categoryToDelete.id) { // Ensure ID exists
       try {
         await onDeleteCategory(categoryToDelete.id);
-        // The parent component (ManageCategoriesContent) will refresh the list
-        toast({ title: texts.toastCategoryDeleted || "Category Deleted", description: `${categoryToDelete.name} has been deleted.` });
+        // The parent component (ManageCategoriesContent) will re-fetch and pass updated 'categories'
+        toast({ title: texts.toastCategoryDeleted || "Category Deleted", description: `${categoryToDelete.nombre} has been deleted.` }); // Use nombre
       } catch (error) {
-        toast({ title: texts.toastError || "Error", description: `Failed to delete ${categoryToDelete.name}.`, variant: "destructive" });
+        // Error toast is handled by the parent (ManageCategoriesContent)
+        // toast({ title: texts.toastError || "Error", description: `Failed to delete ${categoryToDelete.nombre}.`, variant: "destructive" });
       } finally {
         setCategoryToDelete(null);
       }
@@ -75,9 +74,9 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>
-                  <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell className="font-medium">{category.nombre}</TableCell> {/* Use nombre */}
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground truncate max-w-xs">
-                    {category.description || '-'}
+                    {category.descripcion || '-'} {/* Use descripcion */}
                   </TableCell>
                   <TableCell className="text-center space-x-1">
                     <Button asChild variant="ghost" size="icon" title={texts.editCategory || "Edit Category"}>
@@ -85,7 +84,7 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
                         <Edit className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" title={texts.deleteButton || "Delete Category"} onClick={() => setCategoryToDelete(category)}>
+                    <Button variant="ghost" size="icon" title={texts.deleteButton || "Delete Category"} onClick={() => setCategoryToDelete(category)} disabled={!category.id}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
@@ -110,7 +109,7 @@ export function CategoryListClient({ initialCategories, onDeleteCategory, lang, 
             <AlertDialogHeader>
               <AlertDialogTitle>{texts.deleteConfirmationTitle || "Are you sure?"}</AlertDialogTitle>
               <AlertDialogDescription>
-                {(texts.deleteConfirmationMessage || "This action cannot be undone. This will permanently delete the category \"{name}\".").replace('{name}', categoryToDelete.name)}
+                {(texts.deleteConfirmationMessage || "This action cannot be undone. This will permanently delete the category \"{name}\".").replace('{name}', categoryToDelete.nombre)} {/* Use nombre */}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

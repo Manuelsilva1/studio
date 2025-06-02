@@ -1,7 +1,10 @@
 
+"use client"; // Make it a client component to use hooks
+
 import Link from 'next/link';
 import { BookOpen, ShoppingCart, Settings } from 'lucide-react';
 import { CorreoLibroLogo } from '@/components/icons/logo';
+import { useCart } from '@/hooks/use-cart'; // Import useCart
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -13,6 +16,9 @@ interface HeaderProps {
 }
 
 export function Header({ lang, dictionary }: HeaderProps) {
+  const { getItemCount, cart, isLoading } = useCart(); // Get cart data
+  const itemCount = getItemCount();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
@@ -27,8 +33,13 @@ export function Header({ lang, dictionary }: HeaderProps) {
             </Button>
           </Link>
           <Link href={`/${lang}/cart`} legacyBehavior passHref>
-            <Button variant="ghost" className="text-sm font-medium">
+            <Button variant="ghost" className="text-sm font-medium relative">
               <ShoppingCart className="mr-2 h-4 w-4" /> {dictionary.header.cart}
+              {!isLoading && itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {itemCount}
+                </span>
+              )}
             </Button>
           </Link>
           <ThemeToggle />
