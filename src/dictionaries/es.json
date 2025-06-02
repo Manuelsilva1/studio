@@ -331,6 +331,7 @@
     },
     "reportsPage": {
       "title": "Informes",
+      "configureAndGenerateReports": "Configure y genere informes de ventas.",
       "generateReportButton": "Generar Informe",
       "exportPDFButton": "Exportar a PDF",
       "exportExcelButton": "Exportar a Excel",
@@ -347,6 +348,8 @@
       "totalOrders": "Pedidos Totales",
       "salesByPaymentMethodTitle": "Ventas por Método de Pago",
       "paymentMethod": "Método de Pago",
+      "cash": "Efectivo",
+      "card": "Tarjeta",
       "salesByBookCategoryTitle": "Ventas por Categoría de Libro",
       "category": "Categoría",
       "quantitySold": "Cantidad Vendida",

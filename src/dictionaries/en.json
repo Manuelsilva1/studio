@@ -331,6 +331,7 @@
     },
     "reportsPage": {
       "title": "Reports",
+      "configureAndGenerateReports": "Configure and generate sales reports.",
       "generateReportButton": "Generate Report",
       "exportPDFButton": "Export to PDF",
       "exportExcelButton": "Export to Excel",
@@ -347,6 +348,8 @@
       "totalOrders": "Total Orders",
       "salesByPaymentMethodTitle": "Sales by Payment Method",
       "paymentMethod": "Payment Method",
+      "cash": "Cash",
+      "card": "Card",
       "salesByBookCategoryTitle": "Sales by Book Category",
       "category": "Category",
       "quantitySold": "Quantity Sold",

@@ -50,14 +50,17 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
   const { toast } = useToast();
   const currentLocale = dateLocales[lang] || enLocale;
 
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-     const end = new Date();
-     const start = subDays(end, 7); // Default to last 7 days
-     return { from: start, to: end };
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [summaryLevel, setSummaryLevel] = useState<SummaryLevel>('none');
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Initialize dateRange on client side
+    const end = new Date();
+    const start = subDays(end, 7);
+    setDateRange({ from: start, to: end });
+  }, []);
 
   const formatCurrencyUYU = (amount: number) => {
     return `UYU ${amount.toFixed(2)}`;
@@ -114,7 +117,7 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
         const salesByCategoryMap: { [key: string]: { category: string; quantity: number; amount: number } } = {};
         filteredSales.forEach(sale => {
           sale.items.forEach(item => {
-            const category = item.book.genre || 'N/A';
+            const category = item.book.genre || 'N/A'; // Using genre as category for now
             salesByCategoryMap[category] = salesByCategoryMap[category] || { category, quantity: 0, amount: 0 };
             salesByCategoryMap[category].quantity += item.quantity;
             salesByCategoryMap[category].amount += item.priceAtSale * item.quantity;
@@ -136,33 +139,94 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
         let periodicSummary: ReportData['periodicSummary'] | undefined = undefined;
         if (summaryLevel !== 'none') {
           const summaryMap: { [key: string]: { sales: number; orders: number } } = {};
-          let intervalGetter: (date: Date) => Date;
-          let periodFormatter: (date: Date) => string;
-
+          
+          let intervalDates: Date[] = [];
           if (summaryLevel === 'daily') {
-            intervalGetter = startOfDay;
-            periodFormatter = (date) => format(date, 'P', { locale: currentLocale });
+            intervalDates = eachDayOfInterval({ start: dateRange.from!, end: dateRange.to! });
           } else if (summaryLevel === 'weekly') {
-            intervalGetter = (date) => startOfWeek(date, { locale: currentLocale });
-            periodFormatter = (date) => `${format(startOfWeek(date, { locale: currentLocale }), 'P')} - ${format(endOfWeek(date, { locale: currentLocale }), 'P')}`;
+            intervalDates = eachWeekOfInterval({ start: dateRange.from!, end: dateRange.to! }, { locale: currentLocale });
           } else { // monthly
-            intervalGetter = startOfMonth;
-            periodFormatter = (date) => format(date, 'MMM yyyy', { locale: currentLocale });
+            intervalDates = eachMonthOfInterval({ start: dateRange.from!, end: dateRange.to! });
           }
 
-          filteredSales.forEach(sale => {
-            const periodKey = format(intervalGetter(parseISO(sale.timestamp)), 'yyyy-MM-dd'); // Use consistent key for grouping
-            summaryMap[periodKey] = summaryMap[periodKey] || { sales: 0, orders: 0 };
-            summaryMap[periodKey].sales += sale.totalAmount;
-            summaryMap[periodKey].orders += 1;
+          intervalDates.forEach(periodStart => {
+            let periodEnd: Date;
+            let periodKey: string;
+            let periodLabel: string;
+
+            if (summaryLevel === 'daily') {
+              periodEnd = endOfDay(periodStart);
+              periodKey = format(periodStart, 'yyyy-MM-dd');
+              periodLabel = format(periodStart, 'P', { locale: currentLocale });
+            } else if (summaryLevel === 'weekly') {
+              periodEnd = endOfWeek(periodStart, { locale: currentLocale });
+              periodKey = format(periodStart, 'yyyy-MM-dd'); // Use start of week as key
+              periodLabel = `${format(periodStart, 'P', { locale: currentLocale })} - ${format(periodEnd, 'P', { locale: currentLocale })}`;
+            } else { // monthly
+              periodEnd = endOfMonth(periodStart);
+              periodKey = format(periodStart, 'yyyy-MM');
+              periodLabel = format(periodStart, 'MMM yyyy', { locale: currentLocale });
+            }
+            
+            summaryMap[periodKey] = { sales: 0, orders: 0 }; // Initialize for all periods in range
+
+            filteredSales.forEach(sale => {
+              const saleDate = parseISO(sale.timestamp);
+              if(isWithinInterval(saleDate, { start: periodStart, end: periodEnd })) {
+                 summaryMap[periodKey].sales += sale.totalAmount;
+                 summaryMap[periodKey].orders += 1;
+              }
+            });
           });
           
           periodicSummary = Object.entries(summaryMap)
-            .map(([key, data]) => ({
-              period: periodFormatter(parseISO(key)),
-              ...data
-            }))
-            .sort((a,b) => parseISO(a.period.split(' - ')[0]).getTime() - parseISO(b.period.split(' - ')[0]).getTime()); // Basic sort, might need adjustment for monthly
+            .map(([key, data]) => {
+                 let periodLabel = '';
+                 if (summaryLevel === 'daily') {
+                    periodLabel = format(parseISO(key), 'P', { locale: currentLocale });
+                 } else if (summaryLevel === 'weekly') {
+                    const startW = parseISO(key);
+                    periodLabel = `${format(startW, 'P', { locale: currentLocale })} - ${format(endOfWeek(startW, {locale: currentLocale}), 'P', { locale: currentLocale })}`;
+                 } else { // monthly
+                    periodLabel = format(parseISO(key + '-01'), 'MMM yyyy', { locale: currentLocale });
+                 }
+                 return { period: periodLabel, ...data};
+            })
+             .sort((a,b) => { // Sort by the actual start date of the period
+                const getDateFromPeriodString = (periodStr: string) => {
+                    if (summaryLevel === 'monthly') return parseISO(periodStr.split(' ')[1] + '-' + (currentLocale.localize?.month(Object.values(dictionary.adminPanel.salesPage.months).indexOf(periodStr.split(' ')[0]), {width: 'abbreviated'}) || '01') + '-01' );
+                    return parseISO(periodStr.split(' - ')[0]); // Works for daily and weekly start
+                };
+                 // This sort might be complex if period strings are localized.
+                 // It's safer to sort based on the 'key' before mapping if keys are chronological.
+                 // For now, this is a basic attempt.
+                 // A better approach would be to sort before mapping to periodLabel.
+                 const dateA = parseISO(a.period.split(' - ')[0]); // This might fail for "MMM yyyy"
+                 const dateB = parseISO(b.period.split(' - ')[0]);
+                 // A simpler sort if keys were already date objects or sortable strings:
+                 // return new Date(a.periodKey).getTime() - new Date(b.periodKey).getTime();
+                 // This sort will need robust parsing based on periodLabel format.
+                 // For now, assuming period strings are somewhat parseable or keys were sorted.
+                 // This sorting logic is likely flawed and needs refinement based on the actual period string.
+                 // Let's assume the Object.entries gives keys in a somewhat chronological order or we sort by keys before mapping.
+                 return 0; 
+             });
+             // Re-sorting based on the original keys (which should be chronological)
+             const originalKeys = Object.keys(summaryMap).sort(); // Sort keys: 'YYYY-MM-DD' or 'YYYY-MM'
+             periodicSummary = originalKeys.map(key => {
+                let periodLabel = '';
+                if (summaryLevel === 'daily') {
+                    periodLabel = format(parseISO(key), 'P', { locale: currentLocale });
+                } else if (summaryLevel === 'weekly') {
+                    const startW = parseISO(key);
+                    periodLabel = `${format(startW, 'P', { locale: currentLocale })} - ${format(endOfWeek(startW, {locale: currentLocale}), 'P', { locale: currentLocale })}`;
+                } else { // monthly
+                    periodLabel = format(parseISO(key + '-01'), 'MMM yyyy', { locale: currentLocale });
+                }
+                return { period: periodLabel, ...summaryMap[key] };
+             });
+
+
         }
         
         setReportData({
@@ -187,6 +251,10 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
   };
 
   const handleExport = (formatType: 'PDF' | 'Excel') => {
+    if (!reportData) {
+        toast({ title: texts.errorGeneratingReport, description: "No report data to export.", variant: "destructive" });
+        return;
+    }
     toast({
       title: formatType === 'PDF' ? texts.exportPDFSimulated : texts.exportExcelSimulated,
       description: `Report for ${reportData?.reportDateRange.from} - ${reportData?.reportDateRange.to}`,
@@ -205,7 +273,7 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
       <Card className="shadow-lg rounded-lg">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><FileText className="mr-2 h-6 w-6 text-primary" />{texts.title}</CardTitle>
-          <CardDescription>Configure and generate sales reports.</CardDescription>
+          <CardDescription>{texts.configureAndGenerateReports}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
@@ -308,7 +376,7 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
                       <TableHeader><TableRow><TableHead>{texts.paymentMethod}</TableHead><TableHead className="text-right"># {texts.totalOrders}</TableHead><TableHead className="text-right">{texts.totalSales}</TableHead></TableRow></TableHeader>
                       <TableBody>
                         {reportData.salesByPaymentMethod.map(item => (
-                          <TableRow key={item.method}><TableCell className="capitalize">{item.method}</TableCell><TableCell className="text-right">{item.count}</TableCell><TableCell className="text-right">{formatCurrencyUYU(item.amount)}</TableCell></TableRow>
+                          <TableRow key={item.method}><TableCell className="capitalize">{texts[item.method as keyof typeof texts] || item.method}</TableCell><TableCell className="text-right">{item.count}</TableCell><TableCell className="text-right">{formatCurrencyUYU(item.amount)}</TableCell></TableRow>
                         ))}
                       </TableBody>
                     </Table>
@@ -372,3 +440,4 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
     </div>
   );
 }
+
