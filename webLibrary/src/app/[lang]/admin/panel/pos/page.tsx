@@ -1,9 +1,10 @@
 
 import { getDictionary } from '@/lib/dictionaries';
-import type { Dictionary } from '@/types'; // Updated import
-import { mockBooks } from '@/lib/mock-data'; 
-import type { Book } from '@/types';
+import type { Dictionary, Book } from '@/types'; // Combined Book import
+// Removed mockBooks import
 import { PosClient } from './components/pos-client';
+// Import getBooks from API services
+import { getBooks as apiGetBooks } from '@/services/api'; 
 
 interface AdminPosPageProps {
   params: {
@@ -58,7 +59,15 @@ export default async function AdminPosPage({ params: { lang } }: AdminPosPagePro
     }
   };
   
-  const books: Book[] = [...mockBooks];
+  // Fetch books from the API on the server side
+  let books: Book[] = [];
+  try {
+    books = await apiGetBooks();
+  } catch (error) {
+    console.error("Failed to fetch books for POS page:", error);
+    // Optionally, handle this error more gracefully, e.g., pass an error message to PosClient
+    // or render an error state here. For now, PosClient will receive an empty allBooks array.
+  }
 
   return (
     <div className="space-y-8">

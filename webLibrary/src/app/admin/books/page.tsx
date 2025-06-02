@@ -3,14 +3,17 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Book } from '@/types';
-import { mockBooks } from '@/lib/mock-data'; // Using mock data
+// Removed: import { mockBooks } from '@/lib/mock-data'; 
+// TODO: This page is non-localized and uses its own mock implementation.
+// It needs a full refactor to use API services and align with the localized admin panel.
+// For now, removing mockBooks will make its local mock services return empty data.
 import { BookFormClient } from './components/book-form-client';
 import { BookListClient } from './components/book-list-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
 // Mock data persistence (in-memory for this scaffold)
-let adminMockBooks: Book[] = [...mockBooks];
+let adminMockBooks: Book[] = []; // Initialize as empty since mockBooks is removed
 
 async function getAdminBooks(): Promise<Book[]> {
   // Simulate API call

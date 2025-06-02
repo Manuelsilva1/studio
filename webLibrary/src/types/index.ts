@@ -113,7 +113,10 @@ export interface Offer {
   // name?: string; // Could be part of description or a separate field
   // couponCode?: string;
   // conditions?: string; 
+  libroIds?: (string | number)[]; // IDs of books included in the offer
 }
+
+export type CreateOfferPayload = Omit<Offer, 'id'>; // Simple Omit for now, can be more specific if needed
 
 export interface ApiResponseError {
   message: string;

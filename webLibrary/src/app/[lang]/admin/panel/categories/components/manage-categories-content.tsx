@@ -1,10 +1,16 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import type { Category } from '@/types';
-import { getCategoryById, saveCategory, deleteCategory, getCategories } from '@/lib/mock-data';
+import type { Category, ApiResponseError } from '@/types'; // Added ApiResponseError
+// Import actual API service functions
+import { 
+  getCategories as apiGetCategories, 
+  createCategory as apiCreateCategory, 
+  updateCategory as apiUpdateCategory, 
+  deleteCategory as apiDeleteCategory 
+} from '@/services/api';
 import { CategoryFormClient } from './category-form-client';
 import { CategoryListClient } from './category-list-client';
 import { Loader2 } from 'lucide-react';
@@ -27,99 +33,86 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
   const action = searchParams.get('action');
   const categoryId = searchParams.get('id');
 
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [categories, setCategories] = useState<Category[]>(initialCategories); // Still use initialCategories for first paint
   const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false); // Initialize to false
+  const [isLoading, setIsLoading] = useState(true); // Start true to load initial list
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false); // For form save operations
   const [keyForForm, setKeyForForm] = useState(Date.now());
 
-  useEffect(() => {
-    setCategories(initialCategories); 
-    let shouldLoadSpecificCategory = action === 'edit' && categoryId;
+  const fetchCategoriesList = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const fetchedCategories = await apiGetCategories();
+      setCategories(fetchedCategories);
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      toast({ title: texts.toastError, description: apiError.message || "Failed to load categories.", variant: "destructive" });
+      setCategories([]); // Set to empty or keep stale data on error
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast, texts.toastError]);
 
-    if (shouldLoadSpecificCategory) {
-      setIsLoading(true);
-      getCategoryById(categoryId as string).then(categoryToEdit => {
-        setEditingCategory(categoryToEdit);
-        setIsLoading(false);
-        setKeyForForm(Date.now());
-      }).catch(error => {
-        console.error("Error fetching category for editing:", error);
-        setIsLoading(false);
-        setEditingCategory(undefined);
-        // Ensure texts and toastError exist before calling toast
-        if (texts && texts.toastError) {
-            toast({ title: texts.toastError, description: "Failed to load category for editing.", variant: "destructive" });
-        } else {
-            console.error("Dictionary texts for toast not available.");
-        }
-      });
+  useEffect(() => {
+    fetchCategoriesList(); // Fetch on initial mount
+  }, [fetchCategoriesList]);
+
+  useEffect(() => {
+    if (action === 'edit' && categoryId) {
+      // Find category from the already fetched list.
+      // No separate getCategoryById API endpoint is assumed for this refactor.
+      const categoryToEdit = categories.find(cat => String(cat.id) === categoryId);
+      setEditingCategory(categoryToEdit);
+      if (!categoryToEdit && categories.length > 0) { // Only toast if categories were loaded but not found
+         toast({ title: texts.toastError, description: `Category with ID ${categoryId} not found.`, variant: "destructive"});
+         router.push(`/${lang}/admin/panel/categories`);
+      }
     } else {
       setEditingCategory(undefined);
-      setKeyForForm(Date.now());
-      // if action is 'add' or viewing list, ensure isLoading is false if not already loading something else.
-      if (action === 'add' || !action) {
-        setIsLoading(false);
-      }
     }
-  }, [action, categoryId, initialCategories, lang, toast, texts]); // Removed texts.toastError from deps, texts is enough
+    setKeyForForm(Date.now()); // Reset form when action or categoryId changes
+  }, [action, categoryId, categories, lang, router, toast, texts.toastError]);
 
-  const refreshCategories = async () => {
-    setIsLoading(true);
+
+  const handleSaveCategory = async (data: Partial<Category>) => { // Data can be Partial for create/update
+    setIsFormSubmitting(true);
     try {
-      const updatedCategories = await getCategories();
-      setCategories(updatedCategories);
-    } catch (error) {
-      if (texts && texts.toastError) {
-        toast({ title: texts.toastError, description: "Failed to refresh categories.", variant: "destructive" });
-      } else {
-        console.error("Dictionary texts for toast not available.");
+      if (data.id) { // Existing ID means update
+        await apiUpdateCategory(data.id, data);
+        toast({ title: texts.toastCategorySaved, description: `${data.nombre} has been updated.` });
+      } else { // No ID means create
+        await apiCreateCategory(data);
+        toast({ title: texts.toastCategorySaved, description: `${data.nombre} has been created.` });
       }
+      await fetchCategoriesList(); // Refresh category list
+      router.push(`/${lang}/admin/panel/categories`); // Navigate back to list view
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      let errorDesc = apiError.message || "Could not save category.";
+      // Example: if (apiError.details?.includes("DUPLICATE_CATEGORY_NAME") && texts.errorDuplicateName) { errorDesc = texts.errorDuplicateName; }
+      toast({ title: texts.toastError, description: errorDesc, variant: "destructive" });
+    } finally {
+      setIsFormSubmitting(false);
     }
-    setIsLoading(false);
   };
 
-
-  const handleSaveCategory = async (data: Category) => {
-    setIsLoading(true);
+  const handleDeleteCategory = async (id: string | number) => { // ID can be string or number
+    // Consider a specific loading state for delete if needed, or use global isLoading
+    setIsLoading(true); 
     try {
-      await saveCategory(data);
-      await refreshCategories(); 
-      router.push(`/${lang}/admin/panel/categories`);
-    } catch (error: any) {
-      let errorDesc = "Could not save category.";
-      if (error.message === "DUPLICATE_CATEGORY_NAME" && texts && texts.errorDuplicateName) {
-        errorDesc = texts.errorDuplicateName;
-      }
-      if (texts && texts.toastError) {
-        toast({ title: texts.toastError, description: errorDesc, variant: "destructive" });
-      } else {
-        console.error("Dictionary texts for toast not available. Save error:", errorDesc);
-      }
+      await apiDeleteCategory(id);
+      toast({ title: texts.toastCategoryDeleted, description: `Category ID ${id} has been deleted.` });
+      await fetchCategoriesList(); // Refresh category list
+      // No need to navigate if already on the list page and it refreshes
+    } catch (error) {
+      const apiError = error as ApiResponseError;
+      toast({ title: texts.toastError, description: apiError.message || "Could not delete category.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleDeleteCategory = async (id: string) => {
-    setIsLoading(true);
-    try {
-      await deleteCategory(id);
-      await refreshCategories();
-      router.push(`/${lang}/admin/panel/categories`);
-    } catch (error) {
-       if (texts && texts.toastError) {
-        toast({ title: texts.toastError, description: "Could not delete category.", variant: "destructive" });
-       } else {
-        console.error("Dictionary texts for toast not available.");
-       }
-    } finally {
-        setIsLoading(false);
-    }
-  };
   
-
-  // Adjusted loading condition: show loader if isLoading is true AND (it's an edit action OR no action (list view trying to load/refresh))
-  if (isLoading && ( (action === 'edit' && categoryId) || !action) ) { 
+  if (isLoading && (!action || (action !== 'add' && !editingCategory) )) {
     return (
       <div className="flex justify-center items-center min-h-[300px]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -127,7 +120,7 @@ export function ManageCategoriesContent({ params, initialCategories, texts }: Ma
     );
   }
 
-  if (action === 'add') {
+  if (action === 'add' || (action === 'edit' && editingCategory)) {
     return <CategoryFormClient
               key={keyForForm}
               category={undefined}

@@ -6,8 +6,12 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useCart } from '@/hooks/use-cart';
+import { useAuth } from '@/context/auth-provider'; // Import useAuth
+import { createSale } from '@/services/api'; // Import createSale
+import type { CreateSalePayload, CreateSaleItemPayload, ApiResponseError } from '@/types'; // Import necessary types
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2, ShieldCheck, Send, Info } from 'lucide-react';
@@ -33,9 +37,13 @@ interface CheckoutFormClientProps {
 }
 
 export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps) {
-  const { cartItems, getCartTotal, clearCart } = useCart();
-  const [isLoading, setIsLoading] = useState(false);
+  // Use the new cart structure from useCart
+  const { cart, getCartTotal, clearCart: clearCartContextAction, isLoading: isCartLoadingHook, error: cartErrorHook } = useCart(); 
+  const { isAuthenticated, user } = useAuth();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false); // Renamed isLoading to isSubmitting for clarity
   const [isOrderSubmitted, setIsOrderSubmitted] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const texts = dictionary.checkoutForm || { 
@@ -73,37 +81,86 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      name: '',
-      email: '',
+      name: user?.nombre || '', // Pre-fill from auth context if available
+      email: user?.email || '',
       address: '',
       city: '',
       state: '',
       zip: '',
-      paymentMethod: 'Credit Card', 
+      paymentMethod: 'Credit Card (Simulated)', 
     },
   });
+  
+  // Watch for user changes to prefill form
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.nombre || '',
+        email: user.email || '',
+        address: form.getValues().address, 
+        city: form.getValues().city,
+        state: form.getValues().state,
+        zip: form.getValues().zip,
+        paymentMethod: form.getValues().paymentMethod,
+      });
+    }
+  }, [user, form]);
 
   const onSubmit: SubmitHandler<CheckoutFormData> = async (data) => {
-    setIsLoading(true);
+    setSubmissionError(null);
+    if (!isAuthenticated) {
+      setSubmissionError("You must be logged in to place an order.");
+      toast({ title: "Authentication Error", description: "Please log in to continue.", variant: "destructive" });
+      // Optionally redirect to login: router.push(`/${lang}/login`);
+      return;
+    }
+
+    if (!cart || cart.items.length === 0) {
+      setSubmissionError("Your cart is empty.");
+      toast({ title: "Empty Cart", description: "Cannot place an order with an empty cart.", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      console.log("Order submitted:", data, cartItems);
+      const saleItems: CreateSaleItemPayload[] = cart.items.map(item => ({
+        libroId: item.libroId,
+        cantidad: item.cantidad,
+        precioUnitario: item.precioUnitario,
+      }));
+
+      const salePayload: CreateSalePayload = {
+        items: saleItems,
+        paymentMethod: data.paymentMethod, // From form
+        // Add other fields from 'data' if needed by your backend for CreateSalePayload
+        // e.g. customerName: data.name, shippingAddress: `${data.address}, ${data.city}, ${data.state} ${data.zip}`
+        // For now, keeping it simple as per defined CreateSalePayload
+      };
+      
+      const createdSale = await createSale(salePayload);
+      
       toast({
         title: texts.orderSubmittedToast,
-        description: texts.orderSubmittedToastDesc,
+        description: `${texts.orderSubmittedToastDesc} Order ID: ${createdSale.id}`,
       });
-      clearCart();
-      setIsOrderSubmitted(true);
-      form.reset();
       
+      await clearCartContextAction(); // Clear cart from context/API
+      setIsOrderSubmitted(true); // Show success screen
+      form.reset(); 
+      // Redirect to a success page, possibly with the sale ID
+      router.push(`/${lang}/checkout/success?orderId=${createdSale.id}`);
+
     } catch (error) {
-      console.error("Checkout error:", error);
+      const apiError = error as ApiResponseError;
+      console.error("Checkout error:", apiError);
+      setSubmissionError(apiError.message || "An unexpected error occurred during checkout.");
       toast({
         title: texts.checkoutErrorToast,
-        description: texts.checkoutErrorToastDesc,
+        description: apiError.message || texts.checkoutErrorToastDesc,
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -125,13 +182,15 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
     );
   }
 
-  if (cartItems.length === 0 && !isOrderSubmitted) {
+  // Display message if cart is empty (and not already submitted)
+  // or if cart is loading/has error from the hook itself
+  if ((!cart || cart.items.length === 0) && !isOrderSubmitted) {
      return (
       <Card className="w-full max-w-lg mx-auto shadow-xl rounded-lg">
         <CardHeader className="text-center">
           <Info className="mx-auto h-16 w-16 text-blue-500 mb-4" />
-          <CardTitle className="font-headline text-3xl">{texts.emptyCartTitle}</CardTitle>
-          <CardDescription>{texts.emptyCartDescription}</CardDescription>
+          <CardTitle className="font-headline text-3xl">{cartErrorHook ? "Cart Error" : texts.emptyCartTitle}</CardTitle>
+          <CardDescription>{cartErrorHook || texts.emptyCartDescription}</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <Link href={`/${lang}/cart`} passHref legacyBehavior>
@@ -141,6 +200,16 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
       </Card>
      );
   }
+  
+  if (isCartLoadingHook) { // Show loading if cart is still loading from the hook
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Loader2 className="h-16 w-16 animate-spin text-primary mb-6" />
+        <p className="text-xl text-muted-foreground">Loading cart details...</p>
+      </div>
+    );
+  }
+
 
   return (
     <Form {...form}>
@@ -151,6 +220,11 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
             <CardDescription>{texts.fillDetails.replace('{total}', getCartTotal().toFixed(2))}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {submissionError && (
+              <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                <span className="font-medium">Error:</span> {submissionError}
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
@@ -207,8 +281,8 @@ export function CheckoutFormClient({ lang, dictionary }: CheckoutFormClientProps
               )} />
           </CardContent>
           <CardFooter className="flex flex-col items-stretch">
-            <Button type="submit" size="lg" disabled={isLoading} className="w-full font-headline text-lg">
-              {isLoading ? (
+            <Button type="submit" size="lg" disabled={isSubmitting || isCartLoadingHook} className="w-full font-headline text-lg">
+              {isSubmitting ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
                 <Send className="mr-2 h-5 w-5" />

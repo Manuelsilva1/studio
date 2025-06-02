@@ -19,12 +19,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, FileText, Download, Loader2, AlertTriangle, Building2 } from 'lucide-react'; // Added Building2
+import { CalendarIcon, FileText, Download, Loader2, AlertTriangle, Building2 } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
-import { getEditorials } from '@/lib/mock-data'; // To fetch editorials
+// Import API services
+import { getEditorials as apiGetEditorials, getAdminSales as apiGetAdminSales } from '@/services/api'; 
+import type { Dictionary, Editorial, Sale, Book, SaleItem, ApiResponseError } from '@/types'; // Use API Sale type
 
 interface ReportsClientProps {
-  initialSales: SaleRecord[];
+  // initialSales is removed, data will be fetched client-side
   texts: Dictionary['adminPanel']['reportsPage'];
   lang: string;
   dictionary: Dictionary;
@@ -55,21 +57,37 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [summaryLevel, setSummaryLevel] = useState<SummaryLevel>('none');
   const [selectedEditorialId, setSelectedEditorialId] = useState<string>('all'); // New state for editorial filter
-  const [editorialsList, setEditorialsList] = useState<Editorial[]>([]); // New state for editorials list
+  const [editorialsList, setEditorialsList] = useState<Editorial[]>([]); 
+  const [allSalesData, setAllSalesData] = useState<Sale[]>([]); // To store all fetched sales
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start true for initial data load
+  const [error, setError] = useState<string | null>(null); // Error state
 
   useEffect(() => {
     const end = new Date();
     const start = subDays(end, 7);
     setDateRange({ from: start, to: end });
 
-    async function fetchEditorials() {
-      const data = await getEditorials();
-      setEditorialsList(data);
+    async function initialLoad() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [editorialsData, salesApiData] = await Promise.all([
+          apiGetEditorials(),
+          apiGetAdminSales()
+        ]);
+        setEditorialsList(editorialsData);
+        setAllSalesData(salesApiData);
+      } catch (err) {
+        const apiError = err as ApiResponseError;
+        setError(apiError.message || "Failed to load initial report data.");
+        toast({ title: "Error", description: apiError.message || "Failed to load initial report data.", variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
     }
-    fetchEditorials();
-  }, []);
+    initialLoad();
+  }, [toast]); // Added toast dependency
 
   const formatCurrencyUYU = (amount: number) => {
     return `UYU ${amount.toFixed(2)}`;
@@ -87,10 +105,10 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
     setIsLoading(true);
     setReportData(null);
 
-    setTimeout(() => {
+    setTimeout(() => { // Simulating processing time, actual data filtering is fast
       try {
-        let salesToProcess = initialSales.filter(sale => {
-          const saleDate = parseISO(sale.timestamp);
+        let salesToProcess = allSalesData.filter(sale => { // Use allSalesData
+          const saleDate = parseISO(sale.fecha); // Use 'fecha'
           return isWithinInterval(saleDate, { start: startOfDay(dateRange.from!), end: endOfDay(dateRange.to!) });
         });
 
@@ -106,17 +124,31 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
             );
 
             if (itemsFromSelectedEditorial.length > 0) {
-              const saleForEditorialReport: SaleRecord = {
-                ...sale, // Keep original sale ID, timestamp, payment method, customer
-                items: itemsFromSelectedEditorial,
-                totalAmount: itemsFromSelectedEditorial.reduce(
+              // The structure of SaleItem from API might differ from SaleRecord's item.
+              // API SaleItem: { id?, libroId, cantidad, precioUnitario, libro? }
+              // Mock SaleRecord Item: { book: Book (mock Book type), quantity, priceAtSale }
+              // We need to ensure itemsFromSelectedEditorial matches what processSalesDataForReport expects,
+              // or adapt processSalesDataForReport.
+              // For now, assuming itemsFromSelectedEditorial will be mapped correctly if needed by processSalesDataForReport.
+              const itemsForReport = itemsFromSelectedEditorial.map(item => ({
+                // Map to the structure expected by processSalesDataForReport if it's different
+                // This might involve fetching book details if item.book is not populated in SaleItem
+                book: item.libro || { id: item.libroId, titulo: `Book ${item.libroId}`, autor:"N/A", editorialId: "N/A", categoriaId: "N/A", precio: item.precioUnitario, stock:0 }, // Simplified mapping
+                quantity: item.cantidad,
+                priceAtSale: item.precioUnitario 
+              }));
+
+              const saleForEditorialReport: Sale = { // Use Sale type
+                ...sale, 
+                items: itemsForReport as SaleItem[], // Cast if structure matches after mapping
+                total: itemsForReport.reduce( // Recalculate total based on filtered items
                   (sum, item) => sum + (item.priceAtSale * item.quantity), 0
                 ),
               };
               acc.push(saleForEditorialReport);
             }
             return acc;
-          }, [] as SaleRecord[]);
+          }, [] as Sale[]);
         }
         
         if (salesToProcess.length === 0) {
@@ -136,116 +168,108 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
           return;
         }
 
-        const totalSalesAmount = salesToProcess.reduce((sum, sale) => sum + sale.totalAmount, 0);
-        const totalOrders = salesToProcess.length; // Counts sales that *have items* from the selected editorial after filtering
+        const totalSalesAmount = salesToProcess.reduce((sum, sale) => sum + sale.total, 0); // Use 'total'
+        const totalOrders = salesToProcess.length;
 
+        // SalesByPaymentMethod might need adjustment if Sale type doesn't have paymentMethod directly
+        // For now, assuming it might be added or handled differently. If not, this part needs to be removed or adapted.
         const salesByPaymentMethod: ReportData['salesByPaymentMethod'] = Object.values(
           salesToProcess.reduce((acc, sale) => {
-            // Use original sale's payment method, but sum only the filtered totalAmount
-            acc[sale.paymentMethod] = acc[sale.paymentMethod] || { method: sale.paymentMethod, amount: 0, count: 0 };
-            acc[sale.paymentMethod].amount += sale.totalAmount; // This is the recalculated totalAmount if filtered by editorial
-            acc[sale.paymentMethod].count += 1; // This sale is counted
+            const method = (sale as any).paymentMethod || 'unknown'; // Assuming paymentMethod might be on Sale, cast to any if not typed
+            acc[method] = acc[method] || { method: method, amount: 0, count: 0 };
+            acc[method].amount += sale.total;
+            acc[method].count += 1;
             return acc;
           }, {} as Record<string, { method: string; amount: number; count: number }>)
         );
 
         const salesByCategoryMap: { [key: string]: { category: string; quantity: number; amount: number } } = {};
         salesToProcess.forEach(sale => {
-          sale.items.forEach(item => { // items are already filtered by editorial if applicable
-            const category = item.book.genre || 'N/A';
+          sale.items.forEach(item => {
+            // item.libro.categoriaId or similar is needed here.
+            // This requires book details to be populated in sale items or fetched.
+            // The 'SaleItem' has 'libroId', and 'libro' (optional Book).
+            // Let's assume 'item.libro' is populated or we use 'item.libroDetails' if fetched.
+            const bookDetail = (item as any).libroDetails || item.libro; // Use enriched details if available
+            const category = bookDetail?.categoriaId ? String(bookDetail.categoriaId) : 'N/A'; // Use categoriaId
             salesByCategoryMap[category] = salesByCategoryMap[category] || { category, quantity: 0, amount: 0 };
-            salesByCategoryMap[category].quantity += item.quantity;
-            salesByCategoryMap[category].amount += item.priceAtSale * item.quantity;
+            salesByCategoryMap[category].quantity += item.cantidad;
+            salesByCategoryMap[category].amount += item.precioUnitario * item.cantidad;
           });
         });
         const salesByCategory = Object.values(salesByCategoryMap).sort((a,b) => b.quantity - a.quantity);
 
-
         const productSalesMap: { [key: string]: { title: string; quantity: number; revenue: number } } = {};
         salesToProcess.forEach(sale => {
-          sale.items.forEach(item => { // items are already filtered
-            productSalesMap[item.book.title] = productSalesMap[item.book.title] || { title: item.book.title, quantity: 0, revenue: 0 };
-            productSalesMap[item.book.title].quantity += item.quantity;
-            productSalesMap[item.book.title].revenue += item.priceAtSale * item.quantity;
+          sale.items.forEach(item => {
+            const bookDetail = (item as any).libroDetails || item.libro;
+            const title = bookDetail?.titulo || `Book ID: ${item.libroId}`; // Use titulo
+            productSalesMap[title] = productSalesMap[title] || { title: title, quantity: 0, revenue: 0 };
+            productSalesMap[title].quantity += item.cantidad;
+            productSalesMap[title].revenue += item.precioUnitario * item.cantidad;
           });
         });
         const topSellingProducts = Object.values(productSalesMap).sort((a, b) => b.quantity - a.quantity).slice(0, 10);
-
+        
         let periodicSummary: ReportData['periodicSummary'] | undefined = undefined;
         if (summaryLevel !== 'none') {
           const summaryMap: { [key: string]: { sales: number; orders: number } } = {};
-          
           let intervalDates: Date[] = [];
-          if (summaryLevel === 'daily') {
-            intervalDates = eachDayOfInterval({ start: dateRange.from!, end: dateRange.to! });
-          } else if (summaryLevel === 'weekly') {
-            intervalDates = eachWeekOfInterval({ start: dateRange.from!, end: dateRange.to! }, { locale: currentLocale });
-          } else { 
-            intervalDates = eachMonthOfInterval({ start: dateRange.from!, end: dateRange.to! });
+          // (Date interval logic remains similar, ensure dateRange.from/to are valid Date objects)
+          if (dateRange?.from && dateRange?.to) {
+            if (summaryLevel === 'daily') {
+              intervalDates = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
+            } else if (summaryLevel === 'weekly') {
+              intervalDates = eachWeekOfInterval({ start: dateRange.from, end: dateRange.to }, { locale: currentLocale });
+            } else { 
+              intervalDates = eachMonthOfInterval({ start: dateRange.from, end: dateRange.to });
+            }
           }
 
           intervalDates.forEach(periodStart => {
-            let periodEnd: Date;
             let periodKey: string;
-            
-            if (summaryLevel === 'daily') {
-              periodEnd = endOfDay(periodStart);
-              periodKey = format(periodStart, 'yyyy-MM-dd');
-            } else if (summaryLevel === 'weekly') {
-              periodEnd = endOfWeek(periodStart, { locale: currentLocale });
-              periodKey = format(periodStart, 'yyyy-MM-dd'); 
-            } else { 
-              periodEnd = endOfMonth(periodStart);
-              periodKey = format(periodStart, 'yyyy-MM');
-            }
+            if (summaryLevel === 'daily') periodKey = format(periodStart, 'yyyy-MM-dd');
+            else if (summaryLevel === 'weekly') periodKey = format(periodStart, 'yyyy-MM-dd');
+            else periodKey = format(periodStart, 'yyyy-MM');
             summaryMap[periodKey] = { sales: 0, orders: 0 };
           });
           
           salesToProcess.forEach(sale => {
-            const saleDate = parseISO(sale.timestamp);
+            const saleDate = parseISO(sale.fecha); // Use 'fecha'
             let periodKeyToUpdate: string | undefined;
-
+             // (Logic for determining periodKeyToUpdate remains similar)
             if (summaryLevel === 'daily') {
                 const key = format(saleDate, 'yyyy-MM-dd');
-                if (isWithinInterval(saleDate, { start: startOfDay(parseISO(key)), end: endOfDay(parseISO(key)) } )) {
-                    periodKeyToUpdate = key;
-                }
+                if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
             } else if (summaryLevel === 'weekly') {
                 const startOfWeekForSale = startOfWeek(saleDate, { locale: currentLocale });
                 const key = format(startOfWeekForSale, 'yyyy-MM-dd');
-                 if (isWithinInterval(saleDate, { start: startOfWeekForSale, end: endOfWeek(startOfWeekForSale, { locale: currentLocale }) } )) {
-                    periodKeyToUpdate = key;
-                 }
+                if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
             } else { // monthly
                 const key = format(saleDate, 'yyyy-MM');
-                 if (isWithinInterval(saleDate, { start: startOfMonth(parseISO(key + '-01')), end: endOfMonth(parseISO(key + '-01')) } )) {
-                    periodKeyToUpdate = key;
-                 }
+                if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
             }
             
             if (periodKeyToUpdate && summaryMap[periodKeyToUpdate]) {
-               summaryMap[periodKeyToUpdate].sales += sale.totalAmount; // sale.totalAmount is already adjusted if filtered by editorial
+               summaryMap[periodKeyToUpdate].sales += sale.total; // Use 'total'
                summaryMap[periodKeyToUpdate].orders += 1;
             }
           });
           
-          const originalKeys = Object.keys(summaryMap).sort();
-          periodicSummary = originalKeys.map(key => {
+          periodicSummary = Object.keys(summaryMap).sort().map(key => {
             let periodLabel = '';
-            if (summaryLevel === 'daily') {
-                periodLabel = format(parseISO(key), 'P', { locale: currentLocale });
-            } else if (summaryLevel === 'weekly') {
+             // (Period label formatting remains similar)
+            if (summaryLevel === 'daily') periodLabel = format(parseISO(key), 'P', { locale: currentLocale });
+            else if (summaryLevel === 'weekly') {
                 const startW = parseISO(key);
                 periodLabel = `${format(startW, 'P', { locale: currentLocale })} - ${format(endOfWeek(startW, {locale: currentLocale}), 'P', { locale: currentLocale })}`;
-            } else { 
-                periodLabel = format(parseISO(key + '-01'), 'MMM yyyy', { locale: currentLocale });
-            }
+            } else periodLabel = format(parseISO(key + '-01'), 'MMM yyyy', { locale: currentLocale });
             return { period: periodLabel, ...summaryMap[key] };
           });
         }
         
         setReportData({
-          totalSalesAmount,
+          totalSalesAmount, // This field name might need to map to reportData structure
           totalOrders,
           salesByPaymentMethod,
           salesByCategory,

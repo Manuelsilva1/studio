@@ -20,29 +20,28 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 interface EditorialListClientProps {
-  initialEditorials: Editorial[];
-  onDeleteEditorial: (editorialId: string) => Promise<void>;
+  editorials: Editorial[]; // Changed from initialEditorials
+  onDeleteEditorial: (editorialId: string | number) => Promise<void>; // ID can be string or number
   lang: string;
   texts: any; // Dictionary texts for editorials
 }
 
-export function EditorialListClient({ initialEditorials, onDeleteEditorial, lang, texts }: EditorialListClientProps) {
-  const [editorials, setEditorials] = useState<Editorial[]>(initialEditorials);
+export function EditorialListClient({ editorials, onDeleteEditorial, lang, texts }: EditorialListClientProps) {
+  // Removed local editorials state, use prop directly
   const [editorialToDelete, setEditorialToDelete] = useState<Editorial | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    setEditorials(initialEditorials);
-  }, [initialEditorials]);
+  // No longer need useEffect to setEditorials
 
   const handleDeleteConfirmation = async () => {
-    if (editorialToDelete) {
+    if (editorialToDelete && editorialToDelete.id) { // Ensure ID exists
       try {
         await onDeleteEditorial(editorialToDelete.id); 
-        setEditorials(prev => prev.filter(e => e.id !== editorialToDelete.id));
-        toast({ title: texts.toastEditorialDeleted || "Publisher Deleted", description: `${editorialToDelete.name} has been deleted.` });
+        // Parent component will re-fetch and pass updated 'editorials'
+        toast({ title: texts.toastEditorialDeleted || "Publisher Deleted", description: `${editorialToDelete.nombre} has been deleted.` }); // Use nombre
       } catch (error) {
-        toast({ title: texts.toastError || "Error", description: `Failed to delete ${editorialToDelete.name}.`, variant: "destructive" });
+        // Error toast is handled by parent
+        // toast({ title: texts.toastError || "Error", description: `Failed to delete ${editorialToDelete.nombre}.`, variant: "destructive" });
       } finally {
         setEditorialToDelete(null);
       }
@@ -65,24 +64,30 @@ export function EditorialListClient({ initialEditorials, onDeleteEditorial, lang
             <TableHeader>
               <TableRow>
                 <TableHead>{texts.tableHeaderName || "Name"}</TableHead>
-                <TableHead>{texts.tableHeaderContact || "Contact Person"}</TableHead>
-                <TableHead>{texts.tableHeaderEmail || "Email"}</TableHead>
+                <TableHead>Website</TableHead> {/* Changed from Contact Person */}
+                {/* <TableHead>{texts.tableHeaderEmail || "Email"}</TableHead> */} {/* Removed Email as it's not in API type */}
                 <TableHead className="text-center">{texts.tableHeaderActions || "Actions"}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {editorials.map((editorial) => (
                 <TableRow key={editorial.id}>
-                  <TableCell className="font-medium">{editorial.name}</TableCell>
-                  <TableCell>{editorial.contactPerson || '-'}</TableCell>
-                  <TableCell>{editorial.email || '-'}</TableCell>
+                  <TableCell className="font-medium">{editorial.nombre}</TableCell> {/* Use nombre */}
+                  <TableCell>
+                    {editorial.sitioWeb ? (
+                      <a href={editorial.sitioWeb} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        {editorial.sitioWeb}
+                      </a>
+                    ) : '-'}
+                  </TableCell>
+                  {/* <TableCell>{editorial.email || '-'}</TableCell> */}
                   <TableCell className="text-center space-x-1">
                     <Link href={`/${lang}/admin/panel/editorials?action=edit&id=${editorial.id}`} passHref legacyBehavior>
                       <Button variant="ghost" size="icon" title={texts.editEditorial || "Edit Publisher"}>
                         <Edit className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" title={texts.deleteButton || "Delete Publisher"} onClick={() => setEditorialToDelete(editorial)}>
+                    <Button variant="ghost" size="icon" title={texts.deleteButton || "Delete Publisher"} onClick={() => setEditorialToDelete(editorial)} disabled={!editorial.id}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
@@ -105,7 +110,7 @@ export function EditorialListClient({ initialEditorials, onDeleteEditorial, lang
             <AlertDialogHeader>
               <AlertDialogTitle>{texts.deleteConfirmationTitle || "Are you sure?"}</AlertDialogTitle>
               <AlertDialogDescription>
-                {(texts.deleteConfirmationMessage || "This action cannot be undone. This will permanently delete the publisher \"{name}\".").replace('{name}', editorialToDelete.name)}
+                {(texts.deleteConfirmationMessage || "This action cannot be undone. This will permanently delete the publisher \"{name}\".").replace('{name}', editorialToDelete.nombre)} {/* Use nombre */}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -2,7 +2,7 @@
 // No "use client" here, this is a Server Component
 import { Suspense } from 'react';
 import type { Dictionary } from '@/types';
-import { getEditorials } from '@/lib/mock-data';
+// Removed mock import: import { getEditorials } from '@/lib/mock-data';
 import { getDictionary } from '@/lib/dictionaries';
 import { Loader2 } from 'lucide-react';
 import { ManageEditorialsContent } from './components/manage-editorials-content';
@@ -47,8 +47,8 @@ export default async function ManageEditorialsPage({ params }: ManageEditorialsP
     toastErrorEditorialDelete: "Could not delete publisher.", // Added
     editorialNotFound: "Publisher not found or failed to load." // Added
   };
-  // Fetch initial data on the server
-  const initialEditorialsData = await getEditorials();
+  // Initial data fetching will be done client-side in ManageEditorialsContent
+  // const initialEditorialsData = await getEditorials();
 
   return (
     <div className="space-y-8">
@@ -56,7 +56,8 @@ export default async function ManageEditorialsPage({ params }: ManageEditorialsP
       <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
         <ManageEditorialsContent
             params={params} // Pass params directly, which includes lang
-            initialEditorials={initialEditorialsData || []} // Pass server-fetched data
+            // initialEditorials is no longer passed; client component fetches its own.
+            // initialEditorials={initialEditorialsData || []} 
             texts={editorialTexts}
         />
       </Suspense>

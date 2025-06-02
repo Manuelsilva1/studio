@@ -3,8 +3,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import type { Book, SaleRecord } from '@/types'; // Added SaleRecord
-import type { Dictionary } from '@/types'; // Updated import
+import type { Book, Sale, CreateSalePayload, CreateSaleItemPayload, ApiResponseError } from '@/types'; // Use API Sale types
+import type { Dictionary } from '@/types'; 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +14,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Search, XCircle, PlusCircle, MinusCircle, ShoppingCart, DollarSign, CreditCard, Loader2 } from 'lucide-react';
-import { addSaleRecord } from '@/lib/mock-data'; // For storing the sale
-import { SaleTicketDialog } from './sale-ticket-dialog'; // For showing the ticket
+// Import createSale from API services
+import { createSale } from '@/services/api'; 
+import { SaleTicketDialog } from './sale-ticket-dialog'; 
 
 interface PosClientProps {
   lang: string;
@@ -37,7 +38,7 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
   const [customerName, setCustomerName] = useState('');
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const { toast } = useToast();
-  const [completedSale, setCompletedSale] = useState<SaleRecord | null>(null);
+  const [completedSale, setCompletedSale] = useState<Sale | null>(null); // Changed SaleRecord to Sale
   const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -105,31 +106,33 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
     }
     setIsProcessingSale(true);
     
-    const saleRecord: SaleRecord = {
-      id: `sale_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      items: currentOrderItems.map(item => ({ 
-        book: item.book, 
-        quantity: item.quantity,
-        priceAtSale: item.book.price // Store price at time of sale
-      })),
-      totalAmount: orderTotal,
-      paymentMethod,
-      customerName: customerName || undefined,
+    const saleItemsPayload: CreateSaleItemPayload[] = currentOrderItems.map(item => ({
+      libroId: item.book.id,
+      cantidad: item.quantity,
+      precioUnitario: item.book.precio, // Use API Book's 'precio'
+    }));
+
+    const salePayload: CreateSalePayload = {
+      items: saleItemsPayload,
+      paymentMethod: paymentMethod,
+      // Customer name might be handled differently by the API (e.g., tied to user or a specific field)
+      // If your API's CreateSalePayload includes customerName, add it here:
+      // customerName: customerName || undefined, 
     };
 
     try {
-      await addSaleRecord(saleRecord);
-      setCompletedSale(saleRecord);
+      const createdSale = await createSale(salePayload); // Use API service
+      setCompletedSale(createdSale);
       setIsTicketDialogOpen(true); // Open dialog
       toast({
         title: posTexts.saleCompletedToastTitle,
-        description: posTexts.saleCompletedToastDesc,
+        description: posTexts.saleCompletedToastDesc + (createdSale.id ? ` ID: ${createdSale.id}` : ""),
       });
       // Resetting the form is now handled in handleCloseTicketDialog
     } catch (error) {
-      console.error("Error completing sale:", error);
-      toast({ title: posTexts.errorCompletingSale || "Error", description: "Could not process sale.", variant: "destructive"});
+      const apiError = error as ApiResponseError;
+      console.error("Error completing sale:", apiError);
+      toast({ title: posTexts.errorCompletingSale || "Error", description: apiError.message || "Could not process sale.", variant: "destructive"});
     } finally {
       setIsProcessingSale(false);
     }
@@ -171,10 +174,10 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                   {searchResults.map(book => (
                     <li key={book.id} className="flex items-center justify-between p-2 hover:bg-accent rounded-md">
                       <div className="flex items-center space-x-2 overflow-hidden">
-                        <Image src={book.coverImage} alt={book.title} width={30} height={45} className="rounded object-cover" data-ai-hint="book cover search"/>
+          <Image src={book.coverImage || '/placeholder-image.png'} alt={book.titulo} width={30} height={45} className="rounded object-cover" data-ai-hint="book cover search"/>
                         <div className="flex-grow overflow-hidden">
-                          <p className="text-sm font-medium truncate" title={book.title}>{book.title}</p>
-                          <p className="text-xs text-muted-foreground truncate" title={book.author}>{book.author}</p>
+            <p className="text-sm font-medium truncate" title={book.titulo}>{book.titulo}</p> {/* Use titulo/autor */}
+            <p className="text-xs text-muted-foreground truncate" title={book.autor}>{book.autor}</p> {/* Use titulo/autor */}
                         </div>
                       </div>
                       <Button size="sm" variant="outline" onClick={() => addToOrder(book)} disabled={book.stock <= 0}>
@@ -215,13 +218,13 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                     {currentOrderItems.map(item => (
                       <TableRow key={item.book.id}>
                         <TableCell className="flex items-center space-x-2">
-                          <Image src={item.book.coverImage} alt={item.book.title} width={40} height={60} className="rounded object-cover" data-ai-hint="book cover order"/>
+                        <Image src={item.book.coverImage || '/placeholder-image.png'} alt={item.book.titulo} width={40} height={60} className="rounded object-cover" data-ai-hint="book cover order"/>
                           <div>
-                            <p className="font-medium truncate w-32" title={item.book.title}>{item.book.title}</p>
-                            <p className="text-xs text-muted-foreground truncate w-32" title={item.book.author}>{item.book.author}</p>
+                          <p className="font-medium truncate w-32" title={item.book.titulo}>{item.book.titulo}</p> {/* Use titulo/autor */}
+                          <p className="text-xs text-muted-foreground truncate w-32" title={item.book.autor}>{item.book.autor}</p> {/* Use titulo/autor */}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">UYU {item.book.price.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">UYU {item.book.precio.toFixed(2)}</TableCell> {/* Use precio */}
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center space-x-1">
                             <Button variant="ghost" size="icon" onClick={() => updateOrderItemQuantity(item.book.id, -1)} className="h-6 w-6">
@@ -233,7 +236,7 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                             </Button>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">UYU {(item.book.price * item.quantity).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">UYU {(item.book.precio * item.quantity).toFixed(2)}</TableCell> {/* Use precio */}
                         <TableCell className="text-center">
                           <Button variant="ghost" size="icon" onClick={() => removeOrderItem(item.book.id)} className="text-destructive h-6 w-6">
                             <XCircle className="h-4 w-4" />

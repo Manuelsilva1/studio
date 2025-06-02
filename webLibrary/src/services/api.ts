@@ -67,6 +67,59 @@ export const loginUser = async (credentials: { email: string; password: string }
   });
 };
 
+// --- Offers ---
+export const getOffers = async (): Promise<Offer[]> => {
+  return fetchApi<Offer[]>('/api/ofertas');
+};
+
+export const getOfferById = async (id: string | number): Promise<Offer> => {
+  return fetchApi<Offer>(`/api/ofertas/${id}`);
+};
+
+export const createOffer = async (offerData: CreateOfferPayload): Promise<Offer> => {
+  return fetchApi<Offer>('/api/ofertas', {
+    method: 'POST',
+    body: offerData,
+  });
+};
+
+export const updateOffer = async (id: string | number, offerData: Partial<Offer>): Promise<Offer> => {
+  return fetchApi<Offer>(`/api/ofertas/${id}`, {
+    method: 'PUT',
+    body: offerData,
+  });
+};
+
+export const deleteOffer = async (id: string | number): Promise<void> => {
+  return fetchApi<void>(`/api/ofertas/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const addBookToOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
+  // The API might return the updated Offer or related BookOffer model. Adjust T if needed.
+  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
+    method: 'POST', 
+    // No body needed if IDs in URL are sufficient
+  });
+};
+
+export const removeBookFromOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
+  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getBooksForOffer = async (offerId: string | number): Promise<Book[]> => {
+  // This assumes an endpoint that returns books for a given offer.
+  // Adjust endpoint if API design is different (e.g., /api/ofertas/{offerId}/libros)
+  // Or, if Offer object contains libroIds, this function might fetch an Offer then its books.
+  // For now, direct endpoint:
+  return fetchApi<Book[]>(`/api/ofertas/${offerId}/libros`); 
+  // Alternative if filtering books by offerId:
+  // return fetchApi<Book[]>(`/api/libros?ofertaId=${offerId}`);
+};
+
 // --- Sales ---
 export const createSale = async (saleData: CreateSalePayload): Promise<Sale> => {
   return fetchApi<Sale>('/api/ventas', {
