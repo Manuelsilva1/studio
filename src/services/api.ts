@@ -3,7 +3,7 @@ import { getAuthHeaders } from '@/lib/auth-utils';
 import type { Book, Category, Editorial, User, Cart, Sale, Offer, CreateSalePayload, CreateOfferPayload, ApiResponseError } from '@/types'; // Ensure all necessary types are imported
 
 // Import mock functions
-import * from as mockApi from '@/lib/mock-data';
+import * as mockApi from '@/lib/mock-data';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_MODE = process.env.NEXT_PUBLIC_API_MODE || 'production'; // Default to production
