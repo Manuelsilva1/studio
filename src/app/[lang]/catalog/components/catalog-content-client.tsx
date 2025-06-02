@@ -1,7 +1,7 @@
 
 "use client"; 
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
 import type { Book, ApiResponseError } from '@/types'; // Added ApiResponseError
 import { getBooks } from '@/services/api'; // Import getBooks API service
 import { BookCard } from './book-card';
@@ -34,23 +34,25 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState<CatalogFilters>(initialFilters);
   
-  // States for API data, loading, and error
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // TODO: Dynamic genres and authors for filters might need separate API calls
-  // For now, they will be derived from the fetched books or FiltersClient might need adjustment
   const [genres, setGenres] = useState<string[]>([]);
   const [authors, setAuthors] = useState<string[]>([]);
-    searchPlaceholder: "Search by title, author, or genre...",
-    noBooksMatch: "No books match your criteria.",
-    previousPage: "Previous",
-    nextPage: "Next",
-    pageIndicator: "Page {currentPage} of {totalPages}",
-    // Add error and loading messages to dictionary if needed
-    loadingBooks: "Loading books...",
-    errorLoadingBooks: "Failed to load books. Please try again later.",
-  };
+
+  const texts = useMemo(() => {
+    const catalogPageTexts = dictionary.catalogPage || {};
+    return {
+      pageTitle: catalogPageTexts.pageTitle || "Book Catalog",
+      searchPlaceholder: catalogPageTexts.searchPlaceholder || "Search by title, author, or genre...",
+      noBooksMatch: catalogPageTexts.noBooksMatch || "No books match your criteria.",
+      previousPage: catalogPageTexts.previousPage || "Previous",
+      nextPage: catalogPageTexts.nextPage || "Next",
+      pageIndicator: catalogPageTexts.pageIndicator || "Page {currentPage} of {totalPages}",
+      loadingBooks: "Loading books...", // Fallback if not in dictionary
+      errorLoadingBooks: "Failed to load books. Please try again later.", // Fallback if not in dictionary
+    };
+  }, [dictionary.catalogPage]);
   
   useEffect(() => {
     const fetchBooks = async () => {
@@ -59,44 +61,36 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
         setError(null);
         const booksFromApi = await getBooks();
         setAllBooks(booksFromApi);
-        setFilteredBooks(booksFromApi); // Initialize filteredBooks with all books
+        setFilteredBooks(booksFromApi); 
 
-        // Derive genres and authors from fetched books for filter population
-        // This is a basic implementation; a more robust solution might involve separate API endpoints for these
         const uniqueGenres = Array.from(new Set(booksFromApi.map(book => book.categoriaId?.toString()).filter(Boolean) as string[]));
-        // Assuming categoriaId is used for genre. If actual genre names are needed, mapping or different API structure is required.
-        // For now, using categoriaId as genre. A proper solution would fetch category names.
         setGenres(uniqueGenres); 
-
 
         const uniqueAuthors = Array.from(new Set(booksFromApi.map(book => book.autor).filter(Boolean)));
         setAuthors(uniqueAuthors);
 
       } catch (err) {
         const apiError = err as ApiResponseError;
-        setError(apiError.message || texts.errorLoadingBooks || "Failed to load books.");
+        setError(apiError.message || texts.errorLoadingBooks); 
         console.error("Error fetching books:", err);
       } finally {
         setIsLoading(false);
       }
     };
     fetchBooks();
-  }, [texts.errorLoadingBooks]); // Added dependency
+  }, [texts.errorLoadingBooks, dictionary]); // Added dictionary to dependency if texts rely on it
 
   const applyFiltersAndSearch = useCallback(() => {
     let booksToFilter = [...allBooks];
 
     if (searchTerm) {
       booksToFilter = booksToFilter.filter(book =>
-        book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || // Changed from title to titulo
+        book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || 
         book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        // Assuming categoriaId can be searched. For actual genre name, book.categoria.nombre would be needed if populated
         (book.categoriaId && book.categoriaId.toString().toLowerCase().includes(searchTerm.toLowerCase())) 
       );
     }
 
-    // Adjust filtering logic if `book.genre` is no longer available and `book.categoriaId` is used.
-    // This example assumes `activeFilters.genre` now refers to `categoriaId`.
     if (activeFilters.genre !== 'all') {
       booksToFilter = booksToFilter.filter(book => book.categoriaId?.toString() === activeFilters.genre);
     }
@@ -104,28 +98,28 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
       booksToFilter = booksToFilter.filter(book => book.autor === activeFilters.author);
     }
     if (activeFilters.minPrice !== '') {
-      booksToFilter = booksToFilter.filter(book => book.precio >= Number(activeFilters.minPrice)); // Changed from price to precio
+      booksToFilter = booksToFilter.filter(book => book.precio >= Number(activeFilters.minPrice)); 
     }
     if (activeFilters.maxPrice !== '') {
-      booksToFilter = booksToFilter.filter(book => book.precio <= Number(activeFilters.maxPrice)); // Changed from price to precio
+      booksToFilter = booksToFilter.filter(book => book.precio <= Number(activeFilters.maxPrice)); 
     }
     
     switch (activeFilters.sortBy) {
       case 'price_asc':
-        booksToFilter.sort((a, b) => a.precio - b.precio); // Changed from price to precio
+        booksToFilter.sort((a, b) => a.precio - b.precio); 
         break;
       case 'price_desc':
-        booksToFilter.sort((a, b) => b.precio - a.precio); // Changed from price to precio
+        booksToFilter.sort((a, b) => b.precio - a.precio); 
         break;
       case 'title_asc':
-        booksToFilter.sort((a, b) => a.titulo.localeCompare(b.titulo)); // Changed from title to titulo
+        booksToFilter.sort((a, b) => a.titulo.localeCompare(b.titulo)); 
         break;
       case 'title_desc':
-        booksToFilter.sort((a, b) => b.titulo.localeCompare(a.titulo)); // Changed from title to titulo
+        booksToFilter.sort((a, b) => b.titulo.localeCompare(a.titulo)); 
         break;
-      // case 'date_added_desc': // dateAdded might not be available on Book type, review if needed
+      // case 'date_added_desc': // dateAdded might not be available on Book type
       //   booksToFilter.sort((a, b) => {
-      //     if (!a.dateAdded || !b.dateAdded) return 0; // Ensure dateAdded exists
+      //     if (!a.dateAdded || !b.dateAdded) return 0;
       //     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
       //   });
       //   break;
@@ -136,8 +130,6 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
   }, [allBooks, searchTerm, activeFilters]);
 
   useEffect(() => {
-    // Apply filters whenever allBooks is updated (e.g. after initial fetch)
-    // or when searchTerm or activeFilters change.
     applyFiltersAndSearch();
   }, [allBooks, searchTerm, activeFilters, applyFiltersAndSearch]);
 
@@ -171,7 +163,6 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
         {texts.pageTitle}
       </h1>
 
-      {/* Pass fetched books to NewArrivalsClient, ensure it handles empty or loading state if necessary */}
       <NewArrivalsClient allBooks={allBooks} lang={lang} dictionary={dictionary} /> 
       
       <div className="mb-8 relative">
@@ -194,8 +185,6 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
             onResetFilters={handleResetFilters}
             initialFilters={initialFilters}
             dictionary={dictionary}
-            // Pass derived genres and authors; FiltersClient might need to adapt
-            // to category IDs if they are not names yet.
           />
         </div>
 

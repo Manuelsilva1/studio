@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
-import type { SaleRecord, Book, SaleItem, Dictionary, Editorial } from '@/types'; // Added Editorial
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import type { Editorial, Sale, Dictionary, ApiResponseError, Book } from '@/types'; // Ensure Sale type, not SaleRecord
 import {
   startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth,
   format, parseISO, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval,
@@ -17,16 +17,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { CalendarIcon, FileText, Download, Loader2, AlertTriangle, Building2 } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
-// Import API services
 import { getEditorials as apiGetEditorials, getAdminSales as apiGetAdminSales } from '@/services/api'; 
-import type { Dictionary, Editorial, Sale, Book, SaleItem, ApiResponseError } from '@/types'; // Use API Sale type
 
 interface ReportsClientProps {
-  // initialSales is removed, data will be fetched client-side
   texts: Dictionary['adminPanel']['reportsPage'];
   lang: string;
   dictionary: Dictionary;
@@ -42,7 +38,7 @@ interface ReportData {
   topSellingProducts: { title: string; quantity: number; revenue: number }[];
   periodicSummary?: { period: string; sales: number; orders: number }[];
   reportDateRange: { from: string; to: string };
-  filteredByEditorialName?: string; // Added for displaying filter context
+  filteredByEditorialName?: string; 
 }
 
 const dateLocales: { [key: string]: Locale } = {
@@ -50,18 +46,19 @@ const dateLocales: { [key: string]: Locale } = {
   es: esLocale,
 };
 
-export function ReportsClient({ initialSales, texts, lang, dictionary }: ReportsClientProps) {
+export function ReportsClient({ texts, lang, dictionary }: ReportsClientProps) {
   const { toast } = useToast();
   const currentLocale = dateLocales[lang] || enLocale;
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [summaryLevel, setSummaryLevel] = useState<SummaryLevel>('none');
-  const [selectedEditorialId, setSelectedEditorialId] = useState<string>('all'); // New state for editorial filter
+  const [selectedEditorialId, setSelectedEditorialId] = useState<string>('all');
   const [editorialsList, setEditorialsList] = useState<Editorial[]>([]); 
-  const [allSalesData, setAllSalesData] = useState<Sale[]>([]); // To store all fetched sales
+  const [allSalesData, setAllSalesData] = useState<Sale[]>([]);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Start true for initial data load
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false); // For report generation
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const end = new Date();
@@ -87,11 +84,113 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
       }
     }
     initialLoad();
-  }, [toast]); // Added toast dependency
+  }, [toast]);
 
   const formatCurrencyUYU = (amount: number) => {
     return `UYU ${amount.toFixed(2)}`;
   };
+
+  const processSalesDataForReport = useCallback((salesToProcess: Sale[]): Omit<ReportData, 'reportDateRange' | 'filteredByEditorialName'> => {
+    const totalSalesAmount = salesToProcess.reduce((sum, sale) => sum + sale.total, 0);
+    const totalOrders = salesToProcess.length;
+
+    const salesByPaymentMethod: ReportData['salesByPaymentMethod'] = Object.values(
+      salesToProcess.reduce((acc, sale) => {
+        // Assuming 'paymentMethod' might be added to Sale type or is available via other means
+        const method = (sale as any).paymentMethod || 'unknown'; 
+        acc[method] = acc[method] || { method: method, amount: 0, count: 0 };
+        acc[method].amount += sale.total;
+        acc[method].count += 1;
+        return acc;
+      }, {} as Record<string, { method: string; amount: number; count: number }>)
+    );
+
+    const salesByCategoryMap: { [key: string]: { category: string; quantity: number; amount: number } } = {};
+    salesToProcess.forEach(sale => {
+      sale.items.forEach(item => {
+        const bookDetail = item.libro; // Assuming item.libro is populated
+        const category = bookDetail?.categoriaId ? String(bookDetail.categoriaId) : 'N/A';
+        salesByCategoryMap[category] = salesByCategoryMap[category] || { category, quantity: 0, amount: 0 };
+        salesByCategoryMap[category].quantity += item.cantidad;
+        salesByCategoryMap[category].amount += item.precioUnitario * item.cantidad;
+      });
+    });
+    const salesByCategory = Object.values(salesByCategoryMap).sort((a,b) => b.quantity - a.quantity);
+
+    const productSalesMap: { [key: string]: { title: string; quantity: number; revenue: number } } = {};
+    salesToProcess.forEach(sale => {
+      sale.items.forEach(item => {
+        const bookDetail = item.libro;
+        const title = bookDetail?.titulo || `Book ID: ${item.libroId}`;
+        productSalesMap[title] = productSalesMap[title] || { title: title, quantity: 0, revenue: 0 };
+        productSalesMap[title].quantity += item.cantidad;
+        productSalesMap[title].revenue += item.precioUnitario * item.cantidad;
+      });
+    });
+    const topSellingProducts = Object.values(productSalesMap).sort((a, b) => b.quantity - a.quantity).slice(0, 10);
+    
+    let periodicSummary: ReportData['periodicSummary'] | undefined = undefined;
+    if (summaryLevel !== 'none' && dateRange?.from && dateRange?.to) {
+      const summaryMap: { [key: string]: { sales: number; orders: number } } = {};
+      let intervalDates: Date[] = [];
+      if (summaryLevel === 'daily') {
+          intervalDates = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
+      } else if (summaryLevel === 'weekly') {
+          intervalDates = eachWeekOfInterval({ start: dateRange.from, end: dateRange.to }, { locale: currentLocale });
+      } else { 
+          intervalDates = eachMonthOfInterval({ start: dateRange.from, end: dateRange.to });
+      }
+
+      intervalDates.forEach(periodStart => {
+        let periodKey: string;
+        if (summaryLevel === 'daily') periodKey = format(periodStart, 'yyyy-MM-dd');
+        else if (summaryLevel === 'weekly') periodKey = format(periodStart, 'yyyy-MM-dd');
+        else periodKey = format(periodStart, 'yyyy-MM');
+        summaryMap[periodKey] = { sales: 0, orders: 0 };
+      });
+      
+      salesToProcess.forEach(sale => {
+        const saleDate = parseISO(sale.fecha);
+        let periodKeyToUpdate: string | undefined;
+        if (summaryLevel === 'daily') {
+            const key = format(saleDate, 'yyyy-MM-dd');
+            if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
+        } else if (summaryLevel === 'weekly') {
+            const startOfWeekForSale = startOfWeek(saleDate, { locale: currentLocale });
+            const key = format(startOfWeekForSale, 'yyyy-MM-dd');
+            if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
+        } else { 
+            const key = format(saleDate, 'yyyy-MM');
+            if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
+        }
+        
+        if (periodKeyToUpdate && summaryMap[periodKeyToUpdate]) {
+           summaryMap[periodKeyToUpdate].sales += sale.total;
+           summaryMap[periodKeyToUpdate].orders += 1;
+        }
+      });
+      
+      periodicSummary = Object.keys(summaryMap).sort().map(key => {
+        let periodLabel = '';
+        if (summaryLevel === 'daily') periodLabel = format(parseISO(key), 'P', { locale: currentLocale });
+        else if (summaryLevel === 'weekly') {
+            const startW = parseISO(key);
+            periodLabel = `${format(startW, 'P', { locale: currentLocale })} - ${format(endOfWeek(startW, {locale: currentLocale}), 'P', { locale: currentLocale })}`;
+        } else periodLabel = format(parseISO(key + '-01'), 'MMM yyyy', { locale: currentLocale });
+        return { period: periodLabel, ...summaryMap[key] };
+      });
+    }
+    
+    return {
+      totalSalesAmount,
+      totalOrders,
+      salesByPaymentMethod,
+      salesByCategory,
+      topSellingProducts,
+      periodicSummary,
+    };
+  }, [summaryLevel, dateRange, currentLocale]);
+
 
   const handleGenerateReport = () => {
     if (!dateRange || !dateRange.from || !dateRange.to) {
@@ -102,190 +201,74 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
       });
       return;
     }
-    setIsLoading(true);
+    setIsGenerating(true);
     setReportData(null);
+    setError(null);
 
-    setTimeout(() => { // Simulating processing time, actual data filtering is fast
+    setTimeout(() => { // Simulate API call or heavy processing
       try {
-        let salesToProcess = allSalesData.filter(sale => { // Use allSalesData
-          const saleDate = parseISO(sale.fecha); // Use 'fecha'
+        let salesToFilter = allSalesData.filter(sale => {
+          const saleDate = parseISO(sale.fecha);
           return isWithinInterval(saleDate, { start: startOfDay(dateRange.from!), end: endOfDay(dateRange.to!) });
         });
 
-        let filteredByEditorialName: string | undefined = undefined;
+        let currentFilteredByEditorialName: string | undefined = undefined;
 
         if (selectedEditorialId && selectedEditorialId !== 'all') {
-          const selectedEditorial = editorialsList.find(e => e.id === selectedEditorialId);
-          filteredByEditorialName = selectedEditorial?.name;
+          const selectedEd = editorialsList.find(e => String(e.id) === selectedEditorialId);
+          currentFilteredByEditorialName = selectedEd?.nombre;
 
-          salesToProcess = salesToProcess.reduce((acc, sale) => {
+          // Filter sales to only include items from the selected publisher
+          salesToFilter = salesToFilter.reduce((acc, sale) => {
             const itemsFromSelectedEditorial = sale.items.filter(
-              item => item.book.editorialId === selectedEditorialId
+              item => String(item.libro?.editorialId) === selectedEditorialId // Assuming item.libro has editorialId
             );
 
             if (itemsFromSelectedEditorial.length > 0) {
-              // The structure of SaleItem from API might differ from SaleRecord's item.
-              // API SaleItem: { id?, libroId, cantidad, precioUnitario, libro? }
-              // Mock SaleRecord Item: { book: Book (mock Book type), quantity, priceAtSale }
-              // We need to ensure itemsFromSelectedEditorial matches what processSalesDataForReport expects,
-              // or adapt processSalesDataForReport.
-              // For now, assuming itemsFromSelectedEditorial will be mapped correctly if needed by processSalesDataForReport.
-              const itemsForReport = itemsFromSelectedEditorial.map(item => ({
-                // Map to the structure expected by processSalesDataForReport if it's different
-                // This might involve fetching book details if item.book is not populated in SaleItem
-                book: item.libro || { id: item.libroId, titulo: `Book ${item.libroId}`, autor:"N/A", editorialId: "N/A", categoriaId: "N/A", precio: item.precioUnitario, stock:0 }, // Simplified mapping
-                quantity: item.cantidad,
-                priceAtSale: item.precioUnitario 
-              }));
-
-              const saleForEditorialReport: Sale = { // Use Sale type
-                ...sale, 
-                items: itemsForReport as SaleItem[], // Cast if structure matches after mapping
-                total: itemsForReport.reduce( // Recalculate total based on filtered items
-                  (sum, item) => sum + (item.priceAtSale * item.quantity), 0
-                ),
+              // Create a new sale object with only items from the selected publisher
+              // and recalculate its total
+              const saleForReport: Sale = {
+                ...sale,
+                items: itemsFromSelectedEditorial,
+                total: itemsFromSelectedEditorial.reduce((sum, item) => sum + (item.precioUnitario * item.cantidad), 0),
               };
-              acc.push(saleForEditorialReport);
+              acc.push(saleForReport);
             }
             return acc;
           }, [] as Sale[]);
         }
         
-        if (salesToProcess.length === 0) {
+        if (salesToFilter.length === 0) {
           setReportData({
             totalSalesAmount: 0,
             totalOrders: 0,
             salesByPaymentMethod: [],
             salesByCategory: [],
             topSellingProducts: [],
+            periodicSummary: [],
             reportDateRange: {
                 from: format(dateRange.from!, 'P', { locale: currentLocale }),
                 to: format(dateRange.to!, 'P', { locale: currentLocale })
             },
-            filteredByEditorialName,
+            filteredByEditorialName: currentFilteredByEditorialName,
           });
-          setIsLoading(false);
-          return;
+        } else {
+            const processedData = processSalesDataForReport(salesToFilter);
+            setReportData({
+            ...processedData,
+            reportDateRange: {
+                from: format(dateRange.from!, 'P', { locale: currentLocale }),
+                to: format(dateRange.to!, 'P', { locale: currentLocale })
+            },
+            filteredByEditorialName: currentFilteredByEditorialName,
+            });
         }
-
-        const totalSalesAmount = salesToProcess.reduce((sum, sale) => sum + sale.total, 0); // Use 'total'
-        const totalOrders = salesToProcess.length;
-
-        // SalesByPaymentMethod might need adjustment if Sale type doesn't have paymentMethod directly
-        // For now, assuming it might be added or handled differently. If not, this part needs to be removed or adapted.
-        const salesByPaymentMethod: ReportData['salesByPaymentMethod'] = Object.values(
-          salesToProcess.reduce((acc, sale) => {
-            const method = (sale as any).paymentMethod || 'unknown'; // Assuming paymentMethod might be on Sale, cast to any if not typed
-            acc[method] = acc[method] || { method: method, amount: 0, count: 0 };
-            acc[method].amount += sale.total;
-            acc[method].count += 1;
-            return acc;
-          }, {} as Record<string, { method: string; amount: number; count: number }>)
-        );
-
-        const salesByCategoryMap: { [key: string]: { category: string; quantity: number; amount: number } } = {};
-        salesToProcess.forEach(sale => {
-          sale.items.forEach(item => {
-            // item.libro.categoriaId or similar is needed here.
-            // This requires book details to be populated in sale items or fetched.
-            // The 'SaleItem' has 'libroId', and 'libro' (optional Book).
-            // Let's assume 'item.libro' is populated or we use 'item.libroDetails' if fetched.
-            const bookDetail = (item as any).libroDetails || item.libro; // Use enriched details if available
-            const category = bookDetail?.categoriaId ? String(bookDetail.categoriaId) : 'N/A'; // Use categoriaId
-            salesByCategoryMap[category] = salesByCategoryMap[category] || { category, quantity: 0, amount: 0 };
-            salesByCategoryMap[category].quantity += item.cantidad;
-            salesByCategoryMap[category].amount += item.precioUnitario * item.cantidad;
-          });
-        });
-        const salesByCategory = Object.values(salesByCategoryMap).sort((a,b) => b.quantity - a.quantity);
-
-        const productSalesMap: { [key: string]: { title: string; quantity: number; revenue: number } } = {};
-        salesToProcess.forEach(sale => {
-          sale.items.forEach(item => {
-            const bookDetail = (item as any).libroDetails || item.libro;
-            const title = bookDetail?.titulo || `Book ID: ${item.libroId}`; // Use titulo
-            productSalesMap[title] = productSalesMap[title] || { title: title, quantity: 0, revenue: 0 };
-            productSalesMap[title].quantity += item.cantidad;
-            productSalesMap[title].revenue += item.precioUnitario * item.cantidad;
-          });
-        });
-        const topSellingProducts = Object.values(productSalesMap).sort((a, b) => b.quantity - a.quantity).slice(0, 10);
-        
-        let periodicSummary: ReportData['periodicSummary'] | undefined = undefined;
-        if (summaryLevel !== 'none') {
-          const summaryMap: { [key: string]: { sales: number; orders: number } } = {};
-          let intervalDates: Date[] = [];
-          // (Date interval logic remains similar, ensure dateRange.from/to are valid Date objects)
-          if (dateRange?.from && dateRange?.to) {
-            if (summaryLevel === 'daily') {
-              intervalDates = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
-            } else if (summaryLevel === 'weekly') {
-              intervalDates = eachWeekOfInterval({ start: dateRange.from, end: dateRange.to }, { locale: currentLocale });
-            } else { 
-              intervalDates = eachMonthOfInterval({ start: dateRange.from, end: dateRange.to });
-            }
-          }
-
-          intervalDates.forEach(periodStart => {
-            let periodKey: string;
-            if (summaryLevel === 'daily') periodKey = format(periodStart, 'yyyy-MM-dd');
-            else if (summaryLevel === 'weekly') periodKey = format(periodStart, 'yyyy-MM-dd');
-            else periodKey = format(periodStart, 'yyyy-MM');
-            summaryMap[periodKey] = { sales: 0, orders: 0 };
-          });
-          
-          salesToProcess.forEach(sale => {
-            const saleDate = parseISO(sale.fecha); // Use 'fecha'
-            let periodKeyToUpdate: string | undefined;
-             // (Logic for determining periodKeyToUpdate remains similar)
-            if (summaryLevel === 'daily') {
-                const key = format(saleDate, 'yyyy-MM-dd');
-                if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
-            } else if (summaryLevel === 'weekly') {
-                const startOfWeekForSale = startOfWeek(saleDate, { locale: currentLocale });
-                const key = format(startOfWeekForSale, 'yyyy-MM-dd');
-                if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
-            } else { // monthly
-                const key = format(saleDate, 'yyyy-MM');
-                if (summaryMap[key] !== undefined) periodKeyToUpdate = key;
-            }
-            
-            if (periodKeyToUpdate && summaryMap[periodKeyToUpdate]) {
-               summaryMap[periodKeyToUpdate].sales += sale.total; // Use 'total'
-               summaryMap[periodKeyToUpdate].orders += 1;
-            }
-          });
-          
-          periodicSummary = Object.keys(summaryMap).sort().map(key => {
-            let periodLabel = '';
-             // (Period label formatting remains similar)
-            if (summaryLevel === 'daily') periodLabel = format(parseISO(key), 'P', { locale: currentLocale });
-            else if (summaryLevel === 'weekly') {
-                const startW = parseISO(key);
-                periodLabel = `${format(startW, 'P', { locale: currentLocale })} - ${format(endOfWeek(startW, {locale: currentLocale}), 'P', { locale: currentLocale })}`;
-            } else periodLabel = format(parseISO(key + '-01'), 'MMM yyyy', { locale: currentLocale });
-            return { period: periodLabel, ...summaryMap[key] };
-          });
-        }
-        
-        setReportData({
-          totalSalesAmount, // This field name might need to map to reportData structure
-          totalOrders,
-          salesByPaymentMethod,
-          salesByCategory,
-          topSellingProducts,
-          periodicSummary,
-          reportDateRange: {
-            from: format(dateRange.from!, 'P', { locale: currentLocale }),
-            to: format(dateRange.to!, 'P', { locale: currentLocale })
-          },
-          filteredByEditorialName,
-        });
-      } catch (error) {
-        console.error("Error generating report:", error);
+      } catch (e) {
+        console.error("Error processing report data:", e);
+        setError(texts.errorGeneratingReport);
         toast({ title: texts.errorGeneratingReport, variant: "destructive" });
       } finally {
-        setIsLoading(false);
+        setIsGenerating(false);
       }
     }, 500); 
   };
@@ -307,6 +290,20 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
     if (summaryLevel === 'monthly') return texts.summaryMonthly;
     return '';
   }
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center min-h-[300px]"><Loader2 className="h-12 w-12 animate-spin text-primary" /><p className="ml-3">Loading report tool...</p></div>;
+  }
+   if (error && !reportData) { // Show general error if data loading failed and no report is shown
+    return (
+      <div className="text-center py-10">
+        <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+        <p className="text-xl text-destructive">{error}</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+      </div>
+    );
+  }
+
 
   return (
     <div className="space-y-6">
@@ -378,7 +375,7 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
                 <SelectContent>
                   <SelectItem value="all">{texts.allEditorials}</SelectItem>
                   {editorialsList.map(editorial => (
-                    <SelectItem key={editorial.id} value={editorial.id}>{editorial.name}</SelectItem>
+                    <SelectItem key={editorial.id} value={String(editorial.id)}>{editorial.nombre}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -386,14 +383,29 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleGenerateReport} disabled={isLoading} size="lg">
-            {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <FileText className="mr-2 h-5 w-5" />}
-            {isLoading ? texts.generatingReport : texts.generateReportButton}
+          <Button onClick={handleGenerateReport} disabled={isGenerating} size="lg">
+            {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <FileText className="mr-2 h-5 w-5" />}
+            {isGenerating ? texts.generatingReport : texts.generateReportButton}
           </Button>
         </CardFooter>
       </Card>
 
-      {reportData && (
+      {isGenerating && (
+         <div className="flex justify-center items-center py-10">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="ml-3 text-muted-foreground">{texts.generatingReport}</p>
+        </div>
+      )}
+
+      {error && reportData === null && !isGenerating && ( // Specific error during report generation
+        <div className="text-center py-10">
+            <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+            <p className="text-xl text-destructive">{error}</p>
+        </div>
+      )}
+
+
+      {reportData && !isGenerating && (
         <Card className="shadow-xl rounded-lg">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">
@@ -441,7 +453,7 @@ export function ReportsClient({ initialSales, texts, lang, dictionary }: Reports
                         <TableHeader><TableRow><TableHead>{texts.paymentMethod}</TableHead><TableHead className="text-right"># {texts.totalOrders}</TableHead><TableHead className="text-right">{texts.totalSales}</TableHead></TableRow></TableHeader>
                         <TableBody>
                           {reportData.salesByPaymentMethod.map(item => (
-                            <TableRow key={item.method}><TableCell className="capitalize">{texts[item.method as keyof typeof texts] || item.method}</TableCell><TableCell className="text-right">{item.count}</TableCell><TableCell className="text-right">{formatCurrencyUYU(item.amount)}</TableCell></TableRow>
+                            <TableRow key={item.method}><TableCell className="capitalize">{(texts as any)[item.method.toLowerCase() as keyof typeof texts] || item.method}</TableCell><TableCell className="text-right">{item.count}</TableCell><TableCell className="text-right">{formatCurrencyUYU(item.amount)}</TableCell></TableRow>
                           ))}
                         </TableBody>
                       </Table>

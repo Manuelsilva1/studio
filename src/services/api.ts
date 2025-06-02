@@ -1,11 +1,16 @@
+
 import { getAuthHeaders } from '@/lib/auth-utils';
-import { ApiResponseError, Book, Category, Editorial, User } from '@/types';
+import type { Book, Category, Editorial, User, Cart, Sale, Offer, CreateSalePayload, CreateOfferPayload, ApiResponseError } from '@/types'; // Ensure all necessary types are imported
+
+// Import mock functions
+import * from as mockApi from '@/lib/mock-data';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_MODE = process.env.NEXT_PUBLIC_API_MODE || 'production'; // Default to production
 
 interface FetchApiOptions extends RequestInit {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body?: any; // Allow any type for body, will be stringified
+  body?: any; 
 }
 
 async function fetchApi<T>(endpoint: string, options: FetchApiOptions = {}): Promise<T> {
@@ -32,7 +37,6 @@ async function fetchApi<T>(endpoint: string, options: FetchApiOptions = {}): Pro
       try {
         errorData = await response.json();
       } catch (e) {
-        // If response is not JSON, use status text
         errorData = { message: response.statusText };
       }
       const error: ApiResponseError = {
@@ -42,18 +46,15 @@ async function fetchApi<T>(endpoint: string, options: FetchApiOptions = {}): Pro
       };
       throw error;
     }
-
-    // Handle cases where response might be empty (e.g., DELETE, PUT with no content)
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return await response.json() as T;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return undefined as any; // Or handle as Promise<void> if appropriate for no-content responses
+    return undefined as any; 
 
   } catch (error) {
     console.error('API call failed:', error);
-    // Re-throw custom error or handle as needed
     if (error instanceof Object && 'message' in error) throw error;
     throw new Error('An unexpected error occurred during API call.');
   }
@@ -61,138 +62,28 @@ async function fetchApi<T>(endpoint: string, options: FetchApiOptions = {}): Pro
 
 // --- Auth ---
 export const loginUser = async (credentials: { email: string; password: string }): Promise<{ token: string; usuario: User }> => {
+  if (API_MODE === 'mock') return mockApi.mockLoginUser(credentials);
   return fetchApi<{ token: string; usuario: User }>('/api/usuarios/login', {
     method: 'POST',
     body: credentials,
   });
 };
 
-// --- Offers ---
-export const getOffers = async (): Promise<Offer[]> => {
-  return fetchApi<Offer[]>('/api/ofertas');
-};
-
-export const getOfferById = async (id: string | number): Promise<Offer> => {
-  return fetchApi<Offer>(`/api/ofertas/${id}`);
-};
-
-export const createOffer = async (offerData: CreateOfferPayload): Promise<Offer> => {
-  return fetchApi<Offer>('/api/ofertas', {
-    method: 'POST',
-    body: offerData,
-  });
-};
-
-export const updateOffer = async (id: string | number, offerData: Partial<Offer>): Promise<Offer> => {
-  return fetchApi<Offer>(`/api/ofertas/${id}`, {
-    method: 'PUT',
-    body: offerData,
-  });
-};
-
-export const deleteOffer = async (id: string | number): Promise<void> => {
-  return fetchApi<void>(`/api/ofertas/${id}`, {
-    method: 'DELETE',
-  });
-};
-
-export const addBookToOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
-  // The API might return the updated Offer or related BookOffer model. Adjust T if needed.
-  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
-    method: 'POST', 
-    // No body needed if IDs in URL are sufficient
-  });
-};
-
-export const removeBookFromOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
-  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
-    method: 'DELETE',
-  });
-};
-
-export const getBooksForOffer = async (offerId: string | number): Promise<Book[]> => {
-  // This assumes an endpoint that returns books for a given offer.
-  // Adjust endpoint if API design is different (e.g., /api/ofertas/{offerId}/libros)
-  // Or, if Offer object contains libroIds, this function might fetch an Offer then its books.
-  // For now, direct endpoint:
-  return fetchApi<Book[]>(`/api/ofertas/${offerId}/libros`); 
-  // Alternative if filtering books by offerId:
-  // return fetchApi<Book[]>(`/api/libros?ofertaId=${offerId}`);
-};
-
-// --- Sales ---
-export const createSale = async (saleData: CreateSalePayload): Promise<Sale> => {
-  return fetchApi<Sale>('/api/ventas', {
-    method: 'POST',
-    body: saleData,
-  });
-};
-
-export const getUserSales = async (): Promise<Sale[]> => {
-  return fetchApi<Sale[]>('/api/ventas');
-};
-
-export const getSaleById = async (saleId: string | number): Promise<Sale> => {
-  return fetchApi<Sale>(`/api/ventas/${saleId}`);
-};
-
-// Admin specific sales endpoints
-export const getAdminSales = async (): Promise<Sale[]> => {
-  return fetchApi<Sale[]>('/api/ventas/admin');
-};
-
-export const getAdminSaleById = async (saleId: string | number): Promise<Sale> => {
-  return fetchApi<Sale>(`/api/ventas/admin/${saleId}`);
-};
-
-// --- Cart ---
-export const getCart = async (): Promise<Cart> => {
-  return fetchApi<Cart>('/api/carrito');
-};
-
-export const addItemToCart = async (item: { libroId: string | number; cantidad: number }): Promise<Cart> => {
-  return fetchApi<Cart>('/api/carrito/items', {
-    method: 'POST',
-    body: item,
-  });
-};
-
-export const updateCartItem = async (itemId: string | number, updates: { cantidad: number }): Promise<Cart> => {
-  return fetchApi<Cart>(`/api/carrito/items/${itemId}`, {
-    method: 'PUT',
-    body: updates,
-  });
-};
-
-export const removeCartItem = async (itemId: string | number): Promise<void> => { // Or Promise<Cart> if API returns updated cart
-  return fetchApi<void>(`/api/carrito/items/${itemId}`, { // Or Cart
-    method: 'DELETE',
-  });
-};
-
-export const registerUser = async (userData: Partial<User>): Promise<User> => {
-  return fetchApi<User>('/api/usuarios/registro', {
-    method: 'POST',
-    body: userData,
-  });
-};
-
-export const getUserProfile = async (userId: string | number): Promise<User> => {
-  return fetchApi<User>(`/api/usuarios/${userId}`);
-};
-
 // --- Books ---
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getBooks = async (params?: Record<string, any>): Promise<Book[]> => {
+  if (API_MODE === 'mock') return mockApi.mockGetBooks(); // params for mock?
   const query = params ? `?${new URLSearchParams(params).toString()}` : '';
   return fetchApi<Book[]>(`/api/libros${query}`);
 };
 
 export const getBookById = async (id: string | number): Promise<Book> => {
+  if (API_MODE === 'mock') return mockApi.mockGetBookById(id);
   return fetchApi<Book>(`/api/libros/${id}`);
 };
 
 export const createBook = async (bookData: Partial<Book>): Promise<Book> => {
+  if (API_MODE === 'mock') return mockApi.mockCreateBook(bookData);
   return fetchApi<Book>('/api/libros', {
     method: 'POST',
     body: bookData,
@@ -200,6 +91,7 @@ export const createBook = async (bookData: Partial<Book>): Promise<Book> => {
 };
 
 export const updateBook = async (id: string | number, bookData: Partial<Book>): Promise<Book> => {
+  if (API_MODE === 'mock') return mockApi.mockUpdateBook(id, bookData);
   return fetchApi<Book>(`/api/libros/${id}`, {
     method: 'PUT',
     body: bookData,
@@ -207,6 +99,7 @@ export const updateBook = async (id: string | number, bookData: Partial<Book>): 
 };
 
 export const deleteBook = async (id: string | number): Promise<void> => {
+  if (API_MODE === 'mock') return mockApi.mockDeleteBook(id);
   return fetchApi<void>(`/api/libros/${id}`, {
     method: 'DELETE',
   });
@@ -214,10 +107,12 @@ export const deleteBook = async (id: string | number): Promise<void> => {
 
 // --- Categories ---
 export const getCategories = async (): Promise<Category[]> => {
+  if (API_MODE === 'mock') return mockApi.mockGetCategories();
   return fetchApi<Category[]>('/api/categorias');
 };
 
 export const createCategory = async (categoryData: Partial<Category>): Promise<Category> => {
+  if (API_MODE === 'mock') return mockApi.mockCreateCategory(categoryData);
   return fetchApi<Category>('/api/categorias', {
     method: 'POST',
     body: categoryData,
@@ -225,6 +120,7 @@ export const createCategory = async (categoryData: Partial<Category>): Promise<C
 };
 
 export const updateCategory = async (id: string | number, categoryData: Partial<Category>): Promise<Category> => {
+  if (API_MODE === 'mock') return mockApi.mockUpdateCategory(id, categoryData);
   return fetchApi<Category>(`/api/categorias/${id}`, {
     method: 'PUT',
     body: categoryData,
@@ -232,6 +128,7 @@ export const updateCategory = async (id: string | number, categoryData: Partial<
 };
 
 export const deleteCategory = async (id: string | number): Promise<void> => {
+  if (API_MODE === 'mock') return mockApi.mockDeleteCategory(id);
   return fetchApi<void>(`/api/categorias/${id}`, {
     method: 'DELETE',
   });
@@ -239,10 +136,12 @@ export const deleteCategory = async (id: string | number): Promise<void> => {
 
 // --- Editorials ---
 export const getEditorials = async (): Promise<Editorial[]> => {
+  if (API_MODE === 'mock') return mockApi.mockGetEditorials();
   return fetchApi<Editorial[]>('/api/editoriales');
 };
 
 export const createEditorial = async (editorialData: Partial<Editorial>): Promise<Editorial> => {
+  if (API_MODE === 'mock') return mockApi.mockCreateEditorial(editorialData);
   return fetchApi<Editorial>('/api/editoriales', {
     method: 'POST',
     body: editorialData,
@@ -250,6 +149,7 @@ export const createEditorial = async (editorialData: Partial<Editorial>): Promis
 };
 
 export const updateEditorial = async (id: string | number, editorialData: Partial<Editorial>): Promise<Editorial> => {
+  if (API_MODE === 'mock') return mockApi.mockUpdateEditorial(id, editorialData);
   return fetchApi<Editorial>(`/api/editoriales/${id}`, {
     method: 'PUT',
     body: editorialData,
@@ -257,7 +157,136 @@ export const updateEditorial = async (id: string | number, editorialData: Partia
 };
 
 export const deleteEditorial = async (id: string | number): Promise<void> => {
+  if (API_MODE === 'mock') return mockApi.mockDeleteEditorial(id);
   return fetchApi<void>(`/api/editoriales/${id}`, {
     method: 'DELETE',
   });
+};
+
+// --- Cart ---
+export const getCart = async (): Promise<Cart> => {
+  if (API_MODE === 'mock') return mockApi.mockGetCart();
+  return fetchApi<Cart>('/api/carrito');
+};
+
+export const addItemToCart = async (item: { libroId: string | number; cantidad: number }): Promise<Cart> => {
+  if (API_MODE === 'mock') return mockApi.mockAddItemToCart(item);
+  return fetchApi<Cart>('/api/carrito/items', {
+    method: 'POST',
+    body: item,
+  });
+};
+
+export const updateCartItem = async (itemId: string | number, updates: { cantidad: number }): Promise<Cart> => {
+  if (API_MODE === 'mock') return mockApi.mockUpdateCartItem(itemId, updates);
+  return fetchApi<Cart>(`/api/carrito/items/${itemId}`, {
+    method: 'PUT',
+    body: updates,
+  });
+};
+
+export const removeCartItem = async (itemId: string | number): Promise<void> => { // Mock should also return void to match if API is void
+  if (API_MODE === 'mock') return mockApi.mockRemoveCartItem(itemId);
+  return fetchApi<void>(`/api/carrito/items/${itemId}`, {
+    method: 'DELETE',
+  });
+};
+
+// --- Sales ---
+export const createSale = async (saleData: CreateSalePayload): Promise<Sale> => {
+  if (API_MODE === 'mock') return mockApi.mockCreateSale(saleData);
+  return fetchApi<Sale>('/api/ventas', {
+    method: 'POST',
+    body: saleData,
+  });
+};
+
+export const getUserSales = async (): Promise<Sale[]> => {
+  if (API_MODE === 'mock') return mockApi.mockGetUserSales();
+  return fetchApi<Sale[]>('/api/ventas');
+};
+
+// getSaleById is missing from mock, adding simple one below
+// export const getSaleById = async (saleId: string | number): Promise<Sale> => {
+//   // if (API_MODE === 'mock') return mockApi.mockGetSaleById(saleId); // TODO: Implement mockGetSaleById
+//   return fetchApi<Sale>(`/api/ventas/${saleId}`);
+// };
+
+export const getAdminSales = async (): Promise<Sale[]> => {
+  if (API_MODE === 'mock') return mockApi.mockGetAdminSales();
+  return fetchApi<Sale[]>('/api/ventas/admin');
+};
+
+export const getAdminSaleById = async (saleId: string | number): Promise<Sale> => {
+  if (API_MODE === 'mock') return mockApi.mockGetAdminSaleById(saleId);
+  return fetchApi<Sale>(`/api/ventas/admin/${saleId}`);
+};
+
+
+// --- Offers ---
+export const getOffers = async (): Promise<Offer[]> => {
+  if (API_MODE === 'mock') return mockApi.mockGetOffers();
+  return fetchApi<Offer[]>('/api/ofertas');
+};
+
+export const getOfferById = async (id: string | number): Promise<Offer> => {
+  if (API_MODE === 'mock') return mockApi.mockGetOfferById(id);
+  return fetchApi<Offer>(`/api/ofertas/${id}`);
+};
+
+export const createOffer = async (offerData: CreateOfferPayload): Promise<Offer> => {
+  if (API_MODE === 'mock') return mockApi.mockCreateOffer(offerData);
+  return fetchApi<Offer>('/api/ofertas', {
+    method: 'POST',
+    body: offerData,
+  });
+};
+
+export const updateOffer = async (id: string | number, offerData: Partial<Offer>): Promise<Offer> => {
+  if (API_MODE === 'mock') return mockApi.mockUpdateOffer(id, offerData);
+  return fetchApi<Offer>(`/api/ofertas/${id}`, {
+    method: 'PUT',
+    body: offerData,
+  });
+};
+
+export const deleteOffer = async (id: string | number): Promise<void> => {
+  if (API_MODE === 'mock') return mockApi.mockDeleteOffer(id);
+  return fetchApi<void>(`/api/ofertas/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const addBookToOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
+  if (API_MODE === 'mock') return mockApi.mockAddBookToOffer(offerId, libroId);
+  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
+    method: 'POST',
+  });
+};
+
+export const removeBookFromOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
+  if (API_MODE === 'mock') return mockApi.mockRemoveBookFromOffer(offerId, libroId);
+  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getBooksForOffer = async (offerId: string | number): Promise<Book[]> => {
+  if (API_MODE === 'mock') return mockApi.mockGetBooksForOffer(offerId);
+  return fetchApi<Book[]>(`/api/ofertas/${offerId}/libros`);
+};
+
+
+// --- Users (Example, not fully implemented in mock or all components) ---
+export const registerUser = async (userData: Partial<User>): Promise<User> => {
+  // if (API_MODE === 'mock') return mockApi.mockRegisterUser(userData); // TODO: Implement mockRegisterUser
+  return fetchApi<User>('/api/usuarios/registro', {
+    method: 'POST',
+    body: userData,
+  });
+};
+
+export const getUserProfile = async (userId: string | number): Promise<User> => {
+  // if (API_MODE === 'mock') return mockApi.mockGetUserProfile(userId); // TODO: Implement mockGetUserProfile
+  return fetchApi<User>(`/api/usuarios/${userId}`);
 };
