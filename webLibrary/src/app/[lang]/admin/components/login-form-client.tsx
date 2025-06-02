@@ -9,39 +9,54 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CorreoLibroLogo } from '@/components/icons/logo';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/auth-provider';
+import { loginUser } from '@/services/api'; // Import the new loginUser function
+import { ApiResponseError } from '@/types'; // Import ApiResponseError
 
 interface LoginFormClientProps {
   lang: string;
   texts: {
     title: string;
     description: string;
-    usernameLabel: string;
+    usernameLabel: string; // Will be treated as email
     usernamePlaceholder: string;
     passwordLabel: string;
     passwordPlaceholder: string;
     loginButton: string;
     loggingIn: string;
+    errorMessage?: string; // Optional error message from dictionary
   };
 }
 
 export function LoginFormClient({ lang, texts }: LoginFormClientProps) {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const { login } = useAuth(); // Get login function
+  const [email, setEmail] = useState(''); // Changed from username to email
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // No actual validation for now, as requested for development
-    console.log('Login attempt with:', { username }); // Avoid logging password
-    
-    // Simulate API call / auth process
-    setTimeout(() => {
-      // In a real app, you'd set some auth state (e.g., cookie, context)
-      router.push(`/${lang}/admin/panel`); // Redirect to the main admin panel
-      // setIsLoading(false); // Not needed if redirecting immediately
-    }, 500);
+    setError(null);
+
+    try {
+      const data = await loginUser({ email, password }); // Use the new API service
+      // The loginUser function now returns { token, usuario }
+      // The service handles response.ok and parsing JSON internally
+      // It will throw an error if not successful, which is caught below
+
+      login(data.token, data.usuario); // data.usuario should be the user object from API
+      router.push(`/${lang}/admin/panel`);
+
+    } catch (err) {
+      const apiError = err as ApiResponseError;
+      setError(apiError.message || texts.errorMessage || "Login failed");
+      console.error("Login error:", apiError);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,16 +68,23 @@ export function LoginFormClient({ lang, texts }: LoginFormClientProps) {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
+          {error && (
+            <div className="text-red-500 text-sm text-center bg-red-100 p-2 rounded">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
-            <Label htmlFor="username">{texts.usernameLabel}</Label>
+            {/* Assuming usernameLabel is actually for email */}
+            <Label htmlFor="email">{texts.usernameLabel}</Label> 
             <Input
-              id="username"
-              type="text"
-              placeholder={texts.usernamePlaceholder}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email" // Changed from username to email
+              type="email" // Changed input type to email
+              placeholder={texts.usernamePlaceholder} // Assuming placeholder is suitable for email
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="text-base"
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
@@ -75,6 +97,7 @@ export function LoginFormClient({ lang, texts }: LoginFormClientProps) {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="text-base"
+              disabled={isLoading}
             />
           </div>
         </CardContent>

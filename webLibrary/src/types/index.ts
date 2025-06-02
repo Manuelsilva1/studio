@@ -1,52 +1,131 @@
+// Core API Data Structures
+
+export interface User {
+  id: number | string; // Assuming ID can be number or string from DB
+  nombre: string;
+  email: string;
+  rol: 'admin' | 'cliente' | string; // Role can be specific or a general string
+  // Add other fields as necessary, e.g., password (though typically not sent to client), createdAt, etc.
+}
 
 export interface Editorial {
-  id: string;
-  name: string;
-  contactPerson?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  notes?: string;
+  id: number | string;
+  nombre: string;
+  sitioWeb?: string; // Optional as per original, but good to have
+  // The following fields were in the original type, keeping them commented for now
+  // contactPerson?: string;
+  // email?: string; // This might be the company email, not user email
+  // phone?: string;
+  // address?: string;
+  // notes?: string;
 }
 
 export interface Category {
-  id: string;
-  name: string;
-  description?: string;
+  id: number | string;
+  nombre: string;
+  descripcion?: string;
 }
 
 export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  genre: string; // This might be replaced or supplemented by categoryId later
-  description: string;
-  coverImage: string;
-  price: number;
+  id: number | string;
+  titulo: string;
+  autor: string;
+  isbn?: string; // Was in original, good to keep
+  precio: number;
   stock: number;
-  editorialId?: string; 
-  // categoryId?: string; // Future: Link books to categories
-  targetAudience?: string;
-  themes?: string[];
-  content?: string; 
-  publishedYear?: number;
-  isbn?: string;
-  dateAdded?: string; 
+  editorialId: number | string; // Reference to Editorial
+  categoriaId: number | string; // Reference to Category
+  // Optional: include full objects if API sends them nested
+  // editorial?: Editorial; 
+  // categoria?: Category;
+  // Fields from original type that might still be relevant or map to new ones:
+  descripcion?: string; // Was 'description'
+  // genre?: string; // Replaced by categoriaId
+  coverImage?: string; // URL or path to image
+  // targetAudience?: string;
+  // themes?: string[];
+  // content?: string; 
+  // publishedYear?: number;
+  // dateAdded?: string; 
 }
 
 export interface CartItem {
-  book: Book;
-  quantity: number;
+  id?: number | string; // Optional if items are identified by bookId in some contexts
+  libroId: number | string; // Reference to Book
+  cantidad: number;
+  precioUnitario: number; // Price at the time of adding to cart
+  // Optional: include full book object if API sends it nested
+  libro?: Book; 
+}
+
+export interface Cart {
+  id?: number | string; // Cart might not have an ID until saved or if user-session based
+  usuarioId?: number | string; // Optional if cart is for anonymous user
+  items: CartItem[];
+  total?: number; // Calculated total, could be done on frontend or backend
+}
+
+export interface SaleItem {
+  id?: number | string; // Optional, depends on DB structure for sale line items
+  libroId: number | string;
+  cantidad: number;
+  precioUnitario: number; // Price at the time of sale
+  // Optional: include full book object if API sends it nested
+  // libro?: Book;
+}
+
+export interface Sale {
+  id: number | string;
+  usuarioId?: number | string; // Can be null if it's a guest sale or POS
+  fecha: string; // ISO date string typically
+  total: number;
+  items: SaleItem[];
+  // Fields from original SaleRecord that might be relevant:
+  // paymentMethod?: 'cash' | 'card' | string; 
+  // customerName?: string; 
+}
+
+// Payload for creating a new sale
+export interface CreateSaleItemPayload {
+  libroId: number | string;
+  cantidad: number;
+  precioUnitario: number; // Price at the time of sale, for record-keeping
+}
+
+export interface CreateSalePayload {
+  items: CreateSaleItemPayload[];
+  paymentMethod: string; // e.g., 'credit_card', 'paypal', 'cash_on_delivery'
+  // Optional: Add other fields the backend might expect for sale creation
+  // paymentConfirmationToken?: string; // If payment is processed externally first
+  // shippingAddressId?: string | number;
+  // customerNotes?: string;
+  // discountCode?: string;
+  // totalAmount?: number; // Backend might recalculate this for security
 }
 
 export interface Offer {
-  id: string;
-  name: string;
-  description: string;
-  couponCode: string;
-  conditions: string; 
+  id: number | string;
+  descripcion: string;
+  descuento: number; // e.g., 0.10 for 10%
+  fechaInicio: string; // ISO date string
+  fechaFin: string; // ISO date string
+  // Fields from original Offer type:
+  // name?: string; // Could be part of description or a separate field
+  // couponCode?: string;
+  // conditions?: string; 
 }
 
+export interface ApiResponseError {
+  message: string;
+  details?: string | Record<string, any>; // Could be a simple string or an object with more detailed errors
+  statusCode?: number;
+}
+
+
+// --- Potentially Unused Types (Review and Remove if Confirm Unused) ---
+// These types (GenAICartItem, GenAIAvailableOffer) seemed to be for mock data or a different feature.
+// If they are not used by the actual API, they should be removed.
+/*
 export type GenAICartItem = {
   name: string;
   price: number;
@@ -59,22 +138,10 @@ export type GenAIAvailableOffer = {
   couponCode: string;
   conditions: string;
 };
+*/
 
-export interface SaleItem {
-  book: Book; 
-  quantity: number;
-  priceAtSale: number; 
-}
-
-export interface SaleRecord {
-  id: string;
-  timestamp: string; 
-  items: SaleItem[];
-  totalAmount: number;
-  paymentMethod: 'cash' | 'card';
-  customerName?: string; 
-}
-
+// --- Internationalization Dictionary Type (Keep As Is) ---
+// This type is for the website's text content and is not related to API data structures.
 export type Dictionary = {
   siteName: string;
   description: string;
@@ -96,7 +163,7 @@ export type Dictionary = {
   };
   languages: {
     english: string;
-    spanish: string;
+    spanish:string;
   };
   cartPage: {
     emptyCartTitle: string;
@@ -203,7 +270,7 @@ export type Dictionary = {
       manageEditorials: string;
       manageCategories: string;
       statistics: string;
-      reports: string; // New
+      reports: string; 
     };
     header: {
       titleSuffix: string;
@@ -396,7 +463,7 @@ export type Dictionary = {
       pickAStartDate: string;
       pickAnEndDate: string;
     };
-    reportsPage: { // New section for Reports
+    reportsPage: { 
       title: string;
       generateReportButton: string;
       exportPDFButton: string;
@@ -420,8 +487,8 @@ export type Dictionary = {
       topSellingProductsTitle: string;
       product: string;
       revenue: string;
-      periodicSummaryTitle: string; // e.g., "Daily Sales Summary"
-      period: string; // "Date" or "Week Starting" or "Month"
+      periodicSummaryTitle: string; 
+      period: string; 
       noDataForReport: string;
       generatingReport: string;
       exportPDFSimulated: string;

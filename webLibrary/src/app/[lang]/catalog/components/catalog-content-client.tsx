@@ -2,15 +2,15 @@
 "use client"; 
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Book } from '@/types';
-import { mockBooks, getGenres, getAuthors } from '@/lib/mock-data';
+import type { Book, ApiResponseError } from '@/types'; // Added ApiResponseError
+import { getBooks } from '@/services/api'; // Import getBooks API service
 import { BookCard } from './book-card';
 import { FiltersClient, type CatalogFilters } from './filters-client';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react'; // Added Loader2
 import { Input } from '@/components/ui/input';
-import type { Dictionary } from '@/types'; // Updated import
-import { NewArrivalsClient } from './new-arrivals-client'; // Import NewArrivalsClient
+import type { Dictionary } from '@/types';
+import { NewArrivalsClient } from './new-arrivals-client';
 
 const ITEMS_PER_PAGE = 8;
 const initialFilters: CatalogFilters = {
@@ -27,77 +27,119 @@ interface CatalogContentClientProps {
 }
 
 export function CatalogContentClient({ lang, dictionary }: CatalogContentClientProps) {
-  const [allBooks] = useState<Book[]>(mockBooks);
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>(allBooks);
-  const [displayedBooks, setDisplayedBooks]  = useState<Book[]>([]);
+  const [allBooks, setAllBooks] = useState<Book[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
+  const [displayedBooks, setDisplayedBooks] = useState<Book[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState<CatalogFilters>(initialFilters);
   
-  const [genres] = useState<string[]>(getGenres());
-  const [authors] = useState<string[]>(getAuthors());
+  // States for API data, loading, and error
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const texts = dictionary.catalogPage || { 
-    pageTitle: "Book Catalog",
+  // TODO: Dynamic genres and authors for filters might need separate API calls
+  // For now, they will be derived from the fetched books or FiltersClient might need adjustment
+  const [genres, setGenres] = useState<string[]>([]);
+  const [authors, setAuthors] = useState<string[]>([]);
     searchPlaceholder: "Search by title, author, or genre...",
     noBooksMatch: "No books match your criteria.",
     previousPage: "Previous",
     nextPage: "Next",
-    pageIndicator: "Page {currentPage} of {totalPages}"
+    pageIndicator: "Page {currentPage} of {totalPages}",
+    // Add error and loading messages to dictionary if needed
+    loadingBooks: "Loading books...",
+    errorLoadingBooks: "Failed to load books. Please try again later.",
   };
+  
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const booksFromApi = await getBooks();
+        setAllBooks(booksFromApi);
+        setFilteredBooks(booksFromApi); // Initialize filteredBooks with all books
+
+        // Derive genres and authors from fetched books for filter population
+        // This is a basic implementation; a more robust solution might involve separate API endpoints for these
+        const uniqueGenres = Array.from(new Set(booksFromApi.map(book => book.categoriaId?.toString()).filter(Boolean) as string[]));
+        // Assuming categoriaId is used for genre. If actual genre names are needed, mapping or different API structure is required.
+        // For now, using categoriaId as genre. A proper solution would fetch category names.
+        setGenres(uniqueGenres); 
+
+
+        const uniqueAuthors = Array.from(new Set(booksFromApi.map(book => book.autor).filter(Boolean)));
+        setAuthors(uniqueAuthors);
+
+      } catch (err) {
+        const apiError = err as ApiResponseError;
+        setError(apiError.message || texts.errorLoadingBooks || "Failed to load books.");
+        console.error("Error fetching books:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchBooks();
+  }, [texts.errorLoadingBooks]); // Added dependency
 
   const applyFiltersAndSearch = useCallback(() => {
-    let books = [...allBooks];
+    let booksToFilter = [...allBooks];
 
     if (searchTerm) {
-      books = books.filter(book =>
-        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (book.genre && book.genre.toLowerCase().includes(searchTerm.toLowerCase()))
+      booksToFilter = booksToFilter.filter(book =>
+        book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || // Changed from title to titulo
+        book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        // Assuming categoriaId can be searched. For actual genre name, book.categoria.nombre would be needed if populated
+        (book.categoriaId && book.categoriaId.toString().toLowerCase().includes(searchTerm.toLowerCase())) 
       );
     }
 
+    // Adjust filtering logic if `book.genre` is no longer available and `book.categoriaId` is used.
+    // This example assumes `activeFilters.genre` now refers to `categoriaId`.
     if (activeFilters.genre !== 'all') {
-      books = books.filter(book => book.genre === activeFilters.genre);
+      booksToFilter = booksToFilter.filter(book => book.categoriaId?.toString() === activeFilters.genre);
     }
     if (activeFilters.author !== 'all') {
-      books = books.filter(book => book.author === activeFilters.author);
+      booksToFilter = booksToFilter.filter(book => book.autor === activeFilters.author);
     }
     if (activeFilters.minPrice !== '') {
-      books = books.filter(book => book.price >= Number(activeFilters.minPrice));
+      booksToFilter = booksToFilter.filter(book => book.precio >= Number(activeFilters.minPrice)); // Changed from price to precio
     }
     if (activeFilters.maxPrice !== '') {
-      books = books.filter(book => book.price <= Number(activeFilters.maxPrice));
+      booksToFilter = booksToFilter.filter(book => book.precio <= Number(activeFilters.maxPrice)); // Changed from price to precio
     }
     
     switch (activeFilters.sortBy) {
       case 'price_asc':
-        books.sort((a, b) => a.price - b.price);
+        booksToFilter.sort((a, b) => a.precio - b.precio); // Changed from price to precio
         break;
       case 'price_desc':
-        books.sort((a, b) => b.price - a.price);
+        booksToFilter.sort((a, b) => b.precio - a.precio); // Changed from price to precio
         break;
       case 'title_asc':
-        books.sort((a, b) => a.title.localeCompare(b.title));
+        booksToFilter.sort((a, b) => a.titulo.localeCompare(b.titulo)); // Changed from title to titulo
         break;
       case 'title_desc':
-        books.sort((a, b) => b.title.localeCompare(a.title));
+        booksToFilter.sort((a, b) => b.titulo.localeCompare(a.titulo)); // Changed from title to titulo
         break;
-      case 'date_added_desc': // New sort option
-        books.sort((a, b) => {
-          if (!a.dateAdded || !b.dateAdded) return 0;
-          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
-        });
-        break;
+      // case 'date_added_desc': // dateAdded might not be available on Book type, review if needed
+      //   booksToFilter.sort((a, b) => {
+      //     if (!a.dateAdded || !b.dateAdded) return 0; // Ensure dateAdded exists
+      //     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+      //   });
+      //   break;
     }
 
-    setFilteredBooks(books);
+    setFilteredBooks(booksToFilter);
     setCurrentPage(1); 
   }, [allBooks, searchTerm, activeFilters]);
 
   useEffect(() => {
+    // Apply filters whenever allBooks is updated (e.g. after initial fetch)
+    // or when searchTerm or activeFilters change.
     applyFiltersAndSearch();
-  }, [searchTerm, activeFilters, applyFiltersAndSearch]);
+  }, [allBooks, searchTerm, activeFilters, applyFiltersAndSearch]);
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -129,7 +171,8 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
         {texts.pageTitle}
       </h1>
 
-      <NewArrivalsClient allBooks={allBooks} lang={lang} dictionary={dictionary} />
+      {/* Pass fetched books to NewArrivalsClient, ensure it handles empty or loading state if necessary */}
+      <NewArrivalsClient allBooks={allBooks} lang={lang} dictionary={dictionary} /> 
       
       <div className="mb-8 relative">
         <Input 
@@ -150,12 +193,23 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
             onFilterChange={handleFilterChange}
             onResetFilters={handleResetFilters}
             initialFilters={initialFilters}
-            dictionary={dictionary} 
+            dictionary={dictionary}
+            // Pass derived genres and authors; FiltersClient might need to adapt
+            // to category IDs if they are not names yet.
           />
         </div>
 
         <div className="md:col-span-3">
-          {displayedBooks.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <p className="ml-4 text-xl text-muted-foreground">{texts.loadingBooks}</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-500 bg-red-50 p-6 rounded-md">
+              <p className="text-xl">{error}</p>
+            </div>
+          ) : displayedBooks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayedBooks.map(book => (
                 <BookCard key={book.id} book={book} lang={lang} />
@@ -167,7 +221,7 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
             </div>
           )}
 
-          {totalPages > 1 && (
+          {!isLoading && !error && totalPages > 1 && (
             <div className="mt-12 flex justify-center items-center space-x-2">
               <Button
                 onClick={() => handlePageChange(currentPage - 1)}
