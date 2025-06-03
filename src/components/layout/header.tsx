@@ -44,11 +44,11 @@ export function Header({ lang, dictionary }: HeaderProps) {
           </Link>
           <ThemeToggle />
           <LanguageSwitcher dictionary={dictionary} />
-          <Button asChild variant="ghost" size="icon">
-            <Link href={`/${lang}/admin`} aria-label={dictionary.header.admin}>
+          <Link href={`/${lang}/admin`} legacyBehavior passHref>
+            <Button variant="ghost" size="icon" aria-label={dictionary.header.admin}>
               <Settings className="h-5 w-5" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </nav>
       </div>
     </header>
