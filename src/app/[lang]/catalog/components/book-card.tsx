@@ -45,6 +45,7 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
   const bookDescription = book.descripcion || catalogTexts.noDescription || "No description available.";
   const addToCartLabel = catalogTexts.addToCartButton || 'Add to Cart';
   const outOfStockLabel = catalogTexts.outOfStockButton || 'Out of Stock';
+  const viewDetailsLabel = catalogTexts.viewDetailsButton || "View Details";
 
   return (
     <Card className="flex flex-col overflow-hidden h-full shadow-md hover:shadow-lg transition-shadow duration-300 rounded-lg">
@@ -78,8 +79,8 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0 mt-auto grid grid-cols-2 gap-2">
         <Link href={`/${lang}/books/${book.id}`} passHref legacyBehavior>
-          <Button variant="outline" className="w-full">
-            <Eye className="mr-2 h-4 w-4" /> {catalogTexts.viewDetailsButton || "View"}
+          <Button variant="outline" className="w-full" aria-label={viewDetailsLabel}>
+            <Eye className="h-4 w-4" /> {viewDetailsLabel}
           </Button>
         </Link>
         <Button 
