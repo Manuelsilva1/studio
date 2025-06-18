@@ -18,6 +18,10 @@ export function NewArrivalsClient({ allBooks, lang, dictionary }: NewArrivalsCli
   const [newBooks, setNewBooks] = useState<Book[]>([]);
 
   useEffect(() => {
+    if (!allBooks || allBooks.length === 0) {
+      setNewBooks([]);
+      return;
+    }
     const today = new Date();
     let sevenDayBooks = allBooks.filter(book => {
       if (!book.dateAdded) return false;
@@ -25,19 +29,18 @@ export function NewArrivalsClient({ allBooks, lang, dictionary }: NewArrivalsCli
         const addedDate = parseISO(book.dateAdded);
         return differenceInDays(today, addedDate) <= 7 && differenceInDays(today, addedDate) >= 0;
       } catch (e) {
-        console.error("Error parsing dateAdded for book:", book.title, book.dateAdded, e);
+        console.error("Error parsing dateAdded for book:", book.titulo, book.dateAdded, e);
         return false;
       }
     });
 
-    // Sort by dateAdded descending (newest first)
     sevenDayBooks.sort((a, b) => {
         if (!a.dateAdded || !b.dateAdded) return 0;
         return parseISO(b.dateAdded).getTime() - parseISO(a.dateAdded).getTime()
     });
 
     if (sevenDayBooks.length > 0) {
-      setNewBooks(sevenDayBooks.slice(0, 4)); // Limit to, say, 4 newest books
+      setNewBooks(sevenDayBooks.slice(0, 4));
     } else {
       let thirtyDayBooks = allBooks.filter(book => {
         if (!book.dateAdded) return false;
@@ -45,7 +48,7 @@ export function NewArrivalsClient({ allBooks, lang, dictionary }: NewArrivalsCli
             const addedDate = parseISO(book.dateAdded);
             return differenceInDays(today, addedDate) <= 30 && differenceInDays(today, addedDate) >= 0;
         } catch (e) {
-            console.error("Error parsing dateAdded for book:", book.title, book.dateAdded, e);
+            console.error("Error parsing dateAdded for book:", book.titulo, book.dateAdded, e);
             return false;
         }
       });
@@ -63,12 +66,6 @@ export function NewArrivalsClient({ allBooks, lang, dictionary }: NewArrivalsCli
   };
 
   if (newBooks.length === 0) {
-    // If you want to show a message when no new books, uncomment below
-    // return (
-    //   <div className="mb-8 text-center text-muted-foreground">
-    //     {newArrivalsTexts.noNewArrivals}
-    //   </div>
-    // );
     return null; 
   }
 
@@ -82,8 +79,8 @@ export function NewArrivalsClient({ allBooks, lang, dictionary }: NewArrivalsCli
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {newBooks.map(book => (
-            <BookCard key={book.id} book={book} lang={lang} />
+          {newBooks.filter(Boolean).map(book => (
+            <BookCard key={book.id} book={book} lang={lang} dictionary={dictionary} />
           ))}
         </div>
       </CardContent>

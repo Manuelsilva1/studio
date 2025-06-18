@@ -7,9 +7,7 @@ import { getDictionary } from '@/lib/dictionaries';
 import type { Dictionary } from '@/types'; // Updated import
 
 interface AdminDashboardPageProps {
-  params: {
-    lang: string;
-  };
+  params: any;
 }
 
 export default async function AdminDashboardPage({ params: { lang } }: AdminDashboardPageProps) {

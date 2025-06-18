@@ -1,13 +1,13 @@
 
 "use client"; 
 
-import { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
-import type { Book, ApiResponseError } from '@/types'; // Added ApiResponseError
-import { getBooks } from '@/services/api'; // Import getBooks API service
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { Book, ApiResponseError } from '@/types';
+import { getBooks } from '@/services/api';
 import { BookCard } from './book-card';
 import { FiltersClient, type CatalogFilters } from './filters-client';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2 } from 'lucide-react'; // Added Loader2
+import { Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/types';
 import { NewArrivalsClient } from './new-arrivals-client';
@@ -49,8 +49,8 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
       previousPage: catalogPageTexts.previousPage || "Previous",
       nextPage: catalogPageTexts.nextPage || "Next",
       pageIndicator: catalogPageTexts.pageIndicator || "Page {currentPage} of {totalPages}",
-      loadingBooks: "Loading books...", // Fallback if not in dictionary
-      errorLoadingBooks: "Failed to load books. Please try again later.", // Fallback if not in dictionary
+      loadingBooks: catalogPageTexts.loadingBooks || "Loading books...",
+      errorLoadingBooks: catalogPageTexts.errorLoadingBooks || "Failed to load books. Please try again later.",
     };
   }, [dictionary.catalogPage]);
   
@@ -78,7 +78,7 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
       }
     };
     fetchBooks();
-  }, [texts.errorLoadingBooks, dictionary]); // Added dictionary to dependency if texts rely on it
+  }, [texts.errorLoadingBooks, dictionary]); // dictionary dependency might be indirect via texts
 
   const applyFiltersAndSearch = useCallback(() => {
     let booksToFilter = [...allBooks];
@@ -117,12 +117,12 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
       case 'title_desc':
         booksToFilter.sort((a, b) => b.titulo.localeCompare(a.titulo)); 
         break;
-      // case 'date_added_desc': // dateAdded might not be available on Book type
-      //   booksToFilter.sort((a, b) => {
-      //     if (!a.dateAdded || !b.dateAdded) return 0;
-      //     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
-      //   });
-      //   break;
+      case 'date_added_desc': // Assumes Book type has dateAdded
+        booksToFilter.sort((a, b) => {
+          if (!a.dateAdded || !b.dateAdded) return 0; // Handle missing dateAdded
+          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+        });
+        break;
     }
 
     setFilteredBooks(booksToFilter);
@@ -200,8 +200,8 @@ export function CatalogContentClient({ lang, dictionary }: CatalogContentClientP
             </div>
           ) : displayedBooks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedBooks.map(book => (
-                <BookCard key={book.id} book={book} lang={lang} />
+              {displayedBooks.filter(Boolean).map(book => (
+                <BookCard key={book.id} book={book} lang={lang} dictionary={dictionary} />
               ))}
             </div>
           ) : (

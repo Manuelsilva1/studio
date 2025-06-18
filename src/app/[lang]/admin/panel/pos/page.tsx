@@ -7,9 +7,7 @@ import { PosClient } from './components/pos-client';
 import { getBooks as apiGetBooks } from '@/services/api'; 
 
 interface AdminPosPageProps {
-  params: {
-    lang: string;
-  };
+  params: any;
 }
 
 export default async function AdminPosPage({ params: { lang } }: AdminPosPageProps) {

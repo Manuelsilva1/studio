@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { ManageOffersContent } from './components/manage-offers-content';
 
 interface ManageOffersPageProps {
-  params: { lang: string };
+  params: any;
 }
 
 // Texts that would ideally come from the dictionary

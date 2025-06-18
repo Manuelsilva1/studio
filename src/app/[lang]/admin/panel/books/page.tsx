@@ -8,7 +8,7 @@ import { BookFormClient } from './components/book-form-client';
 import { BookListClient } from './components/book-list-client';
 import { Loader2 } from 'lucide-react';
 import { getBooks, getBookById, createBook, updateBook, deleteBook as apiDeleteBook } from '@/services/api'; // Import API functions
-import type { Book, ApiResponseError } from '@/types';
+import type {ApiResponseError } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 // Removed mock data and functions
@@ -122,7 +122,7 @@ function ManageBooksContent({ params: { lang } }: ManageBooksContentProps) {
 }
 
 interface ManageBooksPageProps {
-  params: { lang: string };
+  params: any;
 }
 
 export default function ManageBooksPage({ params }: ManageBooksPageProps) {

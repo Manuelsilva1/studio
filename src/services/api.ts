@@ -6,7 +6,7 @@ import type { Book, Category, Editorial, User, Cart, Sale, Offer, CreateSalePayl
 import * as mockApi from '@/lib/mock-data';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const API_MODE = process.env.NEXT_PUBLIC_API_MODE || 'production'; // Default to production
+const API_MODE = 'mock'; // Default to production
 
 interface FetchApiOptions extends RequestInit {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

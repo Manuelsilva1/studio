@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { ManageCategoriesContent } from './components/manage-categories-content';
 
 interface ManageCategoriesPageProps {
-  params: { lang: string };
+  params: any;
 }
 
 export default async function ManageCategoriesPage({ params }: ManageCategoriesPageProps) {

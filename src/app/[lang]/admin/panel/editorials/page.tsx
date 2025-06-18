@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { ManageEditorialsContent } from './components/manage-editorials-content';
 
 interface ManageEditorialsPageProps {
-  params: { lang: string };
+  params: any;
 }
 
 export default async function ManageEditorialsPage({ params }: ManageEditorialsPageProps) {

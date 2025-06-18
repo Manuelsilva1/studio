@@ -47,6 +47,12 @@
     "pageIndicator": "Page {currentPage} of {totalPages}",
     "addToCartButton": "Add to Cart",
     "outOfStockButton": "Out of Stock",
+    "viewDetailsButton": "View Details",
+    "noDescription": "No description available.",
+    "loadingBooks": "Loading books...",
+    "errorLoadingBooks": "Failed to load books. Please try again later.",
+    "unknownTitle": "Untitled Book",
+    "unknownAuthor": "Unknown Author",
     "newArrivalsSection": {
       "title": "New Arrivals",
       "noNewArrivals": "No new books in the last month. Check back soon!"
@@ -371,4 +377,3 @@
     }
   }
 }
-

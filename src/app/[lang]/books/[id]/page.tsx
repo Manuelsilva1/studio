@@ -10,9 +10,11 @@ import { getDictionary } from '@/lib/dictionaries';
 // Remove mockBooks if no longer needed for generateStaticParams or other parts
 // import { mockBooks } from '@/lib/mock-data'; 
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, AlertTriangle } from 'lucide-react'; // Added AlertTriangle for errors
-import { LightboxClient } from './components/lightbox-client';
-import { CartProvider, useCart } from '@/context/cart-provider'; 
+import { ShoppingCart, AlertTriangle, Link } from 'lucide-react'; // Added AlertTriangle for errors
+import { LightboxClient } from '@/app/books/[id]/components/lightbox-client';
+import { CartProvider } from '@/context/cart-provider';
+import { useCart } from '@/hooks/use-cart';
+
 // getDictionary is already imported
 // Dictionary type is already imported
 import { useToast } from '@/hooks/use-toast'; 

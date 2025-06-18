@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from 'react';
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useContext } from 'react'; // Import useContext
 import type { Book, Cart, CartItem as ApiCartItem, ApiResponseError } from '@/types'; // Renamed CartItem to ApiCartItem to avoid conflict
 import { useAuth } from './auth-provider';
 import { getCart, addItemToCart as apiAddItemToCart, updateCartItem as apiUpdateCartItem, removeCartItem as apiRemoveCartItem } from '@/services/api';
@@ -86,7 +86,7 @@ export function CartProvider({ children }: CartProviderProps) {
     try {
       await apiRemoveCartItem(itemId);
       // Option 1: Re-fetch the entire cart
-      await fetchCart(); 
+      await fetchCart();
       // Option 2: If API returned updated cart (current service returns void)
       // setCart(updatedCartFromApi);
       // Option 3: Manipulate local state (less safe if other changes happen concurrently)
@@ -155,10 +155,10 @@ export function CartProvider({ children }: CartProviderProps) {
       setIsLoading(false);
     }
     // Option 2: If no dedicated API, just clear local state and let it re-sync
-    // setCart(null); 
+    // setCart(null);
     // This is less ideal as the backend cart would persist.
   };
-  
+
   const getCartTotal = () => {
     return cart?.total ?? cart?.items?.reduce((total, item) => total + (item.libro?.precio ?? 0) * item.cantidad, 0) ?? 0;
   };
@@ -186,3 +186,12 @@ export function CartProvider({ children }: CartProviderProps) {
     </CartContext.Provider>
   );
 }
+
+// Add this hook to export the cart context
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};

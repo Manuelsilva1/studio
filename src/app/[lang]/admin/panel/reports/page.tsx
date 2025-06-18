@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { ReportsClient } from './components/reports-client';
 
 interface AdminReportsPageProps {
-  params: { lang: string };
+  params: any;
 }
 
 export default async function AdminReportsPage({ params }: AdminReportsPageProps) {

@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 // or child pages (like the /admin login page) to define their own specific structures.
 interface AdminSegmentLayoutProps {
   children: ReactNode;
-  params: { lang: string }; // lang might be needed by children or for other context providers
+  params: any; // Temporalmente cambiado a 'any' para depuración
 }
 
 export default function AdminSegmentLayout({ children, params }: AdminSegmentLayoutProps) {

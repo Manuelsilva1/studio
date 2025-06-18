@@ -7,9 +7,7 @@ import { ManageSalesContent } from './components/manage-sales-content'; // Impor
 import { Loader2 } from 'lucide-react'; // Import Loader2 for Suspense fallback
 
 interface AdminSalesPageProps {
-  params: {
-    lang: string;
-  };
+  params: any;
 }
 
 export default async function AdminSalesPage({ params: { lang } }: AdminSalesPageProps) {

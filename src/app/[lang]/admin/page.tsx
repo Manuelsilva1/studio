@@ -5,7 +5,7 @@ import { LoginFormClient } from './components/login-form-client';
 import { PublicLayout } from '@/components/layout/public-layout'; // Import PublicLayout
 
 interface LoginPageProps {
-  params: { lang: string };
+  params: any;
 }
 
 export default async function LoginPage({ params }: LoginPageProps) {

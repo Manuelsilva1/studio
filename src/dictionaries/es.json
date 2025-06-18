@@ -47,6 +47,12 @@
     "pageIndicator": "Página {currentPage} de {totalPages}",
     "addToCartButton": "Añadir al Carrito",
     "outOfStockButton": "Agotado",
+    "viewDetailsButton": "Ver Detalles",
+    "noDescription": "Sin descripción disponible.",
+    "loadingBooks": "Cargando libros...",
+    "errorLoadingBooks": "Error al cargar los libros. Por favor, inténtalo de nuevo más tarde.",
+    "unknownTitle": "Libro sin Título",
+    "unknownAuthor": "Autor Desconocido",
     "newArrivalsSection": {
       "title": "Novedades",
       "noNewArrivals": "No hay libros nuevos en el último mes. ¡Vuelve pronto!"
