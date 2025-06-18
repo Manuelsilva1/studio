@@ -53,19 +53,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(adminPanelUrl);
   }
 
-  // Handle other protected public-facing routes (checkout, cart, sales history)
-  // For now, these also redirect to the admin login page if not authenticated,
-  // as it's the only login page available.
-  const otherProtectedPublicRoutes = [
-    `/${currentLocale}/checkout`,
-    `/${currentLocale}/cart`,
-    `/${currentLocale}/sales/history`,
-  ];
-
-  if (otherProtectedPublicRoutes.some(route => pathname.startsWith(route)) && !token) {
-    const loginUrl = new URL(`/${currentLocale}/admin`, origin); // Redirect to admin login
-    return NextResponse.redirect(loginUrl);
-  }
+  // The following routes are no longer protected by this middleware forcing admin login.
+  // Their internal logic will handle authentication requirements.
+  // const otherProtectedPublicRoutes = [
+  //   `/${currentLocale}/checkout`,
+  //   `/${currentLocale}/cart`,
+  //   `/${currentLocale}/sales/history`,
+  // ];
+  // if (otherProtectedPublicRoutes.some(route => pathname.startsWith(route)) && !token) {
+  //   const loginUrl = new URL(`/${currentLocale}/admin`, origin); // Redirect to admin login
+  //   return NextResponse.redirect(loginUrl);
+  // }
 
   // --- Locale Redirection if missing (after auth check, as auth might redirect) ---
   if (!hasLocalePrefix) {
