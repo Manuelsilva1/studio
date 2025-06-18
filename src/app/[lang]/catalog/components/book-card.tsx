@@ -87,10 +87,11 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
           {(typeof book.stock === 'number' && book.stock > 0)
-            ? `${catalogTexts.addToCartButton || 'Add to Cart'} - UYU ${typeof book.precio === 'number' ? book.precio.toFixed(2) : 'N/A'}`
+            ? (catalogTexts.addToCartButton || 'Add to Cart')
             : (catalogTexts.outOfStockButton || 'Out of Stock')}
         </Button>
       </CardFooter>
     </Card>
   );
 }
+
