@@ -43,6 +43,8 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
   const authorName = book.autor || catalogTexts.unknownAuthor || "Unknown Author";
   const authorDisplay = `${bookDetailTexts.byAuthorPrefix || "By"} ${authorName}`;
   const bookDescription = book.descripcion || catalogTexts.noDescription || "No description available.";
+  const addToCartLabel = catalogTexts.addToCartButton || 'Add to Cart';
+  const outOfStockLabel = catalogTexts.outOfStockButton || 'Out of Stock';
 
   return (
     <Card className="flex flex-col overflow-hidden h-full shadow-md hover:shadow-lg transition-shadow duration-300 rounded-lg">
@@ -77,18 +79,17 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
       <CardFooter className="p-4 pt-0 mt-auto grid grid-cols-2 gap-2">
         <Link href={`/${lang}/books/${book.id}`} passHref legacyBehavior>
           <Button variant="outline" className="w-full">
-            <Eye className="h-4 w-4" /> {catalogTexts.viewDetailsButton || "View"}
+            <Eye className="mr-2 h-4 w-4" /> {catalogTexts.viewDetailsButton || "View"}
           </Button>
         </Link>
         <Button 
           onClick={handleAddToCart} 
           className="w-full" 
+          size="icon"
           disabled={typeof book.stock !== 'number' || book.stock <= 0}
+          aria-label={(typeof book.stock === 'number' && book.stock > 0) ? addToCartLabel : outOfStockLabel}
         >
-          <ShoppingCart className="h-4 w-4" /> 
-          {(typeof book.stock === 'number' && book.stock > 0)
-            ? (catalogTexts.addToCartButton || 'Add to Cart')
-            : (catalogTexts.outOfStockButton || 'Out of Stock')}
+          <ShoppingCart className="h-5 w-5" /> 
         </Button>
       </CardFooter>
     </Card>
