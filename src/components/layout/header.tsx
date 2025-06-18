@@ -1,14 +1,14 @@
 
-"use client"; // Make it a client component to use hooks
+"use client"; 
 
 import Link from 'next/link';
 import { BookOpen, ShoppingCart, Settings } from 'lucide-react';
 import { CorreoLibroLogo } from '@/components/icons/logo';
-import { useCart } from '@/hooks/use-cart'; // Import useCart
+// import { useCart } from '@/hooks/use-cart'; // Temporarily commented out for diagnosis
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import type { Dictionary } from '@/types'; // Updated import
+import type { Dictionary } from '@/types';
 
 interface HeaderProps {
   lang: string;
@@ -16,8 +16,10 @@ interface HeaderProps {
 }
 
 export function Header({ lang, dictionary }: HeaderProps) {
-  const { getItemCount, cart, isLoading } = useCart(); // Get cart data
-  const itemCount = getItemCount();
+  // const { getItemCount, isLoading } = useCart(); // Temporarily commented out
+  // const itemCount = getItemCount(); // Temporarily commented out
+  const itemCount = 0; // Placeholder for diagnosis
+  const isLoading = true; // Placeholder for diagnosis
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -35,11 +37,11 @@ export function Header({ lang, dictionary }: HeaderProps) {
           <Link href={`/${lang}/cart`} legacyBehavior passHref>
             <Button variant="ghost" className="text-sm font-medium relative">
               <ShoppingCart className="mr-2 h-4 w-4" /> {dictionary.header.cart}
-              {!isLoading && itemCount > 0 && (
+              {/*!isLoading && itemCount > 0 && ( // Temporarily commented out
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                   {itemCount}
                 </span>
-              )}
+              )*/}
             </Button>
           </Link>
           <ThemeToggle />

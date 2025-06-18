@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { ClientLayoutProviders } from './components/client-layout-providers';
 import { getDictionary } from '@/lib/dictionaries';
-import type { Dictionary } from '@/types'; // Updated import
+import type { Dictionary } from '@/types';
 import type { Metadata, Viewport } from 'next';
 
 interface LangLayoutProps {
@@ -12,14 +12,26 @@ interface LangLayoutProps {
 }
 
 export async function generateMetadata({ params: { lang } }: LangLayoutProps): Promise<Metadata> {
-  const dictionary = await getDictionary(lang);
-  return {
-    title: {
-      default: dictionary.siteName,
-      template: `%s | ${dictionary.siteName}`,
-    },
-    description: dictionary.description,
-  };
+  try {
+    const dictionary = await getDictionary(lang);
+    return {
+      title: {
+        default: dictionary.siteName,
+        template: `%s | ${dictionary.siteName}`,
+      },
+      description: dictionary.description,
+    };
+  } catch (error) {
+    console.error(`Failed to load dictionary for metadata (lang: ${lang}):`, error);
+    // Fallback metadata in case of error
+    return {
+      title: {
+        default: 'Librería 33',
+        template: '%s | Librería 33',
+      },
+      description: 'Error loading page content. Welcome to Librería 33.',
+    };
+  }
 }
 
 export const viewport: Viewport = {
