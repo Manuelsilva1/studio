@@ -77,7 +77,7 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
       <CardFooter className="p-4 pt-0 mt-auto grid grid-cols-2 gap-2">
         <Link href={`/${lang}/books/${book.id}`} passHref legacyBehavior>
           <Button variant="outline" className="w-full">
-            <Eye className="mr-2 h-4 w-4" /> {catalogTexts.viewDetailsButton || "View"}
+            <Eye className="h-4 w-4" /> {catalogTexts.viewDetailsButton || "View"}
           </Button>
         </Link>
         <Button 
@@ -85,7 +85,7 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
           className="w-full" 
           disabled={typeof book.stock !== 'number' || book.stock <= 0}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" />
+          <ShoppingCart className="h-4 w-4" /> 
           {(typeof book.stock === 'number' && book.stock > 0)
             ? (catalogTexts.addToCartButton || 'Add to Cart')
             : (catalogTexts.outOfStockButton || 'Out of Stock')}
@@ -94,4 +94,3 @@ export function BookCard({ book, lang, dictionary }: BookCardProps) {
     </Card>
   );
 }
-
