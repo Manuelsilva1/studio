@@ -48,8 +48,8 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
     }
     const lowerSearchTerm = searchTerm.toLowerCase();
     const filtered = allBooks.filter(book =>
-      book.title.toLowerCase().includes(lowerSearchTerm) ||
-      book.author.toLowerCase().includes(lowerSearchTerm)
+      (book.titulo && book.titulo.toLowerCase().includes(lowerSearchTerm)) || // Use titulo
+      (book.autor && book.autor.toLowerCase().includes(lowerSearchTerm))    // Use autor
     );
     setSearchResults(filtered.slice(0, 10)); 
   }, [searchTerm, allBooks]);
@@ -63,25 +63,25 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
             item.book.id === book.id ? { ...item, quantity: item.quantity + 1 } : item
           );
         }
-        toast({ title: "Stock limit reached", description: `Cannot add more of ${book.title}.`, variant: "destructive" });
+        toast({ title: "Stock limit reached", description: `Cannot add more of ${book.titulo}.`, variant: "destructive" }); // Use titulo
         return prevOrder;
       }
       if (book.stock > 0) {
         return [...prevOrder, { book, quantity: 1 }];
       }
-      toast({ title: "Out of stock", description: `${book.title} is out of stock.`, variant: "destructive" });
+      toast({ title: "Out of stock", description: `${book.titulo} is out of stock.`, variant: "destructive" }); // Use titulo
       return prevOrder;
     });
   };
 
-  const updateOrderItemQuantity = (bookId: string, change: number) => {
+  const updateOrderItemQuantity = (bookId: string | number, change: number) => { // Allow number for bookId
     setCurrentOrderItems(prevOrder =>
       prevOrder.map(item => {
-        if (item.book.id === bookId) {
+        if (String(item.book.id) === String(bookId)) { // Compare as strings
           const newQuantity = item.quantity + change;
           if (newQuantity <= 0) return null; 
           if (newQuantity > item.book.stock) {
-            toast({ title: "Stock limit reached", description: `Max stock for ${item.book.title} is ${item.book.stock}.`, variant: "destructive" });
+            toast({ title: "Stock limit reached", description: `Max stock for ${item.book.titulo} is ${item.book.stock}.`, variant: "destructive" }); // Use titulo
             return { ...item, quantity: item.book.stock };
           }
           return { ...item, quantity: newQuantity };
@@ -91,12 +91,12 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
     );
   };
 
-  const removeOrderItem = (bookId: string) => {
-    setCurrentOrderItems(prevOrder => prevOrder.filter(item => item.book.id !== bookId));
+  const removeOrderItem = (bookId: string | number) => { // Allow number for bookId
+    setCurrentOrderItems(prevOrder => prevOrder.filter(item => String(item.book.id) !== String(bookId))); // Compare as strings
   };
 
   const orderTotal = useMemo(() => {
-    return currentOrderItems.reduce((total, item) => total + item.book.price * item.quantity, 0);
+    return currentOrderItems.reduce((total, item) => total + item.book.precio * item.quantity, 0);
   }, [currentOrderItems]);
 
   const handleCompleteSale = async () => {
@@ -109,26 +109,23 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
     const saleItemsPayload: CreateSaleItemPayload[] = currentOrderItems.map(item => ({
       libroId: item.book.id,
       cantidad: item.quantity,
-      precioUnitario: item.book.precio, // Use API Book's 'precio'
+      precioUnitario: item.book.precio, 
     }));
 
     const salePayload: CreateSalePayload = {
       items: saleItemsPayload,
       paymentMethod: paymentMethod,
-      // Customer name might be handled differently by the API (e.g., tied to user or a specific field)
-      // If your API's CreateSalePayload includes customerName, add it here:
-      // customerName: customerName || undefined, 
+      // customerName: customerName || undefined, // If API supports it
     };
 
     try {
-      const createdSale = await createSale(salePayload); // Use API service
+      const createdSale = await createSale(salePayload); 
       setCompletedSale(createdSale);
-      setIsTicketDialogOpen(true); // Open dialog
+      setIsTicketDialogOpen(true); 
       toast({
         title: posTexts.saleCompletedToastTitle,
         description: posTexts.saleCompletedToastDesc + (createdSale.id ? ` ID: ${createdSale.id}` : ""),
       });
-      // Resetting the form is now handled in handleCloseTicketDialog
     } catch (error) {
       const apiError = error as ApiResponseError;
       console.error("Error completing sale:", apiError);
@@ -141,7 +138,6 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
   const handleCloseTicketDialog = () => {
     setIsTicketDialogOpen(false);
     setCompletedSale(null);
-    // Reset POS state after dialog is closed
     setCurrentOrderItems([]);
     setSearchTerm('');
     setSearchResults([]);
@@ -174,10 +170,10 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                   {searchResults.map(book => (
                     <li key={book.id} className="flex items-center justify-between p-2 hover:bg-accent rounded-md">
                       <div className="flex items-center space-x-2 overflow-hidden">
-          <Image src={book.coverImage || '/placeholder-image.png'} alt={book.titulo} width={30} height={45} className="rounded object-cover" data-ai-hint="book cover search"/>
+                        <Image src={book.coverImage || '/placeholder-image.png'} alt={book.titulo} width={30} height={45} className="rounded object-cover" data-ai-hint="book cover search"/>
                         <div className="flex-grow overflow-hidden">
-            <p className="text-sm font-medium truncate" title={book.titulo}>{book.titulo}</p> {/* Use titulo/autor */}
-            <p className="text-xs text-muted-foreground truncate" title={book.autor}>{book.autor}</p> {/* Use titulo/autor */}
+                          <p className="text-sm font-medium truncate" title={book.titulo}>{book.titulo}</p> 
+                          <p className="text-xs text-muted-foreground truncate" title={book.autor}>{book.autor}</p>
                         </div>
                       </div>
                       <Button size="sm" variant="outline" onClick={() => addToOrder(book)} disabled={book.stock <= 0}>
@@ -220,11 +216,11 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                         <TableCell className="flex items-center space-x-2">
                         <Image src={item.book.coverImage || '/placeholder-image.png'} alt={item.book.titulo} width={40} height={60} className="rounded object-cover" data-ai-hint="book cover order"/>
                           <div>
-                          <p className="font-medium truncate w-32" title={item.book.titulo}>{item.book.titulo}</p> {/* Use titulo/autor */}
-                          <p className="text-xs text-muted-foreground truncate w-32" title={item.book.autor}>{item.book.autor}</p> {/* Use titulo/autor */}
+                          <p className="font-medium truncate w-32" title={item.book.titulo}>{item.book.titulo}</p> 
+                          <p className="text-xs text-muted-foreground truncate w-32" title={item.book.autor}>{item.book.autor}</p> 
                           </div>
                         </TableCell>
-                      <TableCell className="text-right">UYU {item.book.precio.toFixed(2)}</TableCell> {/* Use precio */}
+                      <TableCell className="text-right">UYU {item.book.precio.toFixed(2)}</TableCell> 
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center space-x-1">
                             <Button variant="ghost" size="icon" onClick={() => updateOrderItemQuantity(item.book.id, -1)} className="h-6 w-6">
@@ -236,7 +232,7 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
                             </Button>
                           </div>
                         </TableCell>
-                      <TableCell className="text-right">UYU {(item.book.precio * item.quantity).toFixed(2)}</TableCell> {/* Use precio */}
+                      <TableCell className="text-right">UYU {(item.book.precio * item.quantity).toFixed(2)}</TableCell> 
                         <TableCell className="text-center">
                           <Button variant="ghost" size="icon" onClick={() => removeOrderItem(item.book.id)} className="text-destructive h-6 w-6">
                             <XCircle className="h-4 w-4" />
@@ -314,9 +310,10 @@ export function PosClient({ lang, dictionary, allBooks, posTexts }: PosClientPro
           isOpen={isTicketDialogOpen}
           onClose={handleCloseTicketDialog}
           saleRecord={completedSale}
-          dictionary={dictionary} // Pass full dictionary
+          dictionary={dictionary} 
         />
       )}
     </>
   );
 }
+

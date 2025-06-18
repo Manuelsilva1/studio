@@ -5,6 +5,7 @@ import type { Dictionary, Book } from '@/types'; // Combined Book import
 import { PosClient } from './components/pos-client';
 // Import getBooks from API services
 import { getBooks as apiGetBooks } from '@/services/api'; 
+import { AlertTriangle } from 'lucide-react'; // Import AlertTriangle for error display
 
 interface AdminPosPageProps {
   params: any;
@@ -37,6 +38,7 @@ export default async function AdminPosPage({ params: { lang } }: AdminPosPagePro
     saleCompletedToastTitle: "Sale Completed!",
     saleCompletedToastDesc: "The sale has been processed successfully.",
     errorCompletingSale: "Error completing sale.",
+    errorLoadingBooks: "Error Loading Books", // Added for consistency
     ticketDialog: {
       title: "Sale Receipt",
       saleId: "Sale ID:",
@@ -57,25 +59,33 @@ export default async function AdminPosPage({ params: { lang } }: AdminPosPagePro
     }
   };
   
-  // Fetch books from the API on the server side
   let books: Book[] = [];
+  let fetchError: string | null = null;
   try {
     books = await apiGetBooks();
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to fetch books for POS page:", error);
-    // Optionally, handle this error more gracefully, e.g., pass an error message to PosClient
-    // or render an error state here. For now, PosClient will receive an empty allBooks array.
+    fetchError = error.message || texts.errorLoadingBooks || "Failed to load books for POS.";
   }
 
   return (
     <div className="space-y-8">
       <h1 className="font-headline text-3xl font-bold text-primary">{texts.title}</h1>
-      <PosClient 
-        lang={lang} 
-        dictionary={dictionary} 
-        allBooks={books} 
-        posTexts={texts} 
-      />
+      {fetchError ? (
+        <div className="text-center py-10 text-red-500 bg-red-50 p-6 rounded-md shadow-md">
+          <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+          <p className="text-xl font-semibold">{texts.errorLoadingBooks}</p>
+          <p>{fetchError}</p>
+        </div>
+      ) : (
+        <PosClient 
+          lang={lang} 
+          dictionary={dictionary} 
+          allBooks={books} 
+          posTexts={texts} 
+        />
+      )}
     </div>
   );
 }
+

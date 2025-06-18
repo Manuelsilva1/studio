@@ -6,7 +6,8 @@ import type { Book, Category, Editorial, User, Cart, Sale, Offer, CreateSalePayl
 import * as mockApi from '@/lib/mock-data';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const API_MODE = 'mock'; // Default to production
+// Correctly use the environment variable or default to 'production'
+const API_MODE = process.env.NEXT_PUBLIC_API_MODE || 'production'; 
 
 interface FetchApiOptions extends RequestInit {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -290,3 +291,4 @@ export const getUserProfile = async (userId: string | number): Promise<User> => 
   // if (API_MODE === 'mock') return mockApi.mockGetUserProfile(userId); // TODO: Implement mockGetUserProfile
   return fetchApi<User>(`/api/usuarios/${userId}`);
 };
+
