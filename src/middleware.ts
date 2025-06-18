@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const PUBLIC_FILE = /\.(.*)$/;
@@ -22,7 +23,7 @@ export function middleware(request: NextRequest) {
   const locales = ['en', 'es'];
   const defaultLocale = 'en';
 
-  // --- Locale Detection and Handling (adapted from original) ---
+  // --- Locale Detection (Part 1 - Determine currentLocale) ---
   let currentLocale = defaultLocale;
   let hasLocalePrefix = false;
 
@@ -35,33 +36,34 @@ export function middleware(request: NextRequest) {
   }
   
   // --- Authentication and Protected Routes ---
-  const protectedRoutePatterns = [
-    /^\/(en|es)\/admin(\/.*)?$/, // /en/admin, /es/admin, /en/admin/panel, /es/admin/panel/books, etc.
-    /^\/(en|es)\/checkout(\/.*)?$/,
-    /^\/(en|es)\/sales\/history(\/.*)?$/,
-    // Add /cart here if it should be strictly protected. 
-    // If guests can view an empty cart, protection might be at component level or for specific cart actions.
-    // For this task, let's protect /cart as well.
-    /^\/(en|es)\/cart(\/.*)?$/, 
-  ];
-
-  const isProtectedRoute = protectedRoutePatterns.some(pattern => pattern.test(pathname));
   const token = request.cookies.get('authToken')?.value;
 
-  if (isProtectedRoute && !token) {
-    // For admin routes, redirect to admin login. For others, to a generic login page.
-    // Ensure the login page itself is not a protected route to avoid redirect loops.
-    let loginPath = `/${currentLocale}/login`; // Generic login page
-    if (pathname.startsWith(`/${currentLocale}/admin`)) {
-      loginPath = `/${currentLocale}/admin`; // Admin login is at /admin
-    }
-    
-    // Preserve searchParams if any, e.g., a `redirect_url`
-    const loginUrl = new URL(loginPath, origin);
-    // request.nextUrl.searchParams.forEach((value, key) => {
-    //   loginUrl.searchParams.append(key, value);
-    // });
-    // For simplicity, not preserving searchParams now, but could be added.
+  const isAdminLoginPage = pathname === `/${currentLocale}/admin`;
+  const isAdminPanelRoute = pathname.startsWith(`/${currentLocale}/admin/panel`);
+
+  // Handle admin panel access: if trying to access panel and not logged in, redirect to admin login page.
+  if (isAdminPanelRoute && !token) {
+    const adminLoginUrl = new URL(`/${currentLocale}/admin`, origin);
+    return NextResponse.redirect(adminLoginUrl);
+  }
+
+  // Handle admin login page access: if logged in and trying to access login page, redirect to panel.
+  if (isAdminLoginPage && token) {
+    const adminPanelUrl = new URL(`/${currentLocale}/admin/panel`, origin);
+    return NextResponse.redirect(adminPanelUrl);
+  }
+
+  // Handle other protected public-facing routes (checkout, cart, sales history)
+  // For now, these also redirect to the admin login page if not authenticated,
+  // as it's the only login page available.
+  const otherProtectedPublicRoutes = [
+    `/${currentLocale}/checkout`,
+    `/${currentLocale}/cart`,
+    `/${currentLocale}/sales/history`,
+  ];
+
+  if (otherProtectedPublicRoutes.some(route => pathname.startsWith(route)) && !token) {
+    const loginUrl = new URL(`/${currentLocale}/admin`, origin); // Redirect to admin login
     return NextResponse.redirect(loginUrl);
   }
 
@@ -88,10 +90,16 @@ export function middleware(request: NextRequest) {
     
     const url = request.nextUrl.clone();
     // Ensure pathname doesn't start with preferredLocale if it was already processed (e.g. from a redirect)
-    if (!url.pathname.startsWith(`/${preferredLocale}`)) {
+    // Also handle the root path case.
+    if (pathname === '/') {
+      url.pathname = `/${preferredLocale}`;
+    } else if (!url.pathname.startsWith(`/${preferredLocale}`)) {
          url.pathname = `/${preferredLocale}${pathname.startsWith('/') ? '' : '/'}${pathname}`;
     }
-    return NextResponse.redirect(url);
+    // Only redirect if the path actually changed to avoid loops on already prefixed paths
+    if (url.pathname !== request.nextUrl.pathname) {
+        return NextResponse.redirect(url);
+    }
   }
   
   // If all checks pass (not static/API, auth valid or public route, locale present)
