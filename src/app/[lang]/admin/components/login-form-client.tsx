@@ -11,7 +11,7 @@ import { CorreoLibroLogo } from '@/components/icons/logo';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/auth-provider';
 import { loginUser } from '@/services/api'; // Import the new loginUser function
-import { ApiResponseError } from '@/types'; // Import ApiResponseError
+import type { ApiResponseError } from '@/types'; // Import ApiResponseError
 
 interface LoginFormClientProps {
   lang: string;
@@ -50,10 +50,36 @@ export function LoginFormClient({ lang, texts }: LoginFormClientProps) {
       login(data.token, data.usuario); // data.usuario should be the user object from API
       router.push(`/${lang}/admin/panel`);
 
-    } catch (err) {
-      const apiError = err as ApiResponseError;
-      setError(apiError.message || texts.errorMessage || "Login failed");
-      console.error("Login error:", apiError);
+    } catch (err: unknown) { // Catch as unknown for safer type checking
+      let messageToDisplay = texts.errorMessage || "Login failed";
+      let diagnosticMessage = "An unknown error occurred during login.";
+
+      if (typeof err === 'object' && err !== null) {
+        if ('message' in err && typeof (err as { message: unknown }).message === 'string' && (err as { message: string }).message) {
+          // Standard Error object or ApiResponseError-like object with a message
+          messageToDisplay = (err as { message: string }).message;
+          diagnosticMessage = `Login failed: ${messageToDisplay}`;
+        } else {
+          // Object without a standard message property, try to stringify
+          try {
+            diagnosticMessage = `Login failed with non-standard error object: ${JSON.stringify(err)}`;
+          } catch (stringifyError) {
+            diagnosticMessage = "Login failed with unstringifiable non-standard error object.";
+          }
+        }
+        // For more detailed logging in the actual browser console (not necessarily the overlay)
+        console.debug("Original error object during login:", err);
+      } else if (typeof err === 'string' && err) {
+        // Error is a simple string
+        messageToDisplay = err;
+        diagnosticMessage = `Login failed: ${err}`;
+        console.debug("Original error string during login:", err);
+      }
+      
+      setError(messageToDisplay);
+      // This console.error is what the Next.js overlay will likely pick up and display.
+      // Using a clear string message here avoids the "{}" issue in the overlay.
+      console.error(diagnosticMessage); 
     } finally {
       setIsLoading(false);
     }
