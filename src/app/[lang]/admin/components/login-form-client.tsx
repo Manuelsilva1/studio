@@ -104,7 +104,6 @@ export function LoginFormClient({ lang, texts }: LoginFormClientProps) {
             <Label htmlFor="email">{texts.usernameLabel}</Label> 
             <Input
               id="email" // Changed from username to email
-              type="email" // Changed input type to email
               placeholder={texts.usernamePlaceholder} // Assuming placeholder is suitable for email
               value={email}
               onChange={(e) => setEmail(e.target.value)}

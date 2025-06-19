@@ -15,13 +15,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('authUser');
-    if (storedToken && storedUser) {
+  const storedToken = localStorage.getItem('authToken');
+  const storedUser  = localStorage.getItem('authUser');
+
+  if (storedToken && storedUser) {
+    try {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
+    } catch (err) {
+      console.warn('authUser corrupto, se limpia →', err);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
     }
-  }, []);
+  }
+}, []);
+
 
   const login = (newToken: string, userData: any) => {
     localStorage.setItem('authToken', newToken);
