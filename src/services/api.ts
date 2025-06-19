@@ -64,7 +64,7 @@ async function fetchApi<T>(endpoint: string, options: FetchApiOptions = {}): Pro
 // --- Auth ---
 export const loginUser = async (credentials: { email: string; password: string }): Promise<{ token: string; usuario: User }> => {
   if (API_MODE === 'mock') return mockApi.mockLoginUser(credentials);
-  return fetchApi<{ token: string; usuario: User }>('/api/usuarios/login', {
+  return fetchApi<{ token: string; usuario: User }>('/api/auth/login', {
     method: 'POST',
     body: credentials,
   });
@@ -75,17 +75,17 @@ export const loginUser = async (credentials: { email: string; password: string }
 export const getBooks = async (params?: Record<string, any>): Promise<Book[]> => {
   if (API_MODE === 'mock') return mockApi.mockGetBooks(); // params for mock?
   const query = params ? `?${new URLSearchParams(params).toString()}` : '';
-  return fetchApi<Book[]>(`/api/libros${query}`);
+  return fetchApi<Book[]>(`/api/books${query}`);
 };
 
 export const getBookById = async (id: string | number): Promise<Book> => {
   if (API_MODE === 'mock') return mockApi.mockGetBookById(id);
-  return fetchApi<Book>(`/api/libros/${id}`);
+  return fetchApi<Book>(`/api/books/${id}`);
 };
 
 export const createBook = async (bookData: Partial<Book>): Promise<Book> => {
   if (API_MODE === 'mock') return mockApi.mockCreateBook(bookData);
-  return fetchApi<Book>('/api/libros', {
+  return fetchApi<Book>('/api/books', {
     method: 'POST',
     body: bookData,
   });
@@ -93,7 +93,7 @@ export const createBook = async (bookData: Partial<Book>): Promise<Book> => {
 
 export const updateBook = async (id: string | number, bookData: Partial<Book>): Promise<Book> => {
   if (API_MODE === 'mock') return mockApi.mockUpdateBook(id, bookData);
-  return fetchApi<Book>(`/api/libros/${id}`, {
+  return fetchApi<Book>(`/api/books/${id}`, {
     method: 'PUT',
     body: bookData,
   });
@@ -101,7 +101,7 @@ export const updateBook = async (id: string | number, bookData: Partial<Book>): 
 
 export const deleteBook = async (id: string | number): Promise<void> => {
   if (API_MODE === 'mock') return mockApi.mockDeleteBook(id);
-  return fetchApi<void>(`/api/libros/${id}`, {
+  return fetchApi<void>(`/api/books/${id}`, {
     method: 'DELETE',
   });
 };
@@ -167,12 +167,12 @@ export const deleteEditorial = async (id: string | number): Promise<void> => {
 // --- Cart ---
 export const getCart = async (): Promise<Cart> => {
   if (API_MODE === 'mock') return mockApi.mockGetCart();
-  return fetchApi<Cart>('/api/carrito');
+  return fetchApi<Cart>('/api/cart');
 };
 
 export const addItemToCart = async (item: { libroId: string | number; cantidad: number }): Promise<Cart> => {
   if (API_MODE === 'mock') return mockApi.mockAddItemToCart(item);
-  return fetchApi<Cart>('/api/carrito/items', {
+  return fetchApi<Cart>('/api/cart/add', {
     method: 'POST',
     body: item,
   });
@@ -180,7 +180,7 @@ export const addItemToCart = async (item: { libroId: string | number; cantidad: 
 
 export const updateCartItem = async (itemId: string | number, updates: { cantidad: number }): Promise<Cart> => {
   if (API_MODE === 'mock') return mockApi.mockUpdateCartItem(itemId, updates);
-  return fetchApi<Cart>(`/api/carrito/items/${itemId}`, {
+  return fetchApi<Cart>(`/api/cart/items/${itemId}`, {
     method: 'PUT',
     body: updates,
   });
@@ -188,7 +188,7 @@ export const updateCartItem = async (itemId: string | number, updates: { cantida
 
 export const removeCartItem = async (itemId: string | number): Promise<void> => { // Mock should also return void to match if API is void
   if (API_MODE === 'mock') return mockApi.mockRemoveCartItem(itemId);
-  return fetchApi<void>(`/api/carrito/items/${itemId}`, {
+  return fetchApi<void>(`/api/cart/items/${itemId}`, {
     method: 'DELETE',
   });
 };
@@ -260,28 +260,28 @@ export const deleteOffer = async (id: string | number): Promise<void> => {
 
 export const addBookToOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
   if (API_MODE === 'mock') return mockApi.mockAddBookToOffer(offerId, libroId);
-  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
+  return fetchApi<void>(`/api/ofertas/${offerId}/books/${libroId}`, {
     method: 'POST',
   });
 };
 
 export const removeBookFromOffer = async (offerId: string | number, libroId: string | number): Promise<void> => {
   if (API_MODE === 'mock') return mockApi.mockRemoveBookFromOffer(offerId, libroId);
-  return fetchApi<void>(`/api/ofertas/${offerId}/libros/${libroId}`, {
+  return fetchApi<void>(`/api/ofertas/${offerId}/books/${libroId}`, {
     method: 'DELETE',
   });
 };
 
 export const getBooksForOffer = async (offerId: string | number): Promise<Book[]> => {
   if (API_MODE === 'mock') return mockApi.mockGetBooksForOffer(offerId);
-  return fetchApi<Book[]>(`/api/ofertas/${offerId}/libros`);
+  return fetchApi<Book[]>(`/api/ofertas/${offerId}/books`);
 };
 
 
 // --- Users (Example, not fully implemented in mock or all components) ---
 export const registerUser = async (userData: Partial<User>): Promise<User> => {
   // if (API_MODE === 'mock') return mockApi.mockRegisterUser(userData); // TODO: Implement mockRegisterUser
-  return fetchApi<User>('/api/usuarios/registro', {
+  return fetchApi<User>('/api/auth/register', {
     method: 'POST',
     body: userData,
   });
@@ -289,6 +289,6 @@ export const registerUser = async (userData: Partial<User>): Promise<User> => {
 
 export const getUserProfile = async (userId: string | number): Promise<User> => {
   // if (API_MODE === 'mock') return mockApi.mockGetUserProfile(userId); // TODO: Implement mockGetUserProfile
-  return fetchApi<User>(`/api/usuarios/${userId}`);
+  return fetchApi<User>(`/api/users/${userId}`);
 };
 
